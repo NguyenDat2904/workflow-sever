@@ -12,7 +12,7 @@ const UsersModal= new Schema({
     gender: { type: String },
     birthDate:{ type:Date },
     desc:{ type: String },
-
+    
 },
 
 { timestamps: true },

@@ -1,29 +1,28 @@
-const UsersModal=require("../modal/modalUser");
+
 const checkEmail=require("../helpers/email");
 const token=require("../helpers/token.helpers")
-const bcrypt=requrie("bcrypt");
-const getUsers=async(req,res)=>{
-    const {email,userName,passWord}=req.body
+const bcrypt=require("bcrypt");
+const Login=async(req,res)=>{
+    const {userName,passWord}=req.body
     try {
-        const userEmail=await checkEmail(email,userName)
+        
+        const userEmail=await checkEmail.checkUsers(userName)
         if(!userEmail){
-            res.status(404).json({
-                message:"Email does not exist"
+           return res.status(404).json({
+                message:"Email does not exist",
             })
         }
         //check  password
         const isPassword = await bcrypt.compare(passWord, userEmail.password);
         if (!isPassword) {
-           return res.status(404).json({
-            message:'Wrong password'
-           });
+         return  res.status(404).json({
+                message:"Wrong password"
+         });
         }
         const refreshToken= token(userEmail,"720h");
+        userEmail.refreshToken=refreshToken
+        await userEmail.save()
         const accessToken =token(userEmail,'24h');
-
-        
-       
-        
             res.status(200).json({
                 _id:userEmail._id,
                 role:userEmail.role,
@@ -37,4 +36,4 @@ const getUsers=async(req,res)=>{
         })
     }
 }
-module.exports=getUsers;
+module.exports=Login;
