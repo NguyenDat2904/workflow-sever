@@ -5,29 +5,6 @@ const token=require("../helpers/token.helpers");
 require("dotenv").config();
 const bcrypt=require("bcrypt");
 const nodemailer = require("nodemailer");
-//get users
-const GetUsers=async(req,res)=>{
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    try {
-        const totalUsers= await UsersModal.countDocuments();
-        const totalPages = Math.ceil(totalUsers / limit);
-        const users= await UsersModal.find({})
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .select('-passWord');
-        res.status(200).json({
-            totalPages,
-            page,
-            users,
-            totalUsers
-        })
-    } catch (error) {
-        res.status(404).json({
-            message:"not found"
-        })
-    }
-}
 const Login=async(req,res)=>{
     const {userName,passWord}=req.body
     try {
@@ -65,9 +42,6 @@ const Login=async(req,res)=>{
     }
 }
 //login google
-const LoginGoogle=async(req,res)=>{
-    
-}
 //forgot
 const Forgot=async(req,res)=>{
     const {email}=req.body
@@ -153,4 +127,4 @@ const NewPassword=async(req,res)=>{
 
 
 }
-module.exports={Login,Forgot,NewPassword,GetUsers};
+module.exports={Login,Forgot,NewPassword};
