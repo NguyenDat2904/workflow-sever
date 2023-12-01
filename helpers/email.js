@@ -1,4 +1,4 @@
-const UsersModal=require("../model/modalUser")
+const UsersModal=require("../models/modalUser")
 const checkEmail=async(email)=>{
         if(email){
             const users=await UsersModal.findOne({email:email})
