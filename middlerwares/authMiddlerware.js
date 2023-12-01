@@ -2,8 +2,9 @@ const jwt=require("jsonwebtoken");
 require("dotenv").config();
 
 const authMiddlerware=(req,res,next)=>{
-    const accessToken=req.headers['accessToken'];
+    const accessToken=req.headers['access-Token'];
     try {
+        console.log(accessToken)
         if(!accessToken){
             res.status(404).json({
                 message:"Not available accessToken",
