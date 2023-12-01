@@ -7,7 +7,6 @@ const authMidddlerware=require("../middlerwares/authMiddlerware")
 router.post("/login",Login.Login)
 router.post("/forgot",Login.Forgot)
 router.patch("/forgot/changePassword/:_id",Login.NewPassword)
-router.get("/",authMidddlerware,Login.GetUsers)
 
 
 module.exports = router;
