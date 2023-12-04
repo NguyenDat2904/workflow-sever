@@ -1,10 +1,9 @@
 const bcrypt = require('bcrypt');
 const userModel = require('../models/modelUser');
-const token = require('../helpers/token.helpers');
+const token = require('../helpers/tokenHelpers');
 const { checkEmail, checkUsers, transporter } = require('../helpers/email');
 const userSchema = require('../helpers/validateUser.helper');
 require('dotenv').config();
-
 
 const AuthController = {
     // post
@@ -43,12 +42,14 @@ const AuthController = {
 
             transporter.sendMail(mailOptions, (err, info) => {
                 if (err) {
+                    console.log(err);
                     res.status(400).json({
                         error: "The email wasn't sent successfully",
                     });
                 } else {
                     res.json({
-                        message: 'The email was sent successfully',
+                        info: info.response,
+                        email,
                     });
                     console.log('Email xác thực đã được gửi:', info.response);
                 }
@@ -95,7 +96,7 @@ const AuthController = {
                 userName,
                 email,
                 passWord: hashPassword.toString(),
-                role:'',
+                role: '',
                 refreshToken: '',
                 phone: '',
                 img: '',
@@ -114,7 +115,7 @@ const AuthController = {
 
             newUser.refreshToken = refreshToken;
             await newUser.save();
-            return res.status(200).json({ userName, email, assetToken, refreshToken });
+            return res.status(200).json({ id: newUser._id, userName, email, assetToken, refreshToken });
         } catch (error) {
             console.log(error);
             return res.status(400).json({
