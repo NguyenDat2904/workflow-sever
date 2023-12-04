@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const userModel = require('../models/modelUser');
-const token = require('../helpers/token.helpers');
+const token = require('../helpers/tokenHelpers');
 const { checkEmail, checkUsers, transporter } = require('../helpers/email');
 const userSchema = require('../helpers/validateUser.helper');
 

@@ -1,11 +1,13 @@
-const checkEmail = require('../helpers/email');
-const UsersModal = require('../models/modelUser');
-const token = require('../helpers/token.helpers');
-require('dotenv').config();
-const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-const Login = async (req, res) => {
-    const { userName, passWord } = req.body;
+
+const checkEmail=require("../helpers/email");
+const UsersModal=require("../models/modelUser")
+const token=require("../helpers/tokenHelpers");
+const {OAuth2Client} = require('google-auth-library');
+require("dotenv").config();
+const bcrypt=require("bcrypt");
+const nodemailer = require("nodemailer");
+const Login=async(req,res)=>{
+    const {userName,passWord}=req.body
     try {
         const userEmail = await checkEmail.checkUsers(userName);
         if (!userEmail) {
@@ -40,6 +42,71 @@ const Login = async (req, res) => {
     }
 };
 //login google
+const LoginGoogle=async(req,res)=>{
+  
+   
+    try {
+        const tokenGoogle=req.headers['tokengoogle']
+        console.log(req)
+        const client =new OAuth2Client({clientId:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"})
+        const ticket=await client.verifyIdToken({
+            idToken:tokenGoogle,
+            audience:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"
+        })
+        const payload=ticket.getPayload()
+        console.log(payload)
+        if(!payload){
+            return res.status(404).json({
+                message:"something went wrong"
+            })
+        }
+        const check=await checkEmail.checkEmail(payload.email);
+        if(!check){
+            const newUser= new UsersModal({
+                name:payload.name,
+                email:payload.email,
+                phone:"",
+                userName:"",
+                passWord:"",
+                role:"nomal",
+                img:payload.picture,
+                refreshToken:"",
+                gender:"",
+                birthDay:null,
+                desc:""
+            })
+            const refreshToken=  token(newUser,"720h")
+            newUser.refreshToken=refreshToken
+            await newUser.save()
+            const accessToken= token(newUser,"24h")
+            res.status(200).json({
+                _id:newUser._id,
+                role:newUser.role,
+                name:newUser.name,
+                email:newUser.email,
+                refreshToken,
+                accessToken
+            })
+        }
+        else{
+            const refreshToken=  token(check,"720h")
+            check.refreshToken=refreshToken
+            const accessToken= token(check,"24h")
+            res.status(200).json({
+                _id:check._id,
+                role:check.role,
+                name:check.name,
+                email:check.email,
+                refreshToken,
+                accessToken
+            })
+        }
+    } catch (error) {
+        return res.status(404).json({
+            message:"login error"
+        })
+    }
+}
 //forgot
 const Forgot = async (req, res) => {
     const { email } = req.body;
@@ -69,7 +136,7 @@ const Forgot = async (req, res) => {
                     <p style="font-size:18px;font-weight:600;font-family: 'Helvetica Neue', Helvetica"> Hi ${userEmail.name}</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">We've received a request to set a new password for this Atlassian account:</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">${email}.</p>
-                    <button style="cursor: pointer;background:#0052cc;padding:5px";border-radius:5px ><a style="font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
+                    <button style="background:#0052cc;padding:5px";border-radius:5px ><a style="cursor: pointer,font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
                    <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">If you didn't request this, you can safely ignore this email.</p>
                     <hr style="margin:15px 0"/>
                     <p style="text-align:center;font-size:14px;font-family: 'Helvetica Neue', Helvetica">This message was sent to you by Atlassian Cloud</p>
@@ -94,14 +161,15 @@ const Forgot = async (req, res) => {
 };
 // new passWord
 
-const NewPassword = async (req, res) => {
-    const { _id } = req.params;
-    const { passWord } = req.body;
+const NewPassword=async(req,res)=>{
+   
     //check user email
     try {
-        const checkId = await UsersModal.findById(_id);
-        console.log(checkId);
-        if (!checkId) {
+         const {_id}=req.params
+        const {passWord}=req.body
+        const checkId= await UsersModal.findById(_id);
+        console.log(checkId)
+        if(!checkId){
             return res.status(404).json({
                 message: 'user not found',
             });
@@ -120,5 +188,34 @@ const NewPassword = async (req, res) => {
             data: null,
         });
     }
-};
-module.exports = { Login, Forgot, NewPassword };
+
+
+}
+//profile change password
+const ProfileChangePassword=async(req,res)=>{
+  
+    try {
+          const {_id}=req.params
+         const {oldPassword,newPassword}=req.body
+        const checkIdUser= await UsersModal.findById(_id)
+        const checkOldPassword= await bcrypt.compareSync(oldPassword,checkIdUser.passWord)
+        if(!checkOldPassword){
+            return res.status(404).json({
+                message:"Old passwords do not match"
+            })
+        }
+        const salt= await bcrypt.genSaltSync(10)
+        const hashNewPassword= await bcrypt.hashSync(newPassword,salt)
+        checkIdUser.passWord=hashNewPassword
+        await checkIdUser.save()
+        return  res.status(200).json({
+            message:"changed password successfully",
+           
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message:"Unable to change password due to pass"
+        })
+    }
+}
+module.exports={Login,Forgot,NewPassword,LoginGoogle,ProfileChangePassword};
