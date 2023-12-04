@@ -1,5 +1,6 @@
 const UsersModal = require('../models/modelUser');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const checkEmail = async (email) => {
     if (email) {
