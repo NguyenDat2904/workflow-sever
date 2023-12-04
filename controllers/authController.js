@@ -1,7 +1,7 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const userModel = require('../models/modelUser');
 const token = require('../helpers/token.helpers');
-const { checkEmail, checkUsers, transporter } = require('../helpers/email.helpers');
+const { checkEmail, checkUsers, transporter } = require('../helpers/email');
 const userSchema = require('../helpers/validateUser.helper');
 
 const AuthController = {
@@ -10,13 +10,13 @@ const AuthController = {
         try {
             const { email, userName = '', url = '' } = req.body;
 
-            // const isCheckUserEmail = await checkEmail(email);
-
-            // if (isCheckUserEmail) {
-            //     return res.status(400).json({
-            //         message: 'Email or userName already exists',
-            //     });
-            // }
+            //
+            const isCheckUserEmail = await checkEmail(email);
+            if (isCheckUserEmail) {
+                return res.status(400).json({
+                    message: 'Email or userName already exists',
+                });
+            }
 
             const mailOptions = {
                 from: `${process.env.USER_EMAIL}`,
@@ -92,7 +92,7 @@ const AuthController = {
                 name: '',
                 userName,
                 email,
-                password: hashPassword,
+                passWord: hashPassword.toString(),
                 role,
                 refreshToken: '',
                 phone: '',
@@ -101,6 +101,7 @@ const AuthController = {
                 birthDate: '',
                 desc: '',
             });
+            console.log(newUser);
 
             const user = {
                 id: newUser._id,
@@ -108,11 +109,12 @@ const AuthController = {
                 role: newUser.role,
             };
 
-            const refreshToken = token(user, '24h');
+            const refreshToken = token(user, '720h');
+            const assetToken = token(user, '24h');
 
             newUser.refreshToken = refreshToken;
             await newUser.save();
-            return res.status(200).json({ userName, email, role, refreshToken });
+            return res.status(200).json({ userName, email, role, assetToken, refreshToken });
         } catch (error) {
             console.log(error);
             return res.status(400).json({
