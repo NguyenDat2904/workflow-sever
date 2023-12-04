@@ -1,7 +1,7 @@
 
 const checkEmail=require("../helpers/email");
 const UsersModal=require("../models/modalUser")
-const token=require("../helpers/token.helpers");
+const token=require("../helpers/tokenHelpers");
 require("dotenv").config();
 const bcrypt=require("bcrypt");
 const nodemailer = require("nodemailer");
@@ -25,7 +25,7 @@ const Login=async(req,res)=>{
         const refreshToken= token(userEmail,"720h");
         userEmail.refreshToken=refreshToken
         await userEmail.save()
-        const accessToken =token(userEmail,'24h');
+        const accessToken =token(userEmail,"60s");
             res.status(200).json({
                 _id:userEmail._id,
                 role:userEmail.role,
@@ -42,6 +42,57 @@ const Login=async(req,res)=>{
     }
 }
 //login google
+const LoginGoogle=async(req,res)=>{
+    const {name,email,img}=req.body
+    try {
+        const check=await checkEmail.checkEmail(email);
+        if(!check){
+            const newUser= new UsersModal({
+                name,
+                email,
+                phone:"",
+                userName:"",
+                passWord:"",
+                role:"nomal",
+                img,
+                refreshToken:"",
+                gender:"",
+                birthDay:null,
+                desc:""
+            })
+            await newUser.save()
+            const checkUser=await checkEmail.checkEmail(email);
+            const refreshToken=  token(checkUser,"720h")
+            checkUser.refreshToken=refreshToken
+            const accessToken= token(checkUser,"24h")
+            res.status(200).json({
+                _id:checkUser._id,
+                role:checkUser.role,
+                name:checkUser.name,
+                email:checkUser.email,
+                refreshToken,
+                accessToken
+            })
+        }
+        else{
+            const refreshToken=  token(check,"720h")
+            check.refreshToken=refreshToken
+            const accessToken= token(check,"24h")
+            res.status(200).json({
+                _id:check._id,
+                role:check.role,
+                name:check.name,
+                email:check.email,
+                refreshToken,
+                accessToken
+            })
+        }
+    } catch (error) {
+        return res.status(404).json({
+            message:"login error"
+        })
+    }
+}
 //forgot
 const Forgot=async(req,res)=>{
     const {email}=req.body
@@ -127,4 +178,30 @@ const NewPassword=async(req,res)=>{
 
 
 }
-module.exports={Login,Forgot,NewPassword};
+//profile change password
+const ProfileChangePassword=async(req,res)=>{
+    const {_id}=req.params
+    const {oldPassword,newPassword}=req.body
+    try {
+        const checkIdUser= await UsersModal.findById(_id)
+        const checkOldPassword= await bcrypt.compareSync(oldPassword,checkIdUser.passWord)
+        if(!checkOldPassword){
+            return res.status(404).json({
+                message:"Old passwords do not match"
+            })
+        }
+        const salt= await bcrypt.genSaltSync(10)
+        const hashNewPassword= await bcrypt.hashSync(newPassword,salt)
+        checkIdUser.passWord=hashNewPassword
+        await checkIdUser.save()
+        return  res.status(200).json({
+            message:"changed password successfully",
+           
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message:"Unable to change password due to pass"
+        })
+    }
+}
+module.exports={Login,Forgot,NewPassword,LoginGoogle,ProfileChangePassword};

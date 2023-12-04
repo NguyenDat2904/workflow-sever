@@ -3,14 +3,27 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
+const cors=require("cors")
 const usersRouter = require('./routes/users');
 
 const app = express();
 const db=require("./config/db")
 
 db();
+// const whileList=["http://localhost:8080"];
+// const corsOptions = {
+//     origin: function (origin, callback) {
+//       if (whileList.indexOf(origin) !== -1) {
+//          callback(null, true);
+//       }else {
+//         callback(new Error('Not allowed by CORS'))
+//       }
+//     },
+//     methods: 'PUT,PATCH,GET,DELETE,UPDATE',
+//   };
+  
 
+// app.use(cors(corsOptions));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
