@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Login=require("../controllers/usersController");
-const authMidddlerware=require("../middlerwares/authMiddlerware")
-const refreshTokenMiddlerware=require("../middlerwares/refreshTokenMiddlerware")
+const authMidddlerware=require("../middlerwares/authMiddleware")
+const refreshTokenMiddlerware=require("../middlerwares/refreshTokenMiddleware")
 
 /* GET users listing. */
 router.post("/login",Login.Login)

@@ -2,6 +2,7 @@
 const checkEmail=require("../helpers/email");
 const UsersModal=require("../models/modalUser")
 const token=require("../helpers/tokenHelpers");
+const {OAuth2Client} = require('google-auth-library');
 require("dotenv").config();
 const bcrypt=require("bcrypt");
 const nodemailer = require("nodemailer");
@@ -43,33 +44,47 @@ const Login=async(req,res)=>{
 }
 //login google
 const LoginGoogle=async(req,res)=>{
-    const {name,email,img}=req.body
+  
+   
     try {
-        const check=await checkEmail.checkEmail(email);
+        const tokenGoogle=req.headers['tokengoogle']
+        console.log(req)
+        const client =new OAuth2Client({clientId:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"})
+        const ticket=await client.verifyIdToken({
+            idToken:tokenGoogle,
+            audience:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"
+        })
+        const payload=ticket.getPayload()
+        console.log(payload)
+        if(!payload){
+            return res.status(404).json({
+                message:"something went wrong"
+            })
+        }
+        const check=await checkEmail.checkEmail(payload.email);
         if(!check){
             const newUser= new UsersModal({
-                name,
-                email,
+                name:payload.name,
+                email:payload.email,
                 phone:"",
                 userName:"",
                 passWord:"",
                 role:"nomal",
-                img,
+                img:payload.picture,
                 refreshToken:"",
                 gender:"",
                 birthDay:null,
                 desc:""
             })
+            const refreshToken=  token(newUser,"720h")
+            newUser.refreshToken=refreshToken
             await newUser.save()
-            const checkUser=await checkEmail.checkEmail(email);
-            const refreshToken=  token(checkUser,"720h")
-            checkUser.refreshToken=refreshToken
-            const accessToken= token(checkUser,"24h")
+            const accessToken= token(newUser,"24h")
             res.status(200).json({
-                _id:checkUser._id,
-                role:checkUser.role,
-                name:checkUser.name,
-                email:checkUser.email,
+                _id:newUser._id,
+                role:newUser.role,
+                name:newUser.name,
+                email:newUser.email,
                 refreshToken,
                 accessToken
             })
@@ -122,7 +137,7 @@ const Forgot=async(req,res)=>{
                     <p style="font-size:18px;font-weight:600;font-family: 'Helvetica Neue', Helvetica"> Hi ${userEmail.name}</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">We've received a request to set a new password for this Atlassian account:</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">${email}.</p>
-                    <button style="cursor: pointer;background:#0052cc;padding:5px";border-radius:5px ><a style="font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
+                    <button style="background:#0052cc;padding:5px";border-radius:5px ><a style="cursor: pointer,font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
                    <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">If you didn't request this, you can safely ignore this email.</p>
                     <hr style="margin:15px 0"/>
                     <p style="text-align:center;font-size:14px;font-family: 'Helvetica Neue', Helvetica">This message was sent to you by Atlassian Cloud</p>
@@ -149,10 +164,11 @@ const Forgot=async(req,res)=>{
 // new passWord
 
 const NewPassword=async(req,res)=>{
-    const {_id}=req.params
-    const {passWord}=req.body
+   
     //check user email
     try {
+         const {_id}=req.params
+        const {passWord}=req.body
         const checkId= await UsersModal.findById(_id);
         console.log(checkId)
         if(!checkId){
@@ -180,9 +196,10 @@ const NewPassword=async(req,res)=>{
 }
 //profile change password
 const ProfileChangePassword=async(req,res)=>{
-    const {_id}=req.params
-    const {oldPassword,newPassword}=req.body
+  
     try {
+          const {_id}=req.params
+         const {oldPassword,newPassword}=req.body
         const checkIdUser= await UsersModal.findById(_id)
         const checkOldPassword= await bcrypt.compareSync(oldPassword,checkIdUser.passWord)
         if(!checkOldPassword){
