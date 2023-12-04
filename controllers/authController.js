@@ -34,7 +34,8 @@ const AuthController = {
                   <a href=${process.env.URL_EMAIL} style="box-sizing:border-box;border-radius:3px;border-width:0;border:none;display:inline-flex;font-style:normal;font-size:inherit;line-height:24px;margin:0;outline:none;padding:4px 12px;text-align:center;vertical-align:middle;white-space:nowrap;text-decoration:none;background:#0052cc;color:#ffffff;cursor: pointer;" target="_blank">
                   Verify your email</a>
                   </div></div><hr style="margin-top:24px;margin-bottom:24px;border:0;border-bottom:1px solid #c1c7d0">
-                  <h4 style="margin-bottom:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;font-size:14px;font-weight:600;letter-spacing:-0.003em;color:#172b4d;line-height:16px;margin-top:16px">Your Workflow Account</h4><p style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;font-size:14px;font-weight:400;letter-spacing:-0.005em;color:#091e42;line-height:20px;margin-top:12px">Make things easier by using one account across all of your Workflow products. <a href="" style="border:none;background:transparent;color:#0052cc;text-decoration:none" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://confluence.atlassian.com/cloud/your-atlassian-account-976161169.html&amp;source=gmail&amp;ust=1701523652239000&amp;usg=AOvVaw0Zmgd8CXRbCxQnfiRGhP-C">Learn more.</a></p><hr style="margin-top:24px;margin-bottom:24px;border:0;border-bottom:1px solid #c1c7d0"><div style="color:#707070;font-size:13px;line-height:19px;text-align:center;margin-top:10px"><table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" align="center" style="border-collapse:collapse"><tbody><tr><td valign="top" align="center" style="padding-top:10px;line-height:18px;text-align:center;font-weight:none;font-size:12px;color:#505f79"><span>This message was sent to you by Workflow Cloud</span><br></td></tr><tr valign="top"><td align="center" style="padding-top:15px;padding-bottom:30px"><a href="#" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://www.atlassian.com&amp;source=gmail&amp;ust=1701523652239000&amp;usg=AOvVaw0zgsKi1JVSAtxfD4-OFx0E">
+                  <h4 style="margin-bottom:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;font-size:14px;font-weight:600;letter-spacing:-0.003em;color:#172b4d;line-height:16px;margin-top:16px">Your Workflow Account</h4><p style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;font-size:14px;font-weight:400;letter-spacing:-0.005em;color:#091e42;line-height:20px;margin-top:12px">Make things easier by using one account across all of your Workflow products. <a href="" style="border:none;background:transparent;color:#0052cc;text-decoration:none" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://confluence.atlassian.com/cloud/your-atlassian-account-976161169.html&amp;source=gmail&amp;ust=1701523652239000&amp;usg=AOvVaw0Zmgd8CXRbCxQnfiRGhP-C">Learn more.</a></p><hr style="margin-top:24px;margin-bottom:24px;border:0;border-bottom:1px solid #c1c7d0"><div style="color:#707070;font-size:13px;line-height:19px;text-align:center;margin-top:10px"><table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" align="center" style="border-collapse:collapse"><tbody><tr><td valign="top" align="center" style="padding-top:10px;line-height:18px;text-align:center;font-weight:none;font-size:12px;color:#505f79"><span>This message was sent to you by Workflow Cloud</span><br></td></tr><tr valign="top">
+                  <td align="center" style="padding-top:15px;padding-bottom:30px"><a href="#" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://www.atlassian.com&amp;source=gmail&amp;ust=1701523652239000&amp;usg=AOvVaw0zgsKi1JVSAtxfD4-OFx0E">
                   <h3 style="margin-bottom:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;font-size:14px;font-weight:600;letter-spacing:-0.003em;color:#172b4d;line-height:16px;margin-top:16px"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Workflow</font></font></h3>
                   </a></td></tr></tbody></table></div></div>`,
             };
@@ -78,7 +79,6 @@ const AuthController = {
                 email,
                 userName,
                 password,
-                role,
             };
 
             const { error, value } = userSchema.validate(userData);
@@ -104,12 +104,10 @@ const AuthController = {
                 birthDate: '',
                 desc: '',
             });
-            console.log(newUser);
 
             const user = {
                 id: newUser._id,
                 userName: newUser.userName,
-                role: newUser.role,
             };
 
             const refreshToken = token(user, '720h');
