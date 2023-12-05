@@ -1,23 +1,23 @@
-const mongoose=require("mongoose");
-const Schema=mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const UsersModal= new Schema({
-    name:{type:String},
-    email:{ type: String, lowercase: true, required: true, unique: true },
-    phone:{type:String},
-    userName:{type:String},
-    passWord:{type:String,require:true},
-    role:{type:String},
-    img:{type:String},
-    refreshToken:{type:String},
-    gender: { type: String },
-    birthDay:{ type:Date },
-    desc:{ type: String },
-    
-},
+const UsersModal = new Schema(
+    {
+        name: { type: String },
+        email: { type: String, lowercase: true, required: true, unique: true },
+        phone: { type: String },
+        userName: { type: String },
+        passWord: { type: String, require: true },
+        role: { type: String },
+        img: { type: String },
+        refreshToken: { type: String },
+        gender: { type: String },
+        birthDay: { type: Date },
+        desc: { type: String },
+    },
 
-{ timestamps: true },
-{ collection: 'users' }
-)
+    { timestamps: true },
+    { collection: 'users' },
+);
 
-module.exports=mongoose.model('users',UsersModal)
+module.exports = mongoose.model('users', UsersModal);
