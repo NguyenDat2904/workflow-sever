@@ -40,6 +40,7 @@ const AuthController = {
             const payload = {
                 email,
                 userName,
+                fullName,
             };
 
             // hết hạn sau 3p
