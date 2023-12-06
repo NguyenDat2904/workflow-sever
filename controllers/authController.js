@@ -13,8 +13,15 @@ const AuthController = {
             const { email = '', userName = '' } = req.body;
 
             // check email and userName
+            if (email === '' || userName === '') {
+                return res.status(400).json({
+                    err: 'User data is missing',
+                });
+            }
+
             const isCheckUserEmail = await checkEmail(email);
             const isCheckUserName = await checkUsers(userName);
+            
             if (isCheckUserEmail && isCheckUserName) {
                 return res.status(400).json({
                     errEmail: 'Email already exists',
@@ -88,10 +95,28 @@ const AuthController = {
             const { email = '', fullName = '', userName = '', password = '' } = req.body;
             const { assetToken } = req.user;
 
-            // Check Email
-            const checkEmailUser = await checkEmail(email);
-            if (checkEmailUser) {
-                return res.status(400).json({ error: 'Email already exists' });
+            if (email === '' || fullName === '' || userName === '' || password === '') {
+                return res.status(400).json({
+                    err: 'User data is missing',
+                });
+            }
+
+            // check email and userName
+            const isCheckUserEmail = await checkEmail(email);
+            const isCheckUserName = await checkUsers(userName);
+            if (isCheckUserEmail && isCheckUserName) {
+                return res.status(400).json({
+                    errEmail: 'Email already exists',
+                    errUserName: 'UserName already exists',
+                });
+            } else if (isCheckUserEmail) {
+                return res.status(400).json({
+                    errEmail: 'Email already exists',
+                });
+            } else if (isCheckUserName) {
+                return res.status(400).json({
+                    errUserName: 'UserName already exists',
+                });
             }
             // validate
             const userData = {
