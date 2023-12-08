@@ -105,16 +105,6 @@ const AuthController = {
                     errUserName: 'UserName already exists',
                 });
             }
-            
-
-            const { error, value } = userSchema.validate(userData);
-            if (error) {
-                return res.status(400).json({
-                    message: 'Authentication error :',
-                    error,
-                    value,
-                });
-            }
 
             const salt = bcrypt.genSaltSync(10);
             const hashPassword = bcrypt.hashSync(password, salt);
