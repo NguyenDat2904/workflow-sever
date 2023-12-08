@@ -82,9 +82,7 @@ const AuthController = {
             const { email = '', fullName = '', userName = '', password = '' } = req.body;
             
             const { assetToken } = req.user;
-            if (!token) {
-                return res.status(400).json({ errorToken: 'token is required' });
-              }
+            
             if (email === '' || fullName === '' || userName === '' || password === '') {
                 return res.status(400).json({
                     err: 'User data is missing',
