@@ -79,13 +79,22 @@ const AuthController = {
     },
     register: async (req, res) => {
         try {
-            const { email = '', fullName = '', userName = '', password = '' } = req.body;
+            const { email = '', fullName = '', userName = '', password = '', token } = req.body;
             const { assetToken } = req.user;
 
+            if (!token) {
+                return res.status(400).json({ errorToken: 'token is required' });
+              }
+            
             if (email === '' || fullName === '' || userName === '' || password === '') {
                 return res.status(400).json({
                     err: 'User data is missing',
                 });
+            }
+            try{
+             jwt.verify(token, process.env.SECRET_KEY);
+            }catch (error){
+                return res.status(400).json({errorVerify : "Verify failed", error})
             }
 
             // check email and userName
