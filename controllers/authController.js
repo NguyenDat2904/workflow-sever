@@ -79,7 +79,8 @@ const AuthController = {
     },
     register: async (req, res) => {
         try {
-            const { email = '', fullName = '', userName = '', password = '', token } = req.body;
+            const { email = '', fullName = '', userName = '', password = '' } = req.body;
+            const authHeader = req.headers['authenRegister'];
             const { assetToken } = req.user;
 
             if (!token) {
@@ -92,7 +93,7 @@ const AuthController = {
                 });
             }
             try{
-             jwt.verify(token, process.env.SECRET_KEY);
+             jwt.verify(authHeader, process.env.SECRET_KEY);
             }catch (error){
                 return res.status(400).json({errorVerify : "Verify failed", error})
             }
