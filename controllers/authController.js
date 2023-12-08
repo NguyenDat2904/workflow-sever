@@ -105,13 +105,7 @@ const AuthController = {
                     errUserName: 'UserName already exists',
                 });
             }
-            // validate
-            const userData = {
-                name: fullName,
-                email,
-                userName,
-                password,
-            };
+            
 
             const { error, value } = userSchema.validate(userData);
             if (error) {
