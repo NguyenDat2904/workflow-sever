@@ -12,22 +12,9 @@ const AuthController = {
         try {
             const { email = '', userName = '', fullName = '' } = req.body;
 
-            // check email and userName
-            if (email === '' || userName === '' || fullName === '') {
-                return res.status(400).json({
-                    err: 'User data is missing',
-                });
-            }
-
             const isCheckUserEmail = await checkEmail(email);
             const isCheckUserName = await checkUsers(userName);
-
-            if (isCheckUserEmail && isCheckUserName) {
-                return res.status(400).json({
-                    errEmail: 'Email already exists',
-                    errUserName: 'UserName already exists',
-                });
-            } else if (isCheckUserEmail) {
+             if (isCheckUserEmail) {
                 return res.status(400).json({
                     errEmail: 'Email already exists',
                 });
@@ -80,6 +67,7 @@ const AuthController = {
                         info: info.response,
                         email,
                         token,
+                        fullName
                     });
                     console.log('Email xác thực đã được gửi:', info.response);
                 }
