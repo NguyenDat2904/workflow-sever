@@ -29,5 +29,6 @@ router.post('/forgot', Login.Forgot);
 router.patch('/forgot/changePassword/:_id', Login.NewPassword);
 router.post('/loginGoogle', Login.LoginGoogle);
 router.patch('/profile/changePassword/:_id', refreshTokenMiddlerware, authMidddlerware, Login.ProfileChangePassword);
+router.get('/:_id', refreshTokenMiddlerware, authMidddlerware, Login.getUser);
 
 module.exports = router;

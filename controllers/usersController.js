@@ -319,4 +319,23 @@ const uploadImg=async(req,res)=>{
     }
    
 }
-module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg};
+//get user
+const getUser=async(req,res)=>{
+   
+    try {
+         const {_id}=req.params
+         if(!_id){
+            res.status(404).json({
+                message:"is not id"
+            })
+         }
+         const user=await UsersModal.findById(_id)
+         res.status(200).json(user)
+    } catch (error) {
+        console.log(error)
+        res.status(404).json({
+            message:"can not get data"
+        })
+    }
+}
+module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg,getUser};
