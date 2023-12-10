@@ -122,6 +122,13 @@ const AuthController = {
                 gender: '',
                 birthDate: '',
                 desc: '',
+                imgCover:"",
+                jopTitle :"",
+                department:"",
+                organization:"",
+                location:"",
+                backgroundProfile:"",
+                textInBackgroundProfile:"",
             });
 
             const user = {
