@@ -1,13 +1,12 @@
-
-const checkEmail=require("../helpers/email");
-const UsersModal=require("../models/modelUser")
-const token=require("../helpers/tokenHelpers");
-const {OAuth2Client} = require('google-auth-library');
-require("dotenv").config();
-const bcrypt=require("bcrypt");
-const nodemailer = require("nodemailer");
-const Login=async(req,res)=>{
-    const {userName,passWord}=req.body
+const checkEmail = require('../helpers/email');
+const UsersModal = require('../models/modelUser');
+const token = require('../helpers/tokenHelpers');
+const { OAuth2Client } = require('google-auth-library');
+require('dotenv').config();
+const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const Login = async (req, res) => {
+    const { userName, passWord } = req.body;
     try {
         const userEmail = await checkEmail.checkUsers(userName);
         if (!userEmail) {
@@ -42,71 +41,77 @@ const Login=async(req,res)=>{
     }
 };
 //login google
-const LoginGoogle=async(req,res)=>{
-  
-   
+const LoginGoogle = async (req, res) => {
     try {
-        const tokenGoogle=req.headers['tokengoogle']
-        console.log(req)
-        const client =new OAuth2Client({clientId:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"})
-        const ticket=await client.verifyIdToken({
-            idToken:tokenGoogle,
-            audience:"927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com"
-        })
-        const payload=ticket.getPayload()
-        console.log(payload)
-        if(!payload){
+        const tokenGoogle = req.headers['tokengoogle'];
+        console.log(req);
+        const client = new OAuth2Client({
+            clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
+        });
+        const ticket = await client.verifyIdToken({
+            idToken: tokenGoogle,
+            audience: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
+        });
+        const payload = ticket.getPayload();
+        console.log(payload);
+        if (!payload) {
             return res.status(404).json({
-                message:"something went wrong"
-            })
+                message: 'something went wrong',
+            });
         }
-        const check=await checkEmail.checkEmail(payload.email);
-        if(!check){
-            const newUser= new UsersModal({
-                name:payload.name,
-                email:payload.email,
-                phone:"",
-                userName:"",
-                passWord:"",
-                role:"nomal",
-                img:payload.picture,
-                refreshToken:"",
-                gender:"",
-                birthDay:null,
-                desc:""
-            })
-            const refreshToken=  token(newUser,"720h")
-            newUser.refreshToken=refreshToken
-            await newUser.save()
-            const accessToken= token(newUser,"24h")
+        const check = await checkEmail.checkEmail(payload.email);
+        if (!check) {
+            const newUser = new UsersModal({
+                name: payload.name,
+                email: payload.email,
+                phone: '',
+                userName: '',
+                passWord: '',
+                role: 'nomal',
+                img: payload.picture,
+                refreshToken: '',
+                gender: '',
+                birthDay: null,
+                desc: '',
+                imgCover:"",
+                jopTitle: '',
+                department: '',
+                organization: '',
+                location: '',
+                backgroundProfile: '',
+                textInBackgroundProfile: '',
+            });
+            const refreshToken = token(newUser, '720h');
+            newUser.refreshToken = refreshToken;
+            await newUser.save();
+            const accessToken = token(newUser, '24h');
             res.status(200).json({
-                _id:newUser._id,
-                role:newUser.role,
-                name:newUser.name,
-                email:newUser.email,
+                _id: newUser._id,
+                role: newUser.role,
+                name: newUser.name,
+                email: newUser.email,
                 refreshToken,
-                accessToken
-            })
-        }
-        else{
-            const refreshToken=  token(check,"720h")
-            check.refreshToken=refreshToken
-            const accessToken= token(check,"24h")
+                accessToken,
+            });
+        } else {
+            const refreshToken = token(check, '720h');
+            check.refreshToken = refreshToken;
+            const accessToken = token(check, '24h');
             res.status(200).json({
-                _id:check._id,
-                role:check.role,
-                name:check.name,
-                email:check.email,
+                _id: check._id,
+                role: check.role,
+                name: check.name,
+                email: check.email,
                 refreshToken,
-                accessToken
-            })
+                accessToken,
+            });
         }
     } catch (error) {
         return res.status(404).json({
-            message:"login error"
-        })
+            message: 'login error',
+        });
     }
-}
+};
 //forgot
 const Forgot = async (req, res) => {
     const { email } = req.body;
@@ -161,15 +166,14 @@ const Forgot = async (req, res) => {
 };
 // new passWord
 
-const NewPassword=async(req,res)=>{
-   
+const NewPassword = async (req, res) => {
     //check user email
     try {
-         const {_id}=req.params
-        const {passWord}=req.body
-        const checkId= await UsersModal.findById(_id);
-        console.log(checkId)
-        if(!checkId){
+        const { _id } = req.params;
+        const { passWord } = req.body;
+        const checkId = await UsersModal.findById(_id);
+        console.log(checkId);
+        if (!checkId) {
             return res.status(404).json({
                 message: 'user not found',
             });
@@ -188,34 +192,131 @@ const NewPassword=async(req,res)=>{
             data: null,
         });
     }
-
-
-}
+};
 //profile change password
-const ProfileChangePassword=async(req,res)=>{
-  
+const ProfileChangePassword = async (req, res) => {
     try {
-          const {_id}=req.params
-         const {oldPassword,newPassword}=req.body
-        const checkIdUser= await UsersModal.findById(_id)
-        const checkOldPassword= await bcrypt.compareSync(oldPassword,checkIdUser.passWord)
-        if(!checkOldPassword){
+        const { _id } = req.params;
+        const { oldPassword, newPassword } = req.body;
+        const checkIdUser = await UsersModal.findById(_id);
+        const checkOldPassword = await bcrypt.compareSync(oldPassword, checkIdUser.passWord);
+        if (!checkOldPassword) {
             return res.status(404).json({
-                message:"Old passwords do not match"
-            })
+                message: 'Old passwords do not match',
+            });
         }
-        const salt= await bcrypt.genSaltSync(10)
-        const hashNewPassword= await bcrypt.hashSync(newPassword,salt)
-        checkIdUser.passWord=hashNewPassword
-        await checkIdUser.save()
-        return  res.status(200).json({
-            message:"changed password successfully",
-           
-        })
+        const salt = await bcrypt.genSaltSync(10);
+        const hashNewPassword = await bcrypt.hashSync(newPassword, salt);
+        checkIdUser.passWord = hashNewPassword;
+        await checkIdUser.save();
+        return res.status(200).json({
+            message: 'changed password successfully',
+        });
     } catch (error) {
         return res.status(404).json({
-            message:"Unable to change password due to pass"
+            message: 'Unable to change password due to pass',
+        });
+    }
+};
+//cập nhật thông tin user
+const updateInfoUser = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { nameFill, contenEditing } = req.body;
+        if (!_id) {
+            res.status(404).json({
+                message: 'is not id',
+            });
+        }
+        const user = await UsersModal.findById(_id);
+        switch (nameFill) {
+            case 'name':
+                user.name = contenEditing;
+                await user.save();
+                break;
+            case 'gender':
+                user.gender = contenEditing;
+                await user.save();
+                break;
+            case 'birthDay':
+                const newbirthday = new Date(contenEditing);
+                user.birthDay = newbirthday;
+                await user.save();
+                break;
+            case 'desc':
+                user.desc = contenEditing;
+                await user.save();
+                break;
+            case 'email':
+                user.email = contenEditing;
+                await user.save();
+                break;
+            case 'phone':
+                user.phone = contenEditing;
+                await user.save();
+                break;
+            case 'jopTitle':
+                user.jopTitle = contenEditing;
+                await user.save();
+                break;
+            case 'department':
+                user.department = contenEditing;
+                await user.save();
+                break;
+            case 'organization':
+                user.organization = contenEditing;
+                await user.save();
+                break;
+            case 'location':
+                user.location = contenEditing;
+                await user.save();
+                break;
+            default:
+                break;
+        }
+        res.status(200).json({data:user})
+    } catch (error) {
+       return res.status(404).json({
+            message:"Can not update"
         })
     }
+};
+const uploadImg=async(req,res)=>{
+    try {
+         const {_id}=req.params
+        const files =req.files
+        const {updatedData}=req.body
+        console.log(files)
+        const users= await UsersModal.findById(_id)
+        if(!users){
+          return  res.status(404).json({
+                message:"is not id"
+            })
+        }
+        console.log(updatedData)
+        if (!users) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        if(files.img){
+            updatedData.img=`http://localhost:3000/images/${files.img[0].filename}`
+        }
+        if(files.imgCover)
+        {
+            updatedData.imgCover=`http://localhost:3000/images/${files.imgCover[0].filename}`
+        }
+       
+        await users.findByIdAndUpdate(_id, updatedData)
+        res.status(200).json({
+            message:"successfully",
+            image: updatedData.img,
+            image_cover: updatedData.img_cover,
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(404).json({
+            message:"error upload img"
+        })
+    }
+   
 }
-module.exports={Login,Forgot,NewPassword,LoginGoogle,ProfileChangePassword};
+module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg};
