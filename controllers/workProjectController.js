@@ -11,7 +11,18 @@ const getWorkProject=async(req,res)=>{
                 message:"not found id"
             })
         }
-        const workProject= await modelWorkProject.find({memberID:_id});
+        const workProject= await modelWorkProject.find({memberID:_id}).populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+        })
+        .populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+        });;
         if(!workProject){
             res.status(404).json({
                 message:"project not found"
@@ -41,8 +52,13 @@ const getListWork=async(req,res)=>{
             populate: {
                 path: 'creatorID',
             },
+        })
+        .populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
         });
-        // const listWork= await ModelListWork.find({_id:{$in:listWorkID}})
         if(!checkProject){
             res.status(404).json({
                 message:"project not found"
@@ -50,7 +66,6 @@ const getListWork=async(req,res)=>{
         }
         res.status(200).json(checkProject)
     } catch (error) {
-        console.log(error)
         res.status(404).json({
             message:"can not get data list work  "
         })
