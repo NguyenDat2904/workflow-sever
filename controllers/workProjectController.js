@@ -27,20 +27,30 @@ const getWorkProject=async(req,res)=>{
 // lấy list công việc của hàm getWorkProject đã lọc công việc theo id user trả về
 const getListWork=async(req,res)=>{
     try {
-        const {listWorkID}=req.body
-        if(!listWorkID){
+        const { nameProject}=req.body
+
+        if(!nameProject){
             res.status(404).json({
                 message:"not found id"
             })
         }
-        const listWork= await ModelListWork.find({_id:{$in:listWorkID}})
-        if(!listWork){
+        //check project
+        const checkProject=await modelWorkProject.findOne({nameProject:nameProject})
+        .populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+        });
+        // const listWork= await ModelListWork.find({_id:{$in:listWorkID}})
+        if(!checkProject){
             res.status(404).json({
                 message:"project not found"
             })
         }
-        res.status(200).json(listWork)
+        res.status(200).json(checkProject)
     } catch (error) {
+        console.log(error)
         res.status(404).json({
             message:"can not get data list work  "
         })
