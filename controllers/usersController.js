@@ -281,6 +281,35 @@ const updateInfoUser = async (req, res) => {
         })
     }
 };
+//upload background content
+const updateBackgroundAndContent=async(req,res)=>{
+        try {
+            const { _id } = req.params;
+            const { backgroundProfile, contentProfile } = req.body;
+            if(!_id||!backgroundProfile||!contentProfile){
+             return res.status(404).json({
+                    message:"is not id or backgroundProfile or contentProfile"
+                })
+            }
+            const users = await UsersModal.findById(_id)
+            if(!users){
+              return  res.status(404).json({
+                    message:"not found"
+                })
+            }
+             users.backgroundProfile=backgroundProfile
+             users.textInBackgroundProfile=contentProfile
+             await users.save()
+           return res.status(200).json({
+                message:"successfully",
+                users
+            })
+        } catch (error) {
+            res.status(404).json({
+                message:"can not update"
+            })
+        }
+}
 const uploadImg=async(req,res)=>{
     try {
          const {_id}=req.params
@@ -338,4 +367,4 @@ const getUser=async(req,res)=>{
         })
     }
 }
-module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg,getUser};
+module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg,updateBackgroundAndContent,getUser};

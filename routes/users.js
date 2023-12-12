@@ -23,6 +23,7 @@ const upload = multer({
 });
 /* GET users listing. */
 router.put('/uploadimg/:_id', upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
+router.patch('/updateUser/background/:_id', Login.updateBackgroundAndContent);
 router.patch('/updateUser/:_id', Login.updateInfoUser);
 router.post('/login', Login.Login);
 router.post('/forgot', Login.Forgot);
