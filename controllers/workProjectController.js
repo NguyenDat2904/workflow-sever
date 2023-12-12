@@ -22,7 +22,7 @@ const getWorkProject=async(req,res)=>{
             populate: {
                 path: 'creatorID',
             },
-        });;
+        });
         if(!workProject){
             res.status(404).json({
                 message:"project not found"
