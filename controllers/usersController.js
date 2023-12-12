@@ -328,13 +328,15 @@ const uploadImg=async(req,res)=>{
         }
         if(files.img){
             updatedData.img=`http://localhost:3000/images/${files.img[0].filename}`
+            users.img=updatedData.img
         }
         if(files.imgCover)
         {
             updatedData.imgCover=`http://localhost:3000/images/${files.imgCover[0].filename}`
+            users.imgCover=updatedData.imgCover
         }
-       
-        await users.findByIdAndUpdate(_id, updatedData)
+        
+        await users.save()
         res.status(200).json({
             message:"successfully",
             image: updatedData.img,
