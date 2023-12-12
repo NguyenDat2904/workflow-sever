@@ -300,7 +300,7 @@ const updateBackgroundAndContent=async(req,res)=>{
              users.backgroundProfile=backgroundProfile
              users.textInBackgroundProfile=contentProfile
              await users.save()
-           return res.status(200).json({
+            return res.status(200).json({
                 message:"successfully",
                 users
             })
@@ -322,25 +322,22 @@ const uploadImg=async(req,res)=>{
                 message:"is not id"
             })
         }
-        console.log(updatedData)
+        console.log(files)
         if (!users) {
             return res.status(404).json({ msg: 'User not found' });
         }
         if(files.img){
             updatedData.img=`http://localhost:3000/images/${files.img[0].filename}`
-            users.img=updatedData.img
         }
         if(files.imgCover)
         {
             updatedData.imgCover=`http://localhost:3000/images/${files.imgCover[0].filename}`
-            users.imgCover=updatedData.imgCover
         }
-        
-        await users.save()
+        await users.findByIdAndUpdate(_id, updatedData)
         res.status(200).json({
             message:"successfully",
             image: updatedData.img,
-            image_cover: updatedData.img_cover,
+            image_cover: updatedData.imgCover,
         })
     } catch (error) {
         console.log(error)
