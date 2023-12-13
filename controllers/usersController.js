@@ -129,7 +129,7 @@ const Forgot = async (req, res) => {
         },
     });
     const mailOptions = {
-        from: 'vanhungnvh1712004@gmail.com', // sender address
+        from: `${process.env.USER_EMAIL}`, // sender address
         to: `${email}`, // list of receivers
         subject: 'Set your new Atlassian password', // Subject line
         text: 'Password retrieval', // plaintext body
