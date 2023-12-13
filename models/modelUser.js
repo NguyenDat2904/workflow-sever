@@ -13,7 +13,7 @@ const UsersModal = new Schema(
         refreshToken: { type: String },
         gender: { type: String },
         birthDay: { type: Date },
-        imgCover:{ type: Date },
+        imgCover:{ type: String },
         desc: { type: String },
         jopTitle :{ type: String },
         department:{ type: String },

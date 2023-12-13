@@ -1,6 +1,7 @@
 const checkEmail = require('../helpers/email');
 const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
+const jwt=require("jsonwebtoken")
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -44,7 +45,6 @@ const Login = async (req, res) => {
 const LoginGoogle = async (req, res) => {
     try {
         const tokenGoogle = req.headers['tokengoogle'];
-        console.log(req);
         const client = new OAuth2Client({
             clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
         });
@@ -53,7 +53,7 @@ const LoginGoogle = async (req, res) => {
             audience: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
         });
         const payload = ticket.getPayload();
-        console.log(payload);
+       
         if (!payload) {
             return res.status(404).json({
                 message: 'something went wrong',
@@ -121,6 +121,10 @@ const Forgot = async (req, res) => {
             message: 'Email does not exist, please register',
         });
     }
+    const payload={
+        userEmail
+    }
+    const tokenUSer=jwt.sign(payload,process.env.SECRET_KEY,{ expiresIn: 3 * 60 * 1000 })
     const smtpTransport = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -141,7 +145,7 @@ const Forgot = async (req, res) => {
                     <p style="font-size:18px;font-weight:600;font-family: 'Helvetica Neue', Helvetica"> Hi ${userEmail.name}</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">We've received a request to set a new password for this Atlassian account:</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">${email}.</p>
-                    <button style="background:#0052cc;padding:5px";border-radius:5px ><a style="cursor: pointer,font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
+                    <button style="background:#0052cc;padding:5px;border-radius:5px "><a style="cursor: pointer;font-size:16px;text-decoration:none;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="${process.env.URL_EMAIL}?tokenUSer=${tokenUSer}$email=${email}&${userEmail._id}">Set password</a></button>
                    <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">If you didn't request this, you can safely ignore this email.</p>
                     <hr style="margin:15px 0"/>
                     <p style="text-align:center;font-size:14px;font-family: 'Helvetica Neue', Helvetica">This message was sent to you by Atlassian Cloud</p>
@@ -160,6 +164,9 @@ const Forgot = async (req, res) => {
             console.log('Message sent: ' + response.response);
             return res.status(200).json({
                 message: 'Email has been sent',
+                _id:userEmail._id,
+                tokenUser:tokenUSer,
+                email:email
             });
         }
     });
@@ -172,7 +179,6 @@ const NewPassword = async (req, res) => {
         const { _id } = req.params;
         const { passWord } = req.body;
         const checkId = await UsersModal.findById(_id);
-        console.log(checkId);
         if (!checkId) {
             return res.status(404).json({
                 message: 'user not found',
@@ -182,7 +188,6 @@ const NewPassword = async (req, res) => {
         const hashPassWord = bcrypt.hashSync(passWord, salt);
         checkId.passWord = hashPassWord;
         await checkId.save();
-        console.log(checkId.passWord);
         res.status(200).json({
             message: 'Changed password successfully',
         });
@@ -314,7 +319,7 @@ const uploadImg=async(req,res)=>{
     try {
          const {_id}=req.params
         const files =req.files
-        const {updatedData}=req.body
+        const updatedData=req.body
         console.log(files)
         const users= await UsersModal.findById(_id)
         if(!users){
@@ -322,21 +327,22 @@ const uploadImg=async(req,res)=>{
                 message:"is not id"
             })
         }
-        console.log(files)
+     
         if (!users) {
             return res.status(404).json({ msg: 'User not found' });
         }
         if(files.img){
-            updatedData.img=`http://localhost:3000/images/${files.img[0].filename}`
+            updatedData.img=`${process.env.LOCALHOST}/images/${files.img[0].filename}`
             users.img=updatedData.img
-            await users.save()
+           
         }
         if(files.imgCover)
         {
-            updatedData.imgCover=`http://localhost:3000/images/${files.imgCover[0].filename}`
+            updatedData.imgCover=`${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`
             users.imgCover=updatedData.imgCover
-            await users.save()
+           
         }
+        await users.save()
         res.status(200).json({
             message:"successfully",
             image: updatedData.img,

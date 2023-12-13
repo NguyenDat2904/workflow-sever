@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const Login = require('../controllers/usersController');
+const veryfyEmail=require("../middlerwares/checkVerifyToken")
 const authMidddlerware = require('../middlerwares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlerwares/refreshTokenMiddleware');
 
@@ -27,7 +28,7 @@ router.patch('/updateUser/background/:_id', refreshTokenMiddlerware, authMidddle
 router.patch('/updateUser/:_id', refreshTokenMiddlerware, authMidddlerware, Login.updateInfoUser);
 router.post('/login', Login.Login);
 router.post('/forgot', Login.Forgot);
-router.patch('/forgot/changePassword/:_id', Login.NewPassword);
+router.patch('/forgot/changePassword/:_id',veryfyEmail, Login.NewPassword);
 router.post('/loginGoogle', Login.LoginGoogle);
 router.patch('/profile/changePassword/:_id', refreshTokenMiddlerware, authMidddlerware, Login.ProfileChangePassword);
 router.get('/:_id', refreshTokenMiddlerware, authMidddlerware, Login.getUser);
