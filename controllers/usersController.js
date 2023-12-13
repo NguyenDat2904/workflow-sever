@@ -241,7 +241,6 @@ const updateInfoUser = async (req, res) => {
                 break;
             case 'desc':
                 user.desc = contenEditing;
-                user.img=null;
                 break;
             case 'email':
                 user.email = contenEditing;
