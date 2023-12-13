@@ -316,14 +316,14 @@ const uploadImg=async(req,res)=>{
         if(files.img){
             updatedData.img=`${process.env.LOCALHOST}/images/${files.img[0].filename}`
             users.img=updatedData.img
+            users.backgroundProfile=""
+            users.textInBackgroundProfile=""
            
         }
         if(files.imgCover)
         {
             updatedData.imgCover=`${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`
             users.imgCover=updatedData.imgCover
-            users.backgroundProfile=""
-            users.textInBackgroundProfile=""
            
         }
         await users.save()
