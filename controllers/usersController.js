@@ -1,6 +1,7 @@
 const checkEmail = require('../helpers/email');
 const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
+const {transporter}=require("../helpers/email")
 const jwt=require("jsonwebtoken")
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
@@ -125,13 +126,6 @@ const Forgot = async (req, res) => {
         userEmail
     }
     const tokenUSer=jwt.sign(payload,process.env.SECRET_KEY,{ expiresIn: 3 * 60 * 1000 })
-    const smtpTransport = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'vanhungnvh1712004@gmail.com',
-            pass: 'scxhxbjaclczltxk',
-        },
-    });
     const mailOptions = {
         from: `${process.env.USER_EMAIL}`, // sender address
         to: `${email}`, // list of receivers
@@ -154,7 +148,7 @@ const Forgot = async (req, res) => {
         
         `, // html body
     };
-    smtpTransport.sendMail(mailOptions, function (error, response) {
+    transporter.sendMail(mailOptions, function (error, response) {
         if (error) {
             console.log(error);
             return res.status(404).json({
