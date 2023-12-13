@@ -285,11 +285,6 @@ const updateBackgroundAndContent=async(req,res)=>{
         try {
             const { _id } = req.params;
             const { backgroundProfile, contentProfile } = req.body;
-            if(!_id||!backgroundProfile||!contentProfile){
-             return res.status(404).json({
-                    message:"is not id or backgroundProfile or contentProfile"
-                })
-            }
             const users = await UsersModal.findById(_id)
             if(!users){
               return  res.status(404).json({
