@@ -139,7 +139,7 @@ const Forgot = async (req, res) => {
                     <p style="font-size:18px;font-weight:600;font-family: 'Helvetica Neue', Helvetica"> Hi ${userEmail.name}</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">We've received a request to set a new password for this Atlassian account:</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">${email}.</p>
-                    <button style="background:#0052cc;padding:5px;border-radius:5px "><a style="cursor: pointer;font-size:16px;text-decoration:none;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="${process.env.URL_EMAIL}?tokenUSer=${tokenUSer}&email=${email}&id=${userEmail._id}">Set password</a></button>
+                    <button style="background:#0052cc;padding:5px;border-radius:5px "><a style="cursor: pointer;font-size:16px;text-decoration:none;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="${process.env.URL_EMAIL_RESETPASSWORD}?tokenUSer=${tokenUSer}&email=${email}&id=${userEmail._id}">Set password</a></button>
                    <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">If you didn't request this, you can safely ignore this email.</p>
                     <hr style="margin:15px 0"/>
                     <p style="text-align:center;font-size:14px;font-family: 'Helvetica Neue', Helvetica">This message was sent to you by Atlassian Cloud</p>
