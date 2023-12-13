@@ -222,9 +222,9 @@ const updateInfoUser = async (req, res) => {
     try {
         const { _id } = req.params;
         const { nameFill, contenEditing } = req.body;
-        if (!_id) {
+        if (!_id||!nameFill) {
             res.status(404).json({
-                message: 'is not id',
+                message: 'is not id or trường cần thay đổi',
             });
         }
         const user = await UsersModal.findById(_id);
