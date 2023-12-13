@@ -221,7 +221,7 @@ const ProfileChangePassword = async (req, res) => {
 const updateInfoUser = async (req, res) => {
     try {
         const { _id } = req.params;
-        const { nameFill, contenEditing } = req.body;
+        const { nameFill, contenEditing} = req.body;
         if (!_id||!nameFill) {
             res.status(404).json({
                 message: 'is not id or trường cần thay đổi',
@@ -231,48 +231,40 @@ const updateInfoUser = async (req, res) => {
         switch (nameFill) {
             case 'name':
                 user.name = contenEditing;
-                await user.save();
                 break;
             case 'gender':
                 user.gender = contenEditing;
-                await user.save();
                 break;
             case 'birthDay':
                 const newbirthday = new Date(contenEditing);
                 user.birthDay = newbirthday;
-                await user.save();
                 break;
             case 'desc':
                 user.desc = contenEditing;
-                await user.save();
                 break;
             case 'email':
                 user.email = contenEditing;
-                await user.save();
                 break;
             case 'phone':
                 user.phone = contenEditing;
-                await user.save();
                 break;
             case 'jopTitle':
                 user.jopTitle = contenEditing;
-                await user.save();
                 break;
             case 'department':
                 user.department = contenEditing;
-                await user.save();
                 break;
             case 'organization':
                 user.organization = contenEditing;
-                await user.save();
                 break;
             case 'location':
                 user.location = contenEditing;
-                await user.save();
                 break;
             default:
                 break;
         }
+        await user.save();
+      
         res.status(200).json({data:user})
     } catch (error) {
        return res.status(404).json({
@@ -293,6 +285,7 @@ const updateBackgroundAndContent=async(req,res)=>{
             }
              users.backgroundProfile=backgroundProfile
              users.textInBackgroundProfile=contentProfile
+             users.img=""
              await users.save()
             return res.status(200).json({
                 message:"successfully",
@@ -331,6 +324,8 @@ const uploadImg=async(req,res)=>{
             users.imgCover=updatedData.imgCover
            
         }
+        users.backgroundProfile=""
+        users.textInBackgroundProfile=""
         await users.save()
         res.status(200).json({
             message:"successfully",
