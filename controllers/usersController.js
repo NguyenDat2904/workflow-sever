@@ -127,7 +127,7 @@ const Forgot = async (req, res) => {
     }
     const tokenUSer=jwt.sign(payload,process.env.SECRET_KEY,{ expiresIn: 3 * 60 * 1000 })
     const mailOptions = {
-        from: process.env.USER_EMAIL, // sender address
+        from: `${process.env.USER_EMAIL}`, // sender address
         to: `${email}`, // list of receivers
         subject: 'Set your new Atlassian password', // Subject line
         text: 'Password retrieval', // plaintext body
