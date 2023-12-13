@@ -322,10 +322,10 @@ const uploadImg=async(req,res)=>{
         {
             updatedData.imgCover=`${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`
             users.imgCover=updatedData.imgCover
+            users.backgroundProfile=""
+            users.textInBackgroundProfile=""
            
         }
-        users.backgroundProfile=""
-        users.textInBackgroundProfile=""
         await users.save()
         res.status(200).json({
             message:"successfully",
