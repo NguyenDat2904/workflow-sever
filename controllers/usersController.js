@@ -325,6 +325,8 @@ const uploadImg=async(req,res)=>{
             users.imgCover=updatedData.imgCover
            
         }
+        users.backgroundProfile=""
+        users.textInBackgroundProfile=""
         await users.save()
         res.status(200).json({
             message:"successfully",
