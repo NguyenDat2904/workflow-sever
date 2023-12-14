@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-14T03:23:26.924Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="7iTaTfsxil_LlriUZLJm" version="22.1.8" type="github">
+<mxfile host="app.diagrams.net" modified="2023-12-14T03:23:59.894Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="WN-Me6MhYOE12DgRNB7v" version="22.1.8" type="github">
   <diagram name="Trang-1" id="B-Z4fJsD4nCX6SHQaJ-v">
     <mxGraphModel dx="2227" dy="1912" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -185,7 +185,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="zbAOLoR1SOaJ92ZHvRIB-92" value="" style="endArrow=diamondThin;endFill=0;endSize=14;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="zbAOLoR1SOaJ92ZHvRIB-2" target="zbAOLoR1SOaJ92ZHvRIB-71">
+        <mxCell id="zbAOLoR1SOaJ92ZHvRIB-92" value="" style="endArrow=diamondThin;endFill=0;endSize=14;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=open;startFill=0;" edge="1" parent="1" source="zbAOLoR1SOaJ92ZHvRIB-2" target="zbAOLoR1SOaJ92ZHvRIB-71">
           <mxGeometry width="160" relative="1" as="geometry">
             <mxPoint x="510" y="60" as="sourcePoint" />
             <mxPoint x="670" y="60" as="targetPoint" />
