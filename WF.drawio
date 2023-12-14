@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2023-12-14T03:21:02.743Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="EVqZ3SRZg5SVXuh89h9c" version="22.1.8" type="github">
+<mxfile host="app.diagrams.net" modified="2023-12-14T03:23:26.924Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="7iTaTfsxil_LlriUZLJm" version="22.1.8" type="github">
   <diagram name="Trang-1" id="B-Z4fJsD4nCX6SHQaJ-v">
     <mxGraphModel dx="2227" dy="1912" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -169,7 +169,7 @@
         <mxCell id="zbAOLoR1SOaJ92ZHvRIB-91" value="+ stages: ref" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="zbAOLoR1SOaJ92ZHvRIB-71">
           <mxGeometry y="104" width="165" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="zbAOLoR1SOaJ92ZHvRIB-81" value="" style="endArrow=open;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=diamondThin;startFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;startSize=14;" edge="1" parent="1" source="zbAOLoR1SOaJ92ZHvRIB-61" target="zbAOLoR1SOaJ92ZHvRIB-73">
+        <mxCell id="zbAOLoR1SOaJ92ZHvRIB-81" value="" style="endArrow=diamondThin;endFill=0;endSize=12;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=open;startFill=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;startSize=14;" edge="1" parent="1" source="zbAOLoR1SOaJ92ZHvRIB-61" target="zbAOLoR1SOaJ92ZHvRIB-73">
           <mxGeometry width="160" relative="1" as="geometry">
             <mxPoint x="670" y="609" as="sourcePoint" />
             <mxPoint x="860" y="600" as="targetPoint" />
