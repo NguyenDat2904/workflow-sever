@@ -17,12 +17,7 @@ const getWorkProject=async(req,res)=>{
                 path: 'creatorID',
             },
         })
-        .populate({
-            path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
-        });
+        
         if(!workProject){
             res.status(404).json({
                 message:"project not found"
@@ -53,12 +48,7 @@ const getListWork=async(req,res)=>{
                 path: 'creatorID',
             },
         })
-        .populate({
-            path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
-        });
+       
         if(!checkProject){
             res.status(404).json({
                 message:"project not found"
@@ -93,4 +83,39 @@ const getWorkDetail=async(req,res)=>{
         })
     }
 }
-module.exports={getWorkProject,getListWork,getWorkDetail}
+// add new work
+const addNewWork=async(req,res)=>{
+   
+    try {
+        const {_id}=req.params
+         const {nameProject,codeProject}=req.body
+         if(!_id||!nameProject||!codeProject){
+            return res.status(400).json({
+                message:"is not nameProject or codeProject or id"
+            })
+         }
+         const newProject=new modelWorkProject({
+            nameProject: nameProject,
+            listWorkID: [],
+            memberID: [_id],
+            codeProject:codeProject,
+            startDay:new Date(),
+            endDate:null,
+            expected:"",
+            describeProject:"",
+            projectStatus:"Chuẩn  bị",
+         })
+        await newProject.save();
+        const data= await modelWorkProject.find({});
+        return res.status(200).json({
+            message:"Add new successfully",
+            data:data
+        })
+    } catch (error) {
+        res.status(404).json({
+            message:"Not found"
+        })
+    }
+
+}
+module.exports={getWorkProject,getListWork,getWorkDetail,addNewWork}
