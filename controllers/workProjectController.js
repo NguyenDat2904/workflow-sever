@@ -161,11 +161,5 @@ const deleteProject = async (req, res) => {
     }
 };
 //restore project
-const restoreProject=async(req,res)=>{
-    const { _id,deleteProject }=req.body
-    if( !_id||!deleteProject ){
-
-    }
-}
 
 module.exports = { getWorkProject, getListWork, getWorkDetail, addNewWork, deleteProject };
