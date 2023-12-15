@@ -94,6 +94,12 @@ const addNewWork=async(req,res)=>{
                 message:"is not nameProject or codeProject or id"
             })
          }
+         const checkCodeProject= await modelWorkProject.findOne(codeProject)
+         if(checkCodeProject){
+            return res.status(401).json({
+                message:"already exists codeProject"
+            })
+         }
          const newProject=new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
@@ -103,7 +109,7 @@ const addNewWork=async(req,res)=>{
             endDate:null,
             expected:"",
             describeProject:"",
-            projectStatus:"Chuẩn  bị",
+            projectStatus:"Chuẩn  bị"
          })
         await newProject.save();
         const data= await modelWorkProject.find({});
@@ -112,10 +118,34 @@ const addNewWork=async(req,res)=>{
             data:data
         })
     } catch (error) {
+        console.log(error)
         res.status(404).json({
             message:"Not found"
         })
     }
 
 }
-module.exports={getWorkProject,getListWork,getWorkDetail,addNewWork}
+//delete project
+const deleteProject=async(req,res)=>{
+    try {
+        // const {_id}=req.params
+        // if(!_id){
+        //     return res.status(400).json({
+        //         message:"is not id"
+        //     })
+        // }
+       
+     
+        // const data=await  modelWorkProject.find({})
+        // return res.status(200).json({
+        //     message:"Delete successfully",
+        //     data: data
+        // })
+    } catch (error) {
+        console.log(error)
+        return res.status(404).json({
+            message:"Can not delete"
+        })
+    }
+}
+module.exports={getWorkProject,getListWork,getWorkDetail,addNewWork,deleteProject}
