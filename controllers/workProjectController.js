@@ -5,7 +5,8 @@ const modalWorkDetail = require('../models/modelWorkDetail');
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { _id, deleteProject } = req.params;
+        const { _id } = req.params;
+        const {deleteProject}=req.body
         if (!_id) {
             res.status(404).json({
                 message: 'not found id',
@@ -159,4 +160,9 @@ const deleteProject = async (req, res) => {
         });
     }
 };
+//restore project
+const restoreProject=async(req,res)=>{
+    const { _id,deleteProject }=req.body
+}
+
 module.exports = { getWorkProject, getListWork, getWorkDetail, addNewWork, deleteProject };
