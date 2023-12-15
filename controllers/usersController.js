@@ -1,11 +1,14 @@
 const checkEmail = require('../helpers/email');
 const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
+const { transporter } = require('../helpers/email');
+const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const Login = async (req, res) => {
+    const { userName, passWord } = req.body;
     try {
         const { userName, passWord } = req.body;
         const userEmail = await checkEmail.checkUsers(userName);
@@ -54,6 +57,7 @@ const LoginGoogle = async (req, res) => {
             audience: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
         });
         const payload = ticket.getPayload();
+
         if (!payload) {
             return res.status(404).json({
                 message: 'something went wrong',
@@ -73,6 +77,13 @@ const LoginGoogle = async (req, res) => {
                 gender: '',
                 birthDay: null,
                 desc: '',
+                imgCover: '',
+                jopTitle: '',
+                department: '',
+                organization: '',
+                location: '',
+                backgroundProfile: '',
+                textInBackgroundProfile: '',
             });
             const refreshToken = token(newUser, '720h');
             newUser.refreshToken = refreshToken;
@@ -115,15 +126,12 @@ const Forgot = async (req, res) => {
             message: 'Email does not exist, please register',
         });
     }
-    const smtpTransport = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'vanhungnvh1712004@gmail.com',
-            pass: 'scxhxbjaclczltxk',
-        },
-    });
+    const payload = {
+        userEmail,
+    };
+    const tokenUSer = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
     const mailOptions = {
-        from: 'vanhungnvh1712004@gmail.com', // sender address
+        from: `${process.env.USER_EMAIL}`, // sender address
         to: `${email}`, // list of receivers
         subject: 'Set your new Atlassian password', // Subject line
         text: 'Password retrieval', // plaintext body
@@ -135,7 +143,7 @@ const Forgot = async (req, res) => {
                     <p style="font-size:18px;font-weight:600;font-family: 'Helvetica Neue', Helvetica"> Hi ${userEmail.name}</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">We've received a request to set a new password for this Atlassian account:</p>
                     <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">${email}.</p>
-                    <button style="background:#0052cc;padding:5px";border-radius:5px ><a style="cursor: pointer,font-size:16px;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="">Set password</a></button>
+                    <button style="background:#0052cc;padding:5px;border-radius:5px "><a style="cursor: pointer;font-size:16px;text-decoration:none;color:#fff;font-family: 'Helvetica Neue', Helvetica" href="${process.env.URL_EMAIL_RESETPASSWORD}?tokenUSer=${tokenUSer}&email=${email}&id=${userEmail._id}">Set password</a></button>
                    <p style="font-size:16px;font-family: 'Helvetica Neue', Helvetica">If you didn't request this, you can safely ignore this email.</p>
                     <hr style="margin:15px 0"/>
                     <p style="text-align:center;font-size:14px;font-family: 'Helvetica Neue', Helvetica">This message was sent to you by Atlassian Cloud</p>
@@ -144,7 +152,7 @@ const Forgot = async (req, res) => {
         
         `, // html body
     };
-    smtpTransport.sendMail(mailOptions, function (error, response) {
+    transporter.sendMail(mailOptions, function (error, response) {
         if (error) {
             console.log(error);
             return res.status(404).json({
@@ -154,6 +162,9 @@ const Forgot = async (req, res) => {
             console.log('Message sent: ' + response.response);
             return res.status(200).json({
                 message: 'Email has been sent',
+                _id: userEmail._id,
+                tokenUser: tokenUSer,
+                email: email,
             });
         }
     });
@@ -175,7 +186,6 @@ const NewPassword = async (req, res) => {
         const hashPassWord = bcrypt.hashSync(passWord, salt);
         checkId.passWord = hashPassWord;
         await checkId.save();
-        console.log(checkId.passWord);
         res.status(200).json({
             message: 'Changed password successfully',
         });
@@ -211,4 +221,151 @@ const ProfileChangePassword = async (req, res) => {
         });
     }
 };
-module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword };
+//cập nhật thông tin user
+const updateInfoUser = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { nameFill, contenEditing } = req.body;
+        if (!_id || !nameFill) {
+            res.status(404).json({
+                message: 'is not id or trường cần thay đổi',
+            });
+        }
+        const user = await UsersModal.findById(_id);
+        switch (nameFill) {
+            case 'name':
+                user.name = contenEditing;
+                break;
+            case 'gender':
+                user.gender = contenEditing;
+                break;
+            case 'birthDay':
+                const newbirthday = new Date(contenEditing);
+                user.birthDay = newbirthday;
+                break;
+            case 'desc':
+                user.desc = contenEditing;
+                break;
+            case 'email':
+                user.email = contenEditing;
+                break;
+            case 'phone':
+                user.phone = contenEditing;
+                break;
+            case 'jopTitle':
+                user.jopTitle = contenEditing;
+                break;
+            case 'department':
+                user.department = contenEditing;
+                break;
+            case 'organization':
+                user.organization = contenEditing;
+                break;
+            case 'location':
+                user.location = contenEditing;
+                break;
+            default:
+                break;
+        }
+        await user.save();
+
+        res.status(200).json({ data: user });
+    } catch (error) {
+        return res.status(404).json({
+            message: 'Can not update',
+        });
+    }
+};
+//upload background content
+const updateBackgroundAndContent = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { backgroundProfile, contentProfile } = req.body;
+        const users = await UsersModal.findById(_id);
+        if (!users) {
+            return res.status(404).json({
+                message: 'not found',
+            });
+        }
+        users.backgroundProfile = backgroundProfile;
+        users.textInBackgroundProfile = contentProfile;
+        users.img = '';
+        await users.save();
+        return res.status(200).json({
+            message: 'successfully',
+            users,
+        });
+    } catch (error) {
+        res.status(404).json({
+            message: 'can not update',
+        });
+    }
+};
+const uploadImg = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const files = req.files;
+        const updatedData = req.body;
+        console.log(files);
+        const users = await UsersModal.findById(_id);
+        if (!users) {
+            return res.status(404).json({
+                message: 'is not id',
+            });
+        }
+
+        if (!users) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        if (files.img) {
+            updatedData.img = `${process.env.LOCALHOST}/images/${files.img[0].filename}`;
+            users.img = updatedData.img;
+            users.backgroundProfile = '';
+            users.textInBackgroundProfile = '';
+        }
+        if (files.imgCover) {
+            updatedData.imgCover = `${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`;
+            users.imgCover = updatedData.imgCover;
+        }
+        await users.save();
+        res.status(200).json({
+            message: 'successfully',
+            image: updatedData.img,
+            image_cover: updatedData.imgCover,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: 'error upload img',
+        });
+    }
+};
+//get user
+const getUser = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        if (!_id) {
+            res.status(404).json({
+                message: 'is not id',
+            });
+        }
+        const user = await UsersModal.findById(_id);
+        res.status(200).json(user);
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            message: 'can not get data',
+        });
+    }
+};
+module.exports = {
+    Login,
+    Forgot,
+    NewPassword,
+    LoginGoogle,
+    ProfileChangePassword,
+    updateInfoUser,
+    uploadImg,
+    updateBackgroundAndContent,
+    getUser,
+};
