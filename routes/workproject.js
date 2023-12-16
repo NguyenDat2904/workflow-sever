@@ -8,6 +8,6 @@ router.patch("/delete-project/:_id",refreshTokenMiddlerware,authMidddlerware,get
 router.post("/add-new-project/:_id",refreshTokenMiddlerware,authMidddlerware,getdataproject.addNewWork)
 router.post("/workdetail",refreshTokenMiddlerware,authMidddlerware,getdataproject.getWorkDetail)
 router.post("/listwork",refreshTokenMiddlerware,authMidddlerware,getdataproject.getListWork)
-router.get("/project/:_id",refreshTokenMiddlerware,authMidddlerware,getdataproject.getWorkProject)
+router.post("/project/:_id",refreshTokenMiddlerware,authMidddlerware,getdataproject.getWorkProject)
 
 module.exports = router;
