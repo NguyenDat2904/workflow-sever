@@ -7,9 +7,9 @@ const getWorkProject = async (req, res) => {
     try {
         const { _id } = req.params;
         const {deleteProject}=req.body
-        if (!_id) {
+        if (!_id||deleteProject==="") {
             res.status(404).json({
-                message: 'not found id ',
+                message: 'not found id or deleteProject',
             } );
 
         }
