@@ -9,6 +9,8 @@ const ModelWorkProject = new Schema(
         managerID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
         adminID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
         codeProject:{type:String},
+        managerID:[{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+        adminID:[{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
         startDay:{type:Date},
         endDate:{type:Date},
         expected:{type:String},
