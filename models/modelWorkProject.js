@@ -6,6 +6,8 @@ const ModelWorkProject = new Schema(
         nameProject: { type: String },
         listWorkID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'listworks' }],
         memberID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+        managerID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
+        adminID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'users' }],
         codeProject:{type:String},
         startDay:{type:Date},
         endDate:{type:Date},
