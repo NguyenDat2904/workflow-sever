@@ -2,9 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const Login = require('../controllers/usersController');
-const veryfyEmail=require("../middlerwares/checkVerifyToken")
-const authMidddlerware = require('../middlerwares/authMiddleware');
-const refreshTokenMiddlerware = require('../middlerwares/refreshTokenMiddleware');
+const veryfyEmail=require("../middlewares/checkVerifyToken")
+const authMidddlerware = require('../middlewares/authMiddleware');
+const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
