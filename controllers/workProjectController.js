@@ -28,7 +28,7 @@ const getWorkProject = async (req, res) => {
                 },
             });
         if (!workProject) {
-            res.status(404).json({
+          return  res.status(404).json({
                 message: 'project not found',
             });
         }
