@@ -152,7 +152,7 @@ const deleteProject = async (req, res) => {
             if (findProjectID.deleteProject === true) {
                  await modelWorkProject.findByIdAndDelete(_id);
             }
-        }, 10000);
+        }, 600000);
         return res.status(200).json({
             message: 'Moved to trash',
         });
