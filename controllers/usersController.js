@@ -1,8 +1,8 @@
 const checkEmail = require('../helpers/email');
 const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
-const {transporter}=require("../helpers/email")
-const jwt=require("jsonwebtoken")
+const { transporter } = require('../helpers/email');
+const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -10,6 +10,7 @@ const nodemailer = require('nodemailer');
 const Login = async (req, res) => {
     const { userName, passWord } = req.body;
     try {
+        const { userName, passWord } = req.body;
         const userEmail = await checkEmail.checkUsers(userName);
         if (!userEmail) {
             return res.status(404).json({
@@ -18,6 +19,7 @@ const Login = async (req, res) => {
         }
         //check  password
         const isPassword = await bcrypt.compare(passWord, userEmail.passWord);
+        console.log(userEmail.passWord);
         if (!isPassword) {
             return res.status(404).json({
                 message: 'Wrong password',
@@ -36,6 +38,7 @@ const Login = async (req, res) => {
             accessToken,
         });
     } catch (error) {
+        console.log(error);
         res.status(404).json({
             message: 'Can not call data',
             data: null,
@@ -54,7 +57,7 @@ const LoginGoogle = async (req, res) => {
             audience: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
         });
         const payload = ticket.getPayload();
-       
+
         if (!payload) {
             return res.status(404).json({
                 message: 'something went wrong',
@@ -74,7 +77,7 @@ const LoginGoogle = async (req, res) => {
                 gender: '',
                 birthDay: null,
                 desc: '',
-                imgCover:"",
+                imgCover: '',
                 jopTitle: '',
                 department: '',
                 organization: '',
@@ -108,6 +111,7 @@ const LoginGoogle = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log(error);
         return res.status(404).json({
             message: 'login error',
         });
@@ -122,10 +126,10 @@ const Forgot = async (req, res) => {
             message: 'Email does not exist, please register',
         });
     }
-    const payload={
-        userEmail
-    }
-    const tokenUSer=jwt.sign(payload,process.env.SECRET_KEY,{ expiresIn: 3 * 60 * 1000 })
+    const payload = {
+        userEmail,
+    };
+    const tokenUSer = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
     const mailOptions = {
         from: `${process.env.USER_EMAIL}`, // sender address
         to: `${email}`, // list of receivers
@@ -158,9 +162,9 @@ const Forgot = async (req, res) => {
             console.log('Message sent: ' + response.response);
             return res.status(200).json({
                 message: 'Email has been sent',
-                _id:userEmail._id,
-                tokenUser:tokenUSer,
-                email:email
+                _id: userEmail._id,
+                tokenUser: tokenUSer,
+                email: email,
             });
         }
     });
@@ -221,8 +225,8 @@ const ProfileChangePassword = async (req, res) => {
 const updateInfoUser = async (req, res) => {
     try {
         const { _id } = req.params;
-        const { nameFill, contenEditing} = req.body;
-        if (!_id||!nameFill) {
+        const { nameFill, contenEditing } = req.body;
+        if (!_id || !nameFill) {
             res.status(404).json({
                 message: 'is not id or trường cần thay đổi',
             });
@@ -264,99 +268,104 @@ const updateInfoUser = async (req, res) => {
                 break;
         }
         await user.save();
-      
-        res.status(200).json({data:user})
+
+        res.status(200).json({ data: user });
     } catch (error) {
-       return res.status(404).json({
-            message:"Can not update"
-        })
+        return res.status(404).json({
+            message: 'Can not update',
+        });
     }
 };
 //upload background content
-const updateBackgroundAndContent=async(req,res)=>{
-        try {
-            const { _id } = req.params;
-            const { backgroundProfile, contentProfile } = req.body;
-            const users = await UsersModal.findById(_id)
-            if(!users){
-              return  res.status(404).json({
-                    message:"not found"
-                })
-            }
-             users.backgroundProfile=backgroundProfile
-             users.textInBackgroundProfile=contentProfile
-             users.img=""
-             await users.save()
-            return res.status(200).json({
-                message:"successfully",
-                users
-            })
-        } catch (error) {
-            res.status(404).json({
-                message:"can not update"
-            })
-        }
-}
-const uploadImg=async(req,res)=>{
+const updateBackgroundAndContent = async (req, res) => {
     try {
-         const {_id}=req.params
-        const files =req.files
-        const updatedData=req.body
-        console.log(files)
-        const users= await UsersModal.findById(_id)
-        if(!users){
-          return  res.status(404).json({
-                message:"is not id"
-            })
+        const { _id } = req.params;
+        const { backgroundProfile, contentProfile } = req.body;
+        const users = await UsersModal.findById(_id);
+        if (!users) {
+            return res.status(404).json({
+                message: 'not found',
+            });
         }
-     
+        users.backgroundProfile = backgroundProfile;
+        users.textInBackgroundProfile = contentProfile;
+        users.img = '';
+        await users.save();
+        return res.status(200).json({
+            message: 'successfully',
+            users,
+        });
+    } catch (error) {
+        res.status(404).json({
+            message: 'can not update',
+        });
+    }
+};
+const uploadImg = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const files = req.files;
+        const updatedData = req.body;
+        console.log(files);
+        const users = await UsersModal.findById(_id);
+        if (!users) {
+            return res.status(404).json({
+                message: 'is not id',
+            });
+        }
+
         if (!users) {
             return res.status(404).json({ msg: 'User not found' });
         }
-        if(files.img){
-            updatedData.img=`${process.env.LOCALHOST}/images/${files.img[0].filename}`
-            users.img=updatedData.img
-            users.backgroundProfile=""
-            users.textInBackgroundProfile=""
-           
+        if (files.img) {
+            updatedData.img = `${process.env.LOCALHOST}/images/${files.img[0].filename}`;
+            users.img = updatedData.img;
+            users.backgroundProfile = '';
+            users.textInBackgroundProfile = '';
         }
-        if(files.imgCover)
-        {
-            updatedData.imgCover=`${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`
-            users.imgCover=updatedData.imgCover
-           
+        if (files.imgCover) {
+            updatedData.imgCover = `${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`;
+            users.imgCover = updatedData.imgCover;
         }
-        await users.save()
+        await users.save();
         res.status(200).json({
-            message:"successfully",
+            message: 'successfully',
             image: updatedData.img,
             image_cover: updatedData.imgCover,
-        })
+        });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(404).json({
-            message:"error upload img"
-        })
+            message: 'error upload img',
+        });
     }
-   
-}
+};
 //get user
-const getUser=async(req,res)=>{
-   
+const getUser = async (req, res) => {
     try {
-         const {_id}=req.params
-         if(!_id){
+        const { _id } = req.params;
+        if (!_id) {
             res.status(404).json({
-                message:"is not id"
-            })
-         }
-         const user=await UsersModal.findById(_id)
-         res.status(200).json(user)
+                message: 'is not id',
+            });
+        }
+        const user = await UsersModal.findById(_id);
+        res.status(200).json(user);
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(404).json({
-            message:"can not get data"
-        })
+            message: 'can not get data',
+        });
     }
-}
-module.exports = { Login, Forgot, NewPassword, LoginGoogle, ProfileChangePassword,updateInfoUser,uploadImg,updateBackgroundAndContent,getUser};
+};
+module.exports = {
+    Login,
+    Forgot,
+    NewPassword,
+    LoginGoogle,
+    ProfileChangePassword,
+    updateInfoUser,
+    uploadImg,
+    updateBackgroundAndContent,
+    getUser,
+};
