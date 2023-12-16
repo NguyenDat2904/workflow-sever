@@ -7,10 +7,11 @@ const getWorkProject = async (req, res) => {
     try {
         const { _id } = req.params;
         const {deleteProject}=req.body
-        if (!_id||!deleteProject) {
+        if (!_id) {
             res.status(404).json({
-                message: 'not found id or deleteProject',
-            });
+                message: 'not found id ',
+            } );
+
         }
         const workProject = await modelWorkProject.find({ memberID: _id, deleteProject: deleteProject }).populate({
             path: 'listWorkID',
@@ -104,7 +105,9 @@ const addNewWork = async (req, res) => {
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
-            memberID: [_id],
+            managerID:[],
+            adminID:[_id],
+            memberID: [],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -161,5 +164,6 @@ const deleteProject = async (req, res) => {
     }
 };
 //restore project
+
 
 module.exports = { getWorkProject, getListWork, getWorkDetail, addNewWork, deleteProject };
