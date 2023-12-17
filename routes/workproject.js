@@ -3,16 +3,17 @@ const router = express.Router();
 const getdataproject = require('../controllers/workProjectController');
 const authMidddlerware = require('../middlewares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
+const CheckAdmin=require("../middlewares/checkAdmin")
 
-router.patch('/delete-project/:_id', getdataproject.deleteProject);
+router.patch('/restore-project/:_id', refreshTokenMiddlerware, authMidddlerware,CheckAdmin, getdataproject.restoreProject);
 router.patch(
     '/editProject/:workProjectID',
     refreshTokenMiddlerware,
     authMidddlerware,
     getdataproject.editProjectInformation,
 );
-router.patch('/delete-project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.deleteProject);
-router.post('/add-new-project/:_id', getdataproject.addNewWork);
+router.patch('/delete-project/:_id', refreshTokenMiddlerware, authMidddlerware,CheckAdmin, getdataproject.deleteProject);
+router.post('/add-new-project/:_id',refreshTokenMiddlerware, authMidddlerware, getdataproject.addNewWork);
 router.post('/workdetail', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkDetail);
 router.post('/listwork', refreshTokenMiddlerware, authMidddlerware, getdataproject.getListWork);
 router.post('/add-new-project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.addNewWork);

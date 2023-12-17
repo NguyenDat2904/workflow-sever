@@ -6,12 +6,11 @@ const modalWorkDetail = require('../models/modelWorkDetail');
 const getWorkProject = async (req, res) => {
     try {
         const { _id } = req.params;
-        const {deleteProject}=req.body
-        if (!_id||deleteProject==="") {
+        const { deleteProject } = req.body;
+        if (!_id || deleteProject === '') {
             res.status(404).json({
                 message: 'not found id or deleteProject',
-            } );
-
+            });
         }
         const workProject = await modelWorkProject
             .find({ memberID: _id })
@@ -119,9 +118,9 @@ const addNewWork = async (req, res) => {
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
-            managerID:[],
-            adminID:[_id],
-            memberID: [],
+            managerID: [],
+            adminID: [_id],
+            memberID: [_id],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -163,10 +162,11 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-            if (findProjectID.deleteProject === true) {
+           const  checkAfterTimeOut=await modelWorkProject.findById(_id);
+            if (checkAfterTimeOut.deleteProject === true) {
                 await modelWorkProject.findByIdAndDelete(_id);
             }
-        }, 10000);
+        }, 3600000);
         return res.status(200).json({
             message: 'Moved to trash',
         });
@@ -178,6 +178,37 @@ const deleteProject = async (req, res) => {
     }
 };
 //restore project
+const restoreProject = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        if (!_id ) {
+            return res.status(404).json({
+                message: 'Is nos id or restoreProject',
+            });
+        }
+        const checkId= await modelWorkProject.findById(_id)
+        if(!checkId){
+            return res.status(401).json({
+                message:"not found project want restore"
+            })
+        }
+        if( checkId.deleteProject===false){
+            return res.status(404).json({
+                message:"Project no trash can"
+            })
+        }
+        checkId.deleteProject=false
+        await checkId.save()
+        return res.status(200).json({
+            message:"restore successfully"
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message: 'Can not restore project',
+        });
+    }
+};
+//Delete existing members in the project
 
 const editProjectInformation = async (req, res) => {
     try {
@@ -237,4 +268,4 @@ const editProjectInformation = async (req, res) => {
     }
 };
 
-module.exports = { getWorkProject, getListWork, getWorkDetail, editProjectInformation, deleteProject, addNewWork };
+module.exports = {restoreProject, getWorkProject, getListWork, getWorkDetail, editProjectInformation, deleteProject, addNewWork };
