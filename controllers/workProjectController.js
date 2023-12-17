@@ -134,10 +134,9 @@ const addNewWork = async (req, res) => {
             imgProject:dataImgProject[randomImgProject]
         });
         await newProject.save();
-        const data = await modelWorkProject.find({});
         return res.status(200).json({
             message: 'Add new successfully',
-            data: data,
+            data: newProject,
         });
     } catch (error) {
         console.log(error);
