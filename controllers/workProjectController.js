@@ -114,7 +114,7 @@ const addNewWork = async (req, res) => {
         console.log(checkCodeProject,checkNameProject)
         if (checkCodeProject.length>0||checkNameProject.length>0) {
             return res.status(401).json({
-                message: 'already exists codeProject',
+                message: 'already exists codeProject or checkNameProject',
             });
         }
         const randomImgProject=(Math.random()*dataImgProject.length)|0
