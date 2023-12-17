@@ -16,7 +16,6 @@ const authMiddlerware = (req, res, next) => {
             if ((err.name = 'TokenExpiredError')) {
                 try {
                     const user = await UsersModal.findOne({ refreshToken: refreshToken });
-                    console.log(user);
                     if (user) {
                         const accessToken = Token(user, '24h');
                         return res.status(200).json({

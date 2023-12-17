@@ -14,7 +14,8 @@ const ModelWorkProject = new Schema(
         expected:{type:String},
         describeProject:{type:String},
         projectStatus:{type:String},
-        deleteProject:{type:Boolean}
+        deleteProject:{type:Boolean},
+        imgProject:{type:String}
     },
     { timestamps: true },
     { collection: 'workprojects' },
