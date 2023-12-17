@@ -1,6 +1,7 @@
 const modelWorkProject = require('../models/modelWorkProject');
 const modelListWork = require('../models/modalListWorks');
 const modalWorkDetail = require('../models/modelWorkDetail');
+const dataImgProject=require("../imgProject.json")
 
 //lấy project
 const getWorkProject = async (req, res) => {
@@ -101,20 +102,22 @@ const getWorkDetail = async (req, res) => {
 const addNewWork = async (req, res) => {
     try {
         const { _id } = req.params;
-
         const { nameProject, codeProject } = req.body;
-        console.log(nameProject, codeProject);
+        
         if (!_id || !nameProject || !codeProject) {
             return res.status(400).json({
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.findOne({ codeProject: codeProject });
-        if (checkCodeProject) {
+        const checkCodeProject = await modelWorkProject.find({memberID:_id, codeProject: codeProject });
+        const checkNameProject=await modelWorkProject.find({memberID:_id, nameProject: nameProject });
+        console.log(checkCodeProject,checkNameProject)
+        if (checkCodeProject.length>0||checkNameProject.length>0) {
             return res.status(401).json({
-                message: 'already exists codeProject',
+                message: 'already exists codeProject or checkNameProject',
             });
         }
+        const randomImgProject=(Math.random()*dataImgProject.length)|0
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
@@ -128,6 +131,7 @@ const addNewWork = async (req, res) => {
             describeProject: '',
             projectStatus: 'Chuẩn  bị',
             deleteProject: false,
+            imgProject:dataImgProject[randomImgProject]
         });
         await newProject.save();
         const data = await modelWorkProject.find({});
