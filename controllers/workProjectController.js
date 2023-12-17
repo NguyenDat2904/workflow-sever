@@ -166,7 +166,7 @@ const deleteProject = async (req, res) => {
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelWorkProject.findByIdAndDelete(_id);
             }
-        }, 180000);
+        }, 3600000);
         return res.status(200).json({
             message: 'Moved to trash',
         });
