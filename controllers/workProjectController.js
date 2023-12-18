@@ -15,7 +15,7 @@ const getWorkProject = async (req, res) => {
             });
         }
         const workProject = await modelWorkProject
-            .find({ memberID: _id })
+            .find({ memberID: _id, deleteProject:false })
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -29,7 +29,7 @@ const getWorkProject = async (req, res) => {
             .select('-passWord')
 
         if (!workProject) {
-          return res.status(404).json({
+          return  res.status(404).json({
                 message: 'project not found',
             });
         }
@@ -60,12 +60,7 @@ const getListWork = async (req, res) => {
                     path: 'creatorID',
                 },
             })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
-            });
+          
         if (!checkProject) {
             return res.status(404).json({
                 message: 'project not found',
