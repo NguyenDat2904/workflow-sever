@@ -6,10 +6,11 @@ const dataImgProject=require("../imgProject.json")
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id,sortKey} = req.query;
         const { deleteProject } = req.body;
+        const page=parseInt(req.query.page)||1
         if (!_id || deleteProject === '') {
-            res.status(404).json({
+           return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
@@ -21,20 +22,21 @@ const getWorkProject = async (req, res) => {
                     path: 'creatorID',
                 },
             })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
-            });
+            .populate('memberID adminID')
+            .sort(sortKey==="nameProject"?{nameProject:1}:sortKey==="codeProject"?{codeProject:1}:{})
+            .skip((page - 1) * 25)
+            .limit(25)
+            .select('-passWord')
+
         if (!workProject) {
           return  res.status(404).json({
                 message: 'project not found',
             });
         }
-        res.status(200).json(workProject);
+      return  res.status(200).json(workProject);
     } catch (error) {
-        res.status(404).json({
+        console.log(error)
+       return res.status(404).json({
             message: 'can not get data work Project',
         });
     }
@@ -58,12 +60,7 @@ const getListWork = async (req, res) => {
                     path: 'creatorID',
                 },
             })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
-            });
+          
         if (!checkProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -122,7 +119,7 @@ const addNewWork = async (req, res) => {
             nameProject: nameProject,
             listWorkID: [],
             managerID: [],
-            adminID: [_id],
+            adminID: {_id},
             memberID: [_id],
             codeProject: codeProject,
             startDay: new Date(),
@@ -212,6 +209,26 @@ const restoreProject = async (req, res) => {
     }
 };
 //Delete existing members in the project
+const DeleteExistingMembers=async(req,res)=>{
+    try {
+        const {_id}=req.params
+        const {_idMemberDelete}=req.body
+        if (!_id||!_idMemberDelete) {
+            return res.status(404).json({
+                message: 'Is nos id or _idMemberDelete',
+            });
+        }
+        const project=await modelWorkProject.findOneAndUpdate({_id:_id},{$pull:{memberID:_idMemberDelete}},{new:true})
+       return res.status(200).json({
+            message:"Delete Existing Members Successfully",
+            date:project
+        })
+    } catch (error) {
+        return res.status(404).json({
+            message:"error delete existing members"
+        })
+    }
+}
 
 const editProjectInformation = async (req, res) => {
     try {
@@ -271,4 +288,4 @@ const editProjectInformation = async (req, res) => {
     }
 };
 
-module.exports = {restoreProject, getWorkProject, getListWork, getWorkDetail, editProjectInformation, deleteProject, addNewWork };
+module.exports = {DeleteExistingMembers,restoreProject, getWorkProject, getListWork, getWorkDetail, editProjectInformation, deleteProject, addNewWork };
