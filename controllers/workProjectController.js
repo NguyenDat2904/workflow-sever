@@ -6,7 +6,8 @@ const dataImgProject=require("../imgProject.json")
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { _id,sortKey} = req.query;
+        const { sortKey} = req.query;
+        const {_id}=req.params;
         const { deleteProject } = req.body;
         const page=parseInt(req.query.page)||1
         if (!_id || deleteProject === '') {
@@ -108,7 +109,7 @@ const addNewWork = async (req, res) => {
         }
         const checkCodeProject = await modelWorkProject.find({memberID:_id, codeProject: codeProject });
         const checkNameProject=await modelWorkProject.find({memberID:_id, nameProject: nameProject });
-        console.log(checkCodeProject,checkNameProject)
+      
         if (checkCodeProject.length>0||checkNameProject.length>0) {
             return res.status(401).json({
                 message: 'already exists codeProject or checkNameProject',
