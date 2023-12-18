@@ -27,7 +27,7 @@ const getWorkProject = async (req, res) => {
             })
             .populate({
                 path: 'adminID',
-               select:'-refreshToken -passWord'
+                select: '-refreshToken -passWord',
             })
             .sort(sortKey === 'nameProject' ? { nameProject: 1 } : sortKey === 'codeProject' ? { codeProject: 1 } : {})
             .skip((page - 1) * 25)
@@ -41,9 +41,9 @@ const getWorkProject = async (req, res) => {
         }
         return res.status(200).json({
             workProject,
-             page,
-             totalPages
-             });
+            page,
+            totalPages,
+        });
     } catch (error) {
         console.log(error);
         return res.status(404).json({
@@ -244,16 +244,16 @@ const DeleteExistingMembers = async (req, res) => {
 
 const editProjectInformation = async (req, res) => {
     try {
-        const { workProjectID } = req.params;
+        const { _id } = req.params;
         const { codeProject, nameProject } = req.body;
 
         // check id project
-        if (!workProjectID) {
+        if (!_id) {
             return res.status(404).json({
                 message: 'not found id',
             });
         }
-        const project = await modelWorkProject.findById({ _id: workProjectID }).populate({
+        const project = await modelWorkProject.findById({ _id: _id }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -268,11 +268,7 @@ const editProjectInformation = async (req, res) => {
         }
 
         // check codeProject
-        const checkCodeProject = await modelWorkProject.findOne({
-            $and: [{ _id: workProjectID }, { codeProject: codeProject }],
-        });
-
-        if (checkCodeProject) {
+        if (project.codeProject === codeProject) {
             return res.status(400).json({
                 message: 'codeProject already exists',
             });
@@ -300,13 +296,11 @@ const editProjectInformation = async (req, res) => {
     }
 };
 //list member
-const ListMember=async(req,res)=>{
+const ListMember = async (req, res) => {
     try {
-        
-    } catch (error) {
-        
-    }
-}
+    } catch (error) {}
+};
+
 module.exports = {
     DeleteExistingMembers,
     restoreProject,
