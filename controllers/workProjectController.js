@@ -10,15 +10,17 @@ const getWorkProject = async (req, res) => {
         const { _id } = req.params;
         const { deleteProject } = req.body;
         const page = parseInt(req.query.page) || 1;
+        const sortOrder=parseInt(req.query.sortOrder) || 1;
         if (!_id || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
+        console.log(totalUsers)
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
-            .find({ memberID: _id, deleteProject: false })
+            .find({ memberID: _id, deleteProject: deleteProject })
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -29,10 +31,9 @@ const getWorkProject = async (req, res) => {
                 path: 'adminID',
                 select: '-refreshToken -passWord',
             })
-            .sort(sortKey === 'nameProject' ? { nameProject: 1 } : sortKey === 'codeProject' ? { codeProject: 1 } : {})
+            .sort(sortKey === 'nameProject' ? { nameProject:sortOrder } : sortKey === 'codeProject' ? { codeProject: sortOrder } : {})
             .skip((page - 1) * 25)
             .limit(25)
-            .select('-passWord');
 
         if (!workProject) {
             return res.status(404).json({
@@ -298,9 +299,40 @@ const editProjectInformation = async (req, res) => {
 //list member
 const ListMember = async (req, res) => {
     try {
-    } catch (error) {}
-};
-
+        const { _id } = req.params;
+        const { deleteProject} = req.body;
+        const page = parseInt(req.query.page) || 1;
+        if (!_id || deleteProject === '') {
+            return res.status(404).json({
+                message: 'not found id or deleteProject',
+            });
+        }
+        const workProject=await modelWorkProject.find({_id:_id,deleteProject:deleteProject})
+        .populate({
+            path:"memberID",
+            select:'-refreshToken -passWord'
+        })
+        .skip((page-1) * 15)
+        .limit(15);
+        if (workProject.length===0) {
+            return res.status(404).json({
+                message: 'project not found',
+            });
+        }
+         const totalMember=workProject.length
+        const totalPages=Math.ceil(totalMember / 15);
+        return res.status(200).json({
+            listMemberProject:workProject,
+             page,
+             totalPages
+             });
+    } catch (error) {
+       
+        return res.status(404).json({
+            message: 'project not found',
+        });
+    }
+}
 module.exports = {
     DeleteExistingMembers,
     restoreProject,
@@ -310,4 +342,5 @@ module.exports = {
     editProjectInformation,
     deleteProject,
     addNewWork,
+    ListMember
 };
