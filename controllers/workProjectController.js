@@ -26,10 +26,6 @@ const getWorkProject = async (req, res) => {
                 },
             })
             .populate({
-                path: 'memberID',
-               select:'-refreshToken -passWord'
-            })
-            .populate({
                 path: 'adminID',
                select:'-refreshToken -passWord'
             })
@@ -303,7 +299,14 @@ const editProjectInformation = async (req, res) => {
         });
     }
 };
-
+//list member
+const ListMember=async(req,res)=>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
 module.exports = {
     DeleteExistingMembers,
     restoreProject,

@@ -3,10 +3,11 @@ const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
 const { transporter } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
+const {google}=require("googleapis")
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const { oauth2 } = require('googleapis/build/src/apis/oauth2');
 const Login = async (req, res) => {
     const { userName, passWord } = req.body;
     try {
@@ -49,66 +50,74 @@ const Login = async (req, res) => {
 const LoginGoogle = async (req, res) => {
     try {
         const tokenGoogle = req.headers['tokengoogle'];
-        const client = new OAuth2Client({
-            clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
-        });
-        const ticket = await client.verifyIdToken({
-            idToken: tokenGoogle,
-            audience: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
-        });
-        const payload = ticket.getPayload();
+        if(tokenGoogle){
+            const oauth2Client=new google.auth.OAuth2({
+                clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com'
+            });
+            oauth2Client.setCredentials({access_token:tokenGoogle})
+            const auth2=google.oauth2({
+                auth:oauth2Client,
+                version:"v2",
+            })
+            const info=await oauth2.userinfo.get();
+            const payload=info.data;
+            if(!payload){
+                return res.status(404).json({
+                    message:"something went wrong"
+                })
+            };
+            const check = await checkEmail.checkEmail(payload.email);
+            if (!check) {
+                const newUser = new UsersModal({
+                    name: payload.name,
+                    email: payload.email,
+                    phone: '',
+                    userName: '',
+                    passWord: '',
+                    role: 'nomal',
+                    img: payload.picture,
+                    refreshToken: '',
+                    gender: '',
+                    birthDay: null,
+                    desc: '',
+                    imgCover: '',
+                    jopTitle: '',
+                    department: '',
+                    organization: '',
+                    location: '',
+                    backgroundProfile: '',
+                    textInBackgroundProfile: '',
+                });
+                const refreshToken = token(newUser, '720h');
+                newUser.refreshToken = refreshToken;
+                await newUser.save();
+                const accessToken = token(newUser, '24h');
+                res.status(200).json({
+                    _id: newUser._id,
+                    role: newUser.role,
+                    name: newUser.name,
+                    email: newUser.email,
+                    refreshToken,
+                    accessToken,
+                });
+            } else {
+                const refreshToken = token(check, '720h');
+                check.refreshToken = refreshToken;
+                const accessToken = token(check, '24h');
+                res.status(200).json({
+                    _id: check._id,
+                    role: check.role,
+                    name: check.name,
+                    email: check.email,
+                    refreshToken,
+                    accessToken,
+                });
+            }
 
-        if (!payload) {
+        }else{
             return res.status(404).json({
-                message: 'something went wrong',
-            });
-        }
-        const check = await checkEmail.checkEmail(payload.email);
-        if (!check) {
-            const newUser = new UsersModal({
-                name: payload.name,
-                email: payload.email,
-                phone: '',
-                userName: '',
-                passWord: '',
-                role: 'nomal',
-                img: payload.picture,
-                refreshToken: '',
-                gender: '',
-                birthDay: null,
-                desc: '',
-                imgCover: '',
-                jopTitle: '',
-                department: '',
-                organization: '',
-                location: '',
-                backgroundProfile: '',
-                textInBackgroundProfile: '',
-            });
-            const refreshToken = token(newUser, '720h');
-            newUser.refreshToken = refreshToken;
-            await newUser.save();
-            const accessToken = token(newUser, '24h');
-            res.status(200).json({
-                _id: newUser._id,
-                role: newUser.role,
-                name: newUser.name,
-                email: newUser.email,
-                refreshToken,
-                accessToken,
-            });
-        } else {
-            const refreshToken = token(check, '720h');
-            check.refreshToken = refreshToken;
-            const accessToken = token(check, '24h');
-            res.status(200).json({
-                _id: check._id,
-                role: check.role,
-                name: check.name,
-                email: check.email,
-                refreshToken,
-                accessToken,
-            });
+                message:"is not token google"
+            })
         }
     } catch (error) {
         console.log(error);
