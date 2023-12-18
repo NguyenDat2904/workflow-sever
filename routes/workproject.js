@@ -17,7 +17,6 @@ router.patch('/delete-project/:_id', refreshTokenMiddlerware, authMidddlerware,C
 router.post('/add-new-project/:_id',refreshTokenMiddlerware, authMidddlerware, getdataproject.addNewWork);
 router.post('/workdetail', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkDetail);
 router.post('/listwork', refreshTokenMiddlerware, authMidddlerware, getdataproject.getListWork);
-router.post('/add-new-project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.addNewWork);
 router.post('/project', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkProject);
 
 
