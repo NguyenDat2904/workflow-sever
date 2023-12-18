@@ -1,43 +1,56 @@
 const modelWorkProject = require('../models/modelWorkProject');
 const modelListWork = require('../models/modalListWorks');
 const modalWorkDetail = require('../models/modelWorkDetail');
-const dataImgProject=require("../imgProject.json")
+const dataImgProject = require('../imgProject.json');
 
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { sortKey} = req.query;
-        const {_id}=req.params;
+        const { sortKey } = req.query;
+        const { _id } = req.params;
         const { deleteProject } = req.body;
-        const page=parseInt(req.query.page)||1
+        const page = parseInt(req.query.page) || 1;
         if (!_id || deleteProject === '') {
-           return res.status(404).json({
+            return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
+        const totalUsers = await modelWorkProject.countDocuments();
+        const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
-            .find({ memberID: _id, deleteProject:false })
+            .find({ memberID: _id, deleteProject: false })
             .populate({
                 path: 'listWorkID',
                 populate: {
                     path: 'creatorID',
                 },
             })
-            .populate('memberID adminID')
-            .sort(sortKey==="nameProject"?{nameProject:1}:sortKey==="codeProject"?{codeProject:1}:{})
+            .populate({
+                path: 'memberID',
+               select:'-refreshToken -passWord'
+            })
+            .populate({
+                path: 'adminID',
+               select:'-refreshToken -passWord'
+            })
+            .sort(sortKey === 'nameProject' ? { nameProject: 1 } : sortKey === 'codeProject' ? { codeProject: 1 } : {})
             .skip((page - 1) * 25)
             .limit(25)
-            .select('-passWord')
+            .select('-passWord');
 
         if (!workProject) {
-          return  res.status(404).json({
+            return res.status(404).json({
                 message: 'project not found',
             });
         }
-      return  res.status(200).json(workProject);
+        return res.status(200).json({
+            workProject,
+             page,
+             totalPages
+             });
     } catch (error) {
-        console.log(error)
-       return res.status(404).json({
+        console.log(error);
+        return res.status(404).json({
             message: 'can not get data work Project',
         });
     }
@@ -53,15 +66,13 @@ const getListWork = async (req, res) => {
             });
         }
         //check project
-        const checkProject = await modelWorkProject
-            .findOne({ nameProject: nameProject })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
-            })
-          
+        const checkProject = await modelWorkProject.findOne({ nameProject: nameProject }).populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+        });
+
         if (!checkProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -101,26 +112,26 @@ const addNewWork = async (req, res) => {
     try {
         const { _id } = req.params;
         const { nameProject, codeProject } = req.body;
-        
+
         if (!_id || !nameProject || !codeProject) {
             return res.status(400).json({
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.find({memberID:_id, codeProject: codeProject });
-        const checkNameProject=await modelWorkProject.find({memberID:_id, nameProject: nameProject });
-      
-        if (checkCodeProject.length>0||checkNameProject.length>0) {
+        const checkCodeProject = await modelWorkProject.find({ memberID: _id, codeProject: codeProject });
+        const checkNameProject = await modelWorkProject.find({ memberID: _id, nameProject: nameProject });
+
+        if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
                 message: 'already exists codeProject or checkNameProject',
             });
         }
-        const randomImgProject=(Math.random()*dataImgProject.length)|0
+        const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
             managerID: [],
-            adminID: {_id},
+            adminID: { _id },
             memberID: [_id],
             codeProject: codeProject,
             startDay: new Date(),
@@ -129,7 +140,7 @@ const addNewWork = async (req, res) => {
             describeProject: '',
             projectStatus: 'Chuẩn  bị',
             deleteProject: false,
-            imgProject:dataImgProject[randomImgProject]
+            imgProject: dataImgProject[randomImgProject],
         });
         await newProject.save();
         return res.status(200).json({
@@ -163,7 +174,7 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-           const  checkAfterTimeOut=await modelWorkProject.findById(_id);
+            const checkAfterTimeOut = await modelWorkProject.findById(_id);
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelWorkProject.findByIdAndDelete(_id);
             }
@@ -182,27 +193,27 @@ const deleteProject = async (req, res) => {
 const restoreProject = async (req, res) => {
     try {
         const { _id } = req.params;
-        if (!_id ) {
+        if (!_id) {
             return res.status(404).json({
                 message: 'Is nos id or restoreProject',
             });
         }
-        const checkId= await modelWorkProject.findById(_id)
-        if(!checkId){
+        const checkId = await modelWorkProject.findById(_id);
+        if (!checkId) {
             return res.status(401).json({
-                message:"not found project want restore"
-            })
+                message: 'not found project want restore',
+            });
         }
-        if( checkId.deleteProject===false){
+        if (checkId.deleteProject === false) {
             return res.status(404).json({
-                message:"Project no trash can"
-            })
+                message: 'Project no trash can',
+            });
         }
-        checkId.deleteProject=false
-        await checkId.save()
+        checkId.deleteProject = false;
+        await checkId.save();
         return res.status(200).json({
-            message:"restore successfully"
-        })
+            message: 'restore successfully',
+        });
     } catch (error) {
         return res.status(404).json({
             message: 'Can not restore project',
@@ -210,26 +221,30 @@ const restoreProject = async (req, res) => {
     }
 };
 //Delete existing members in the project
-const DeleteExistingMembers=async(req,res)=>{
+const DeleteExistingMembers = async (req, res) => {
     try {
-        const {_id}=req.params
-        const {_idMemberDelete}=req.body
-        if (!_id||!_idMemberDelete) {
+        const { _id } = req.params;
+        const { _idMemberDelete } = req.body;
+        if (!_id || !_idMemberDelete) {
             return res.status(404).json({
                 message: 'Is nos id or _idMemberDelete',
             });
         }
-        const project=await modelWorkProject.findOneAndUpdate({_id:_id},{$pull:{memberID:_idMemberDelete}},{new:true})
-       return res.status(200).json({
-            message:"Delete Existing Members Successfully",
-            date:project
-        })
+        const project = await modelWorkProject.findOneAndUpdate(
+            { _id: _id },
+            { $pull: { memberID: _idMemberDelete } },
+            { new: true },
+        );
+        return res.status(200).json({
+            message: 'Delete Existing Members Successfully',
+            date: project,
+        });
     } catch (error) {
         return res.status(404).json({
-            message:"error delete existing members"
-        })
+            message: 'error delete existing members',
+        });
     }
-}
+};
 
 const editProjectInformation = async (req, res) => {
     try {
@@ -289,4 +304,13 @@ const editProjectInformation = async (req, res) => {
     }
 };
 
-module.exports = {DeleteExistingMembers,restoreProject, getWorkProject, getListWork, getWorkDetail, editProjectInformation, deleteProject, addNewWork };
+module.exports = {
+    DeleteExistingMembers,
+    restoreProject,
+    getWorkProject,
+    getListWork,
+    getWorkDetail,
+    editProjectInformation,
+    deleteProject,
+    addNewWork,
+};
