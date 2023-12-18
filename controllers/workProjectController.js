@@ -14,7 +14,7 @@ const getWorkProject = async (req, res) => {
             });
         }
         const workProject = await modelWorkProject
-            .find({ memberID: _id })
+            .find({ memberID: _id, deleteProject:false })
             .populate({
                 path: 'listWorkID',
                 populate: {
