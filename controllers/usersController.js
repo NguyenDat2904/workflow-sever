@@ -9,7 +9,6 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const { oauth2 } = require('googleapis/build/src/apis/oauth2');
 const Login = async (req, res) => {
-    const { userName, passWord } = req.body;
     try {
         const { userName, passWord } = req.body;
         const userEmail = await checkEmail.checkUsers(userName);
@@ -49,13 +48,17 @@ const Login = async (req, res) => {
 //login google
 const LoginGoogle = async (req, res) => {
     try {
-        const tokenGoogle = req.headers['tokengoogle'];
-        if(tokenGoogle){
+            const tokenGoogle = req.headers['tokengoogle'];
+            if(!tokenGoogle){
+                return res.status(404).json({
+                    message:"is not token google"
+                })
+            }
             const oauth2Client=new google.auth.OAuth2({
                 clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com'
             });
             oauth2Client.setCredentials({access_token:tokenGoogle})
-            const auth2=google.oauth2({
+            const oauth2=google.oauth2({
                 auth:oauth2Client,
                 version:"v2",
             })
@@ -74,7 +77,7 @@ const LoginGoogle = async (req, res) => {
                     phone: '',
                     userName: '',
                     passWord: '',
-                    role: 'nomal',
+                    role: 'normal',
                     img: payload.picture,
                     refreshToken: '',
                     gender: '',
@@ -92,7 +95,7 @@ const LoginGoogle = async (req, res) => {
                 newUser.refreshToken = refreshToken;
                 await newUser.save();
                 const accessToken = token(newUser, '24h');
-                res.status(200).json({
+              return  res.status(200).json({
                     _id: newUser._id,
                     role: newUser.role,
                     name: newUser.name,
@@ -104,7 +107,7 @@ const LoginGoogle = async (req, res) => {
                 const refreshToken = token(check, '720h');
                 check.refreshToken = refreshToken;
                 const accessToken = token(check, '24h');
-                res.status(200).json({
+              return  res.status(200).json({
                     _id: check._id,
                     role: check.role,
                     name: check.name,
@@ -113,12 +116,6 @@ const LoginGoogle = async (req, res) => {
                     accessToken,
                 });
             }
-
-        }else{
-            return res.status(404).json({
-                message:"is not token google"
-            })
-        }
     } catch (error) {
         console.log(error);
         return res.status(404).json({
