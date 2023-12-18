@@ -106,6 +106,7 @@ const LoginGoogle = async (req, res) => {
             } else {
                 const refreshToken = token(check, '720h');
                 check.refreshToken = refreshToken;
+                await check.save()
                 const accessToken = token(check, '24h');
               return  res.status(200).json({
                     _id: check._id,
