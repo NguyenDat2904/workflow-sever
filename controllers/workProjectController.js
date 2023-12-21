@@ -52,6 +52,46 @@ const getWorkProject = async (req, res) => {
         });
     }
 };
+// project detail
+const ProjectDetail=async(req,res)=>{
+    try {
+        const {_id}=req.params
+        if(!_id){
+            return res.status(404).json({
+                message:"is not Id project "
+            })
+        }
+        const project=await modelWorkProject.findById(_id)
+        .populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+            populate:{
+                path:'workDetrailID'
+            }
+        })
+        .populate({
+            path: 'adminID',
+            select: '-refreshToken -passWord',
+        })
+        .populate({
+            path: 'memberID',
+            select: '-refreshToken -passWord',
+        })
+        if(!project){
+            return res.status(404).json({
+                message:"not found project"
+            })
+        }
+        return res.status(200).json(project)
+
+    } catch (error) {
+        return res.status(404).json({
+            message:"can not get project detail"
+        })
+    }
+}
 // lấy list công việc của hàm getWorkProject đã lọc công việc theo id user trả về
 const getListWork = async (req, res) => {
     try {
@@ -342,5 +382,6 @@ module.exports = {
     editProjectInformation,
     deleteProject,
     addNewWork,
-    ListMember
+    ListMember,
+    ProjectDetail
 };
