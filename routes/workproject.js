@@ -5,6 +5,8 @@ const authMidddlerware = require('../middlewares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
 const checkUserPermissions = require('../middlewares/checkUserPermissions');
 
+router.get('/project-detail/:_id', refreshTokenMiddlerware,
+authMidddlerware,getdataproject.ProjectDetail)
 router.post("/list-member/:_id", refreshTokenMiddlerware, authMidddlerware,getdataproject.ListMember)
 router.delete(
     '/delete-existing-members/:_id',
