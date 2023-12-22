@@ -21,7 +21,7 @@ router.patch(
 );
 
 router.patch(
-    '/editProject/:_id',
+    '/edit-project/:_id',
     refreshTokenMiddlerware,
     authMidddlerware,
     checkUserPermissions,
@@ -38,5 +38,19 @@ router.post('/add-new-project/:_id', refreshTokenMiddlerware, authMidddlerware, 
 router.post('/workdetail', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkDetail);
 router.post('/listwork', refreshTokenMiddlerware, authMidddlerware, getdataproject.getListWork);
 router.post('/project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkProject);
+router.post(
+    '/send-email-to-user',
+     refreshTokenMiddlerware,
+     authMidddlerware,
+     checkUserPermissions,
+    getdataproject.sendEmailToUser,
+);
+
+router.post(
+    '/add-members-to-project',
+    //  refreshTokenMiddlerware,
+    //  authMidddlerware,
+    getdataproject.addMembersToProject,
+);
 
 module.exports = router;

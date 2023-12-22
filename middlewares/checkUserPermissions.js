@@ -4,13 +4,13 @@ const checkUserPermissions = async (req, res, next) => {
     try {
         const { _id } = req.params;
         const { _idUser } = req.body;
-        if (!_idUser) {
+        if (!_id || !_idUser) {
             return res.status(404).json({
                 message: 'is not _id',
             });
         }
-        
-        // get project 
+
+        // get project
         const listProject = await modelWorkProject.findById({ _id: _id });
         if (!listProject) {
             return res.status(404).json({
@@ -37,8 +37,8 @@ const checkUserPermissions = async (req, res, next) => {
 
         if (listProject.adminID.toString() !== _idUser && !checkManager) {
             return res.status(400).json({
-                message:"this user does not have permissions"
-            })
+                message: 'this user does not have permissions',
+            });
         }
     } catch (error) {
         console.log(error);

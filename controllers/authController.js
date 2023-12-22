@@ -75,7 +75,7 @@ const AuthController = {
             });
         } catch (error) {
             console.log(error);
-            res.status(500).json({
+            res.status(error.status).json({
                 error,
             });
         }
@@ -125,13 +125,13 @@ const AuthController = {
                 gender: '',
                 birthDate: '',
                 desc: '',
-                imgCover:"",
-                jopTitle :"",
-                department:"",
-                organization:"",
-                location:"",
-                backgroundProfile:"",
-                textInBackgroundProfile:"",
+                imgCover: '',
+                jopTitle: '',
+                department: '',
+                organization: '',
+                location: '',
+                backgroundProfile: '',
+                textInBackgroundProfile: '',
             });
 
             const user = {

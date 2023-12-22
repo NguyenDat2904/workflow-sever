@@ -2,6 +2,10 @@ const modelWorkProject = require('../models/modelWorkProject');
 const modelListWork = require('../models/modalListWorks');
 const modalWorkDetail = require('../models/modelWorkDetail');
 const dataImgProject = require('../imgProject.json');
+const userModel = require('../models/modelUser');
+const { transporter, checkEmail } = require('../helpers/email');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 //lấy project
 const getWorkProject = async (req, res) => {
@@ -301,6 +305,393 @@ const ListMember = async (req, res) => {
     } catch (error) {}
 };
 
+const sendEmailToUser = async (req, res) => {
+    try {
+        const { email, _id, userName } = req.body;
+
+        // check user in project
+        const project = await modelWorkProject.findById({ _id });
+        const user = await userModel.findOne({ email: email });
+        if (user) {
+            const findUserInProject = project.memberID.find((u) => u.toString() === user._id.toString());
+            if (findUserInProject) {
+                return res.status(400).json({
+                    message: 'The user already exists in this project',
+                });
+            }
+        }
+
+        // token hết hạn sau 3p
+        const payload = { email };
+        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
+
+        // gửi mail
+        const mailOptions = {
+            from: `${process.env.USER_EMAIL}`,
+            to: `${email}`,
+            subject: `${userName} invited you to join them in Workflow`,
+            html: `
+            <div
+            id=":13f"
+            class="ii gt"
+            jslog="20277; u014N:xr6bB; 1:WyIjdGhyZWFkLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd; 4:WyIjbXNnLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd"
+            >
+            <div id=":13e" class="a3s aiL msg-2887060111352600736">
+                <u></u>
+                <div
+                style="
+                    margin: 0;
+                    padding: 0;
+                    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+                    Oxygen, Ubuntu, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+                    font-size: 14px;
+                    font-weight: 400;
+                    letter-spacing: -0.005em;
+                    color: #091e42;
+                    line-height: 20px;
+                    background: #ffffff;
+                    height: 100%;
+                    width: 100%;
+                "
+                >
+                <table
+                    width="100%"
+                    border="0"
+                    cellspacing="0"
+                    cellpadding="0"
+                    style="border-collapse: collapse"
+                >
+                    <tbody>
+                    <tr>
+                        <td align="center">
+                        <div style="max-width: 520px; margin: 0 auto">
+                            <div
+                            style="
+                                vertical-align: top;
+                                text-align: left;
+                                font-family: -apple-system, BlinkMacSystemFont, Segoe UI,
+                                Roboto, Oxygen, Ubuntu, Fira Sans, Droid Sans,
+                                Helvetica Neue, sans-serif;
+                                font-size: 14px;
+                                font-weight: 400;
+                                letter-spacing: -0.005em;
+                                color: #091e42;
+                                line-height: 20px;
+                            "
+                            >
+                            <div
+                                style="
+                                border: solid #ebecf0 1px;
+                                border-bottom: none;
+                                border-radius: 4px 4px 0 0;
+                                max-width: 520px;
+                                "
+                            >
+                                <table
+                                style="
+                                    background-image: url('https://ci3.googleusercontent.com/meips/ADKq_Namd0eL0mopCP-jRZLSOnD2W5HHUwYwuGcmfsY49BunHZVwdXSaTzBaHE2Ig-RHDlF_zfDKgxnXDrVeHT773kIwDqdZwrsPTqXIHcB2phJAi2i6S1Q0JuqeeKg=s0-d-e1-ft#https://id-mail-assets.atlassian.com/shared/white-background-10px.png');
+                                    background-repeat: repeat;
+                                    width: 100%;
+                                    border-radius: 4px 4px 0 0;
+                                    border-collapse: collapse;
+                                "
+                                width="100%"
+                                >
+                                <tbody>
+                                    <tr>
+                                    <td>
+                                        <h1
+                                        height="45"
+                                        style="
+                                            border: 0;
+                                            line-height: 33px;
+                                            outline: none;
+                                            text-decoration: none;
+                                            height: 100%;
+                                            max-height: 45px;
+                                            padding: 27px 0px 20px 40px;
+                                        "
+                                        border="0"
+                                        >
+                                        Workflow
+                                        </h1>
+                                    </td>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </div>
+                            <div
+                                style="
+                                margin-bottom: 32px;
+                                background: #fafbfc;
+                                padding: 40px;
+                                border-radius: 0 0 4px 4px;
+                                border: solid #ebecf0 1px;
+                                border-top: none;
+                                "
+                            >
+                                <table
+                                width="100%"
+                                border="0"
+                                cellspacing="0"
+                                cellpadding="0"
+                                style="border-collapse: collapse"
+                                >
+                                <tbody>
+                                    <tr>
+                                    <td align="center">
+                                        <div style="max-width: 520px; margin: 0 auto">
+                                        <table style="border-collapse: collapse">
+                                            <tbody>
+                                            <tr>
+                                                <td>
+                                                <h1
+                                                    style="
+                                                    margin: 0px;
+                                                    text-align: left;
+                                                    "
+                                                >
+                                                    <div style="line-height: 33px">
+                                                    ${userName}
+                                                    invited you to join them in
+                                                    Workflow
+                                                    </div>
+                                                </h1>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                <div
+                                                    style="
+                                                    font-family: -apple-system,
+                                                        BlinkMacSystemFont, Segoe UI,
+                                                        Roboto, Oxygen, Ubuntu,
+                                                        Fira Sans, Droid Sans,
+                                                        Helvetica Neue, sans-serif;
+                                                    font-size: 14px;
+                                                    font-weight: 400;
+                                                    letter-spacing: -0.005em;
+                                                    color: #091e42;
+                                                    line-height: 20px;
+                                                    margin-top: 16px;
+                                                    text-align: left;
+                                                    "
+                                                >
+                                                    Start planning and tracking work
+                                                    with
+                                                    ${userName}
+                                                    and your team. You can share your
+                                                    work and view what your team is
+                                                    doing.
+                                                </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                <div
+                                                    style="
+                                                    display: flex;
+                                                    margin-top: 24px;
+                                                    "
+                                                >
+                                                    
+                                                    <a
+                                                    href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
+                                                    style="
+                                                        box-sizing: border-box;
+                                                        border-radius: 3px;
+                                                        border-width: 0;
+                                                        border: none;
+                                                        display: inline-flex;
+                                                        font-style: normal;
+                                                        font-size: inherit;
+                                                        line-height: 24px;
+                                                        margin: 0;
+                                                        outline: none;
+                                                        padding: 4px 12px;
+                                                        text-align: center;
+                                                        vertical-align: middle;
+                                                        white-space: nowrap;
+                                                        text-decoration: none;
+                                                        background: #0052cc;
+                                                        color: #ffffff;
+                                                    "
+                                                    target="_blank"
+                                                    >Accept Invite</a
+                                                    >
+                                                </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                <div
+                                                    style="
+                                                    font-family: -apple-system,
+                                                        BlinkMacSystemFont, Segoe UI,
+                                                        Roboto, Oxygen, Ubuntu,
+                                                        Fira Sans, Droid Sans,
+                                                        Helvetica Neue, sans-serif;
+                                                    font-size: 14px;
+                                                    font-weight: 400;
+                                                    letter-spacing: -0.005em;
+                                                    color: #091e42;
+                                                    line-height: 20px;
+                                                    margin-top: 24px;
+                                                    "
+                                                >
+                                                    <span
+                                                    style="
+                                                        font-family: -apple-system,
+                                                        BlinkMacSystemFont, Segoe UI,
+                                                        Roboto, Oxygen, Ubuntu,
+                                                        Fira Sans, Droid Sans,
+                                                        Helvetica Neue, sans-serif;
+                                                        font-size: 14px;
+                                                        font-weight: 600;
+                                                        letter-spacing: -0.003em;
+                                                        color: #172b4d;
+                                                        line-height: 16px;
+                                                    "
+                                                    >What is Workflow?</span
+                                                    >
+                                                    Project and issue tracking
+                                                    <a
+                                                    href="#"
+                                                    style="
+                                                        border: none;
+                                                        background: transparent;
+                                                        color: #0052cc;
+                                                        text-decoration: none;
+                                                    "
+                                                    target="_blank"
+                                                    >Learn more</a
+                                                    >
+                                                </div>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    </td>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </div>
+                            <div style="text-align: center; margin-bottom: 16px">
+                                <div
+                                style="
+                                    font-family: -apple-system, BlinkMacSystemFont,
+                                    Segoe UI, Roboto, Oxygen, Ubuntu, Fira Sans,
+                                    Droid Sans, Helvetica Neue, sans-serif;
+                                    font-size: 14px;
+                                    font-weight: normal;
+                                    letter-spacing: -0.003em;
+                                    color: #172b4d;
+                                    line-height: 20px;
+                                    margin: 16px 0;
+                                "
+                                >
+                                This message was sent to you by Workflow Cloud
+                                </div>
+                                <a href="#" target="_blank"
+                                ><img
+                                    src=""
+                                    height="18"
+                                    border="0"
+                                    alt="Workflow logo"
+                                    style="
+                                    border: 0;
+                                    line-height: 100%;
+                                    outline: none;
+                                    text-decoration: none;
+                                    color: #c1c7d0;
+                                    "
+                                    class="CToWUd"
+                                    data-bit="iit"
+                                /></a>
+                            </div>
+                            </div>
+                        </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <img
+                    border="0"
+                    width="1"
+                    height="1"
+                    alt=""
+                    src="https://ci3.googleusercontent.com/meips/ADKq_NZ6DQbB1OP8gLtvDmpz_bVZf1rV1NpEeOA_jLwaogOm078H3NOkjIbAekoX93rka2upbORc5d8Sh5T5t8-XieRSIVpPHm_f5OMzN9YzoltR6z1nXloPMluTYeYaiVL5GJFkd_FyxY9HD_aWp8pEeu-ihvPWVa3L6yFUb3T1GKFiHAgORPOqMBwUrRZS9oBvmNLUnlo3ryDXMg2xEbJQlHNJZTnv6TO9rTpkqP7DslKmv55QiT1-1rs=s0-d-e1-ft#https://atlas-trk.prd.msg.ss-inf.net/q/5b45ZDS6G4Y3DYxywsuOCw~~/AAAAAQA~/RgRnRyZ6PlcLYXRsYXNzaWFudXNCCmVfeqFkZYRH9npSGm5ndXllbmJpbmgxOTExMDNAZ21haWwuY29tWAQAAAAA"
+                    class="CToWUd"
+                    data-bit="iit"
+                />
+                <div class="yj6qo"></div>
+                <div class="adL"></div>
+                </div>
+            </div>
+            <div class="yj6qo"></div>
+            </div>
+            `,
+        };
+
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.log(err);
+                res.status(400).json({
+                    error: "The email wasn't sent successfully",
+                });
+            } else {
+                res.json({
+                    info: info.response,
+                    email,
+                    token,
+                });
+                console.log('Email đã được gửi:', info.response);
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(error.status).json({
+            error,
+        });
+    }
+};
+
+const addMembersToProject = async (req, res) => {
+    try {
+        const { _id, _idUser } = req.body;
+
+        // tìm dự án và người dùng
+        const project = await modelWorkProject.findById({ _id });
+        const user = await userModel.findById({ _id: _idUser });
+
+        if (!project || !user) {
+            return res.status(400).json({
+                message: '_id or _idUser not found',
+            });
+        }
+
+        // check id user trong project
+        const findUserInProject = project.memberID.find((idUser) => idUser.toString() === user._id.toString());
+        if (findUserInProject) {
+            return res.status(400).json({
+                message: 'The user already exists in the project',
+            });
+        }
+
+        project.memberID.push(user._id);
+        await project.save();
+        res.json({
+            message: 'Added user successfully',
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error,
+        });
+    }
+};
+
 module.exports = {
     DeleteExistingMembers,
     restoreProject,
@@ -310,4 +701,6 @@ module.exports = {
     editProjectInformation,
     deleteProject,
     addNewWork,
+    sendEmailToUser,
+    addMembersToProject,
 };
