@@ -39,7 +39,7 @@ router.post('/workdetail', refreshTokenMiddlerware, authMidddlerware, getdatapro
 router.post('/listwork', refreshTokenMiddlerware, authMidddlerware, getdataproject.getListWork);
 router.post('/project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkProject);
 router.post(
-    '/send-email-to-user',
+    '/send-email-to-user/:_id',
      refreshTokenMiddlerware,
      authMidddlerware,
      checkUserPermissions,

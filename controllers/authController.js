@@ -30,7 +30,7 @@ const AuthController = {
 
             // hết hạn sau 3p
             const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
-
+            
             const mailOptions = {
                 from: `${process.env.USER_EMAIL}`,
                 to: `${email}`,

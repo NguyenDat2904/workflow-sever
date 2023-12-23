@@ -307,7 +307,8 @@ const ListMember = async (req, res) => {
 
 const sendEmailToUser = async (req, res) => {
     try {
-        const { email, _id, userName } = req.body;
+        const { _id } = req.params;
+        const { email, userName } = req.body;
 
         // check user in project
         const project = await modelWorkProject.findById({ _id });
@@ -318,6 +319,9 @@ const sendEmailToUser = async (req, res) => {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
                 });
+            } else {
+                project.memberID.push(user._id);
+                await project.save();
             }
         }
 
@@ -632,6 +636,7 @@ const sendEmailToUser = async (req, res) => {
             <div class="yj6qo"></div>
             </div>
             `,
+            
         };
 
         transporter.sendMail(mailOptions, (err, info) => {
