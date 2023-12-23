@@ -14,15 +14,17 @@ const getWorkProject = async (req, res) => {
         const { _id } = req.params;
         const { deleteProject } = req.body;
         const page = parseInt(req.query.page) || 1;
+        const sortOrder=parseInt(req.query.sortOrder) || 1;
         if (!_id || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
+        console.log(totalUsers)
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
-            .find({ memberID: _id, deleteProject: false })
+            .find({ memberID: _id, deleteProject: deleteProject })
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -33,10 +35,9 @@ const getWorkProject = async (req, res) => {
                 path: 'adminID',
                 select: '-refreshToken -passWord',
             })
-            .sort(sortKey === 'nameProject' ? { nameProject: 1 } : sortKey === 'codeProject' ? { codeProject: 1 } : {})
+            .sort(sortKey === 'nameProject' ? { nameProject:sortOrder } : sortKey === 'codeProject' ? { codeProject: sortOrder } : {})
             .skip((page - 1) * 25)
             .limit(25)
-            .select('-passWord');
 
         if (!workProject) {
             return res.status(404).json({
@@ -55,6 +56,46 @@ const getWorkProject = async (req, res) => {
         });
     }
 };
+// project detail
+const ProjectDetail=async(req,res)=>{
+    try {
+        const {_id}=req.params
+        if(!_id){
+            return res.status(404).json({
+                message:"is not Id project "
+            })
+        }
+        const project=await modelWorkProject.findById(_id)
+        .populate({
+            path: 'listWorkID',
+            populate: {
+                path: 'creatorID',
+            },
+            populate:{
+                path:'workDetrailID'
+            }
+        })
+        .populate({
+            path: 'adminID',
+            select: '-refreshToken -passWord',
+        })
+        .populate({
+            path: 'memberID',
+            select: '-refreshToken -passWord',
+        })
+        if(!project){
+            return res.status(404).json({
+                message:"not found project"
+            })
+        }
+        return res.status(200).json(project)
+
+    } catch (error) {
+        return res.status(404).json({
+            message:"can not get project detail"
+        })
+    }
+}
 // lấy list công việc của hàm getWorkProject đã lọc công việc theo id user trả về
 const getListWork = async (req, res) => {
     try {
@@ -656,7 +697,7 @@ const sendEmailToUser = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(error.status).json({
+        res.status(500).json({
             error,
         });
     }
@@ -708,4 +749,6 @@ module.exports = {
     addNewWork,
     sendEmailToUser,
     addMembersToProject,
+    ListMember,
+    ProjectDetail
 };
