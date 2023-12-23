@@ -5,16 +5,8 @@ const authMidddlerware = require('../middlewares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
 const checkUserPermissions = require('../middlewares/checkUserPermissions');
 
-router.get('/project-detail/:_id', refreshTokenMiddlerware,
-authMidddlerware,getdataproject.ProjectDetail)
-router.post("/list-member/:_id", refreshTokenMiddlerware, authMidddlerware,getdataproject.ListMember)
-router.delete(
-    '/delete-existing-members/:_id',
-    refreshTokenMiddlerware,
-    authMidddlerware,
-    checkUserPermissions,
-    getdataproject.DeleteExistingMembers,
-);
+
+router.post('/list-member/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.ListMember);
 router.patch(
     '/restore-project/:_id',
     refreshTokenMiddlerware,
@@ -24,7 +16,7 @@ router.patch(
 );
 
 router.patch(
-    '/editProject/:_id',
+    '/edit-project/:_id',
     refreshTokenMiddlerware,
     authMidddlerware,
     checkUserPermissions,
@@ -41,5 +33,21 @@ router.post('/add-new-project/:_id', refreshTokenMiddlerware, authMidddlerware, 
 router.post('/workdetail', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkDetail);
 router.post('/listwork', refreshTokenMiddlerware, authMidddlerware, getdataproject.getListWork);
 router.post('/project/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.getWorkProject);
+router.post(
+    '/send-email-to-user/:_id',
+    refreshTokenMiddlerware,
+    authMidddlerware,
+    checkUserPermissions,
+    getdataproject.sendEmailToUser,
+);
+router.post('/add-members-to-project', refreshTokenMiddlerware, authMidddlerware, getdataproject.addMembersToProject);
+router.get('/project-detail/:_id', refreshTokenMiddlerware, authMidddlerware, getdataproject.ProjectDetail);
 
+router.delete(
+    '/delete-existing-members/:_id',
+    refreshTokenMiddlerware,
+    authMidddlerware,
+    checkUserPermissions,
+    getdataproject.DeleteExistingMembers,
+);
 module.exports = router;
