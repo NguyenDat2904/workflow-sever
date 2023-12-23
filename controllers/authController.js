@@ -75,7 +75,7 @@ const AuthController = {
             });
         } catch (error) {
             console.log(error);
-            res.status(error.status).json({
+            res.status(500).json({
                 error,
             });
         }

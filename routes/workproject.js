@@ -48,8 +48,8 @@ router.post(
 
 router.post(
     '/add-members-to-project',
-    //  refreshTokenMiddlerware,
-    //  authMidddlerware,
+     refreshTokenMiddlerware,
+     authMidddlerware,
     getdataproject.addMembersToProject,
 );
 
