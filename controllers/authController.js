@@ -84,8 +84,6 @@ const AuthController = {
         try {
             const { email = '', fullName = '', userName = '', password = '' } = req.body;
 
-            const { assetToken } = req.user;
-
             if (email === '' || fullName === '' || userName === '' || password === '') {
                 return res.status(400).json({
                     err: 'User data is missing',
@@ -139,6 +137,7 @@ const AuthController = {
                 role: newUser.role,
             };
 
+            const assetToken = Token(user, '24h');
             const refreshToken = Token(user, '720h');
             newUser.refreshToken = refreshToken;
 
