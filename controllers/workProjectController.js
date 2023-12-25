@@ -5,6 +5,7 @@ const dataImgProject = require('../imgProject.json');
 const userModel = require('../models/modelUser');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
+const modelUser = require('../models/modelUser');
 require('dotenv').config();
 
 //lấy project
@@ -304,7 +305,7 @@ const editProjectInformation = async (req, res) => {
                 message: 'not found id',
             });
         }
-        const project = await modelWorkProject.findById({ _id: _id }).populate({
+        const project = await modelWorkProject.findById({ _id }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -360,16 +361,13 @@ const sendEmailToUser = async (req, res) => {
 
         // check user in project
         const project = await modelWorkProject.findById({ _id });
-        const user = await userModel.findOne({ email: email });
+        const user = await userModel.findOne({ email });
         if (user) {
-            const findUserInProject = project.memberID.find((u) => u.toString() === user._id.toString());
+            const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
             if (findUserInProject) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
                 });
-            } else {
-                project.memberID.push(user._id);
-                await project.save();
             }
         }
 
@@ -383,19 +381,21 @@ const sendEmailToUser = async (req, res) => {
             to: `${email}`,
             subject: `${userName} invited you to join them in Workflow`,
             html: `
+            <html>
+            <body>
             <div
-            id=":13f"
-            class="ii gt"
-            jslog="20277; u014N:xr6bB; 1:WyIjdGhyZWFkLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd; 4:WyIjbXNnLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd"
+              id=":13f"
+              class="ii gt"
+              jslog="20277; u014N:xr6bB; 1:WyIjdGhyZWFkLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd; 4:WyIjbXNnLWY6MTc4MzcyNjA4NDk5MTQwNTM4MCJd"
             >
-            <div id=":13e" class="a3s aiL msg-2887060111352600736">
+              <div id=":13e" class="a3s aiL msg-2887060111352600736">
                 <u></u>
                 <div
-                style="
+                  style="
                     margin: 0;
                     padding: 0;
                     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-                    Oxygen, Ubuntu, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+                      Oxygen, Ubuntu, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
                     font-size: 14px;
                     font-weight: 400;
                     letter-spacing: -0.005em;
@@ -404,57 +404,57 @@ const sendEmailToUser = async (req, res) => {
                     background: #ffffff;
                     height: 100%;
                     width: 100%;
-                "
+                  "
                 >
-                <table
+                  <table
                     width="100%"
                     border="0"
                     cellspacing="0"
                     cellpadding="0"
                     style="border-collapse: collapse"
-                >
+                  >
                     <tbody>
-                    <tr>
+                      <tr>
                         <td align="center">
-                        <div style="max-width: 520px; margin: 0 auto">
+                          <div style="max-width: 520px; margin: 0 auto">
                             <div
-                            style="
+                              style="
                                 vertical-align: top;
                                 text-align: left;
                                 font-family: -apple-system, BlinkMacSystemFont, Segoe UI,
-                                Roboto, Oxygen, Ubuntu, Fira Sans, Droid Sans,
-                                Helvetica Neue, sans-serif;
+                                  Roboto, Oxygen, Ubuntu, Fira Sans, Droid Sans,
+                                  Helvetica Neue, sans-serif;
                                 font-size: 14px;
                                 font-weight: 400;
                                 letter-spacing: -0.005em;
                                 color: #091e42;
                                 line-height: 20px;
-                            "
+                              "
                             >
-                            <div
+                              <div
                                 style="
-                                border: solid #ebecf0 1px;
-                                border-bottom: none;
-                                border-radius: 4px 4px 0 0;
-                                max-width: 520px;
+                                  border: solid #ebecf0 1px;
+                                  border-bottom: none;
+                                  border-radius: 4px 4px 0 0;
+                                  max-width: 520px;
                                 "
-                            >
+                              >
                                 <table
-                                style="
+                                  style="
                                     background-image: url('https://ci3.googleusercontent.com/meips/ADKq_Namd0eL0mopCP-jRZLSOnD2W5HHUwYwuGcmfsY49BunHZVwdXSaTzBaHE2Ig-RHDlF_zfDKgxnXDrVeHT773kIwDqdZwrsPTqXIHcB2phJAi2i6S1Q0JuqeeKg=s0-d-e1-ft#https://id-mail-assets.atlassian.com/shared/white-background-10px.png');
                                     background-repeat: repeat;
                                     width: 100%;
                                     border-radius: 4px 4px 0 0;
                                     border-collapse: collapse;
-                                "
-                                width="100%"
+                                  "
+                                  width="100%"
                                 >
-                                <tbody>
+                                  <tbody>
                                     <tr>
-                                    <td>
+                                      <td>
                                         <h1
-                                        height="45"
-                                        style="
+                                          height="45"
+                                          style="
                                             border: 0;
                                             line-height: 33px;
                                             outline: none;
@@ -462,213 +462,212 @@ const sendEmailToUser = async (req, res) => {
                                             height: 100%;
                                             max-height: 45px;
                                             padding: 27px 0px 20px 40px;
-                                        "
-                                        border="0"
+                                          "
+                                          border="0"
                                         >
-                                        Workflow
+                                          Workflow
                                         </h1>
-                                    </td>
+                                      </td>
                                     </tr>
-                                </tbody>
+                                  </tbody>
                                 </table>
-                            </div>
-                            <div
+                              </div>
+                              <div
                                 style="
-                                margin-bottom: 32px;
-                                background: #fafbfc;
-                                padding: 40px;
-                                border-radius: 0 0 4px 4px;
-                                border: solid #ebecf0 1px;
-                                border-top: none;
+                                  margin-bottom: 32px;
+                                  background: #fafbfc;
+                                  padding: 40px;
+                                  border-radius: 0 0 4px 4px;
+                                  border: solid #ebecf0 1px;
+                                  border-top: none;
                                 "
-                            >
+                              >
                                 <table
-                                width="100%"
-                                border="0"
-                                cellspacing="0"
-                                cellpadding="0"
-                                style="border-collapse: collapse"
+                                  width="100%"
+                                  border="0"
+                                  cellspacing="0"
+                                  cellpadding="0"
+                                  style="border-collapse: collapse"
                                 >
-                                <tbody>
+                                  <tbody>
                                     <tr>
-                                    <td align="center">
+                                      <td align="center">
                                         <div style="max-width: 520px; margin: 0 auto">
-                                        <table style="border-collapse: collapse">
+                                          <table style="border-collapse: collapse">
                                             <tbody>
-                                            <tr>
+                                              <tr>
                                                 <td>
-                                                <h1
+                                                  <h1
                                                     style="
-                                                    margin: 0px;
-                                                    text-align: left;
+                                                      margin: 0px;
+                                                      text-align: left;
                                                     "
-                                                >
+                                                  >
                                                     <div style="line-height: 33px">
                                                     ${userName}
-                                                    invited you to join them in
-                                                    Workflow
+                                                      invited you to join them in
+                                                      Workflow
                                                     </div>
-                                                </h1>
+                                                  </h1>
                                                 </td>
-                                            </tr>
-                                            <tr>
+                                              </tr>
+                                              <tr>
                                                 <td>
-                                                <div
+                                                  <div
                                                     style="
-                                                    font-family: -apple-system,
+                                                      font-family: -apple-system,
                                                         BlinkMacSystemFont, Segoe UI,
                                                         Roboto, Oxygen, Ubuntu,
                                                         Fira Sans, Droid Sans,
                                                         Helvetica Neue, sans-serif;
-                                                    font-size: 14px;
-                                                    font-weight: 400;
-                                                    letter-spacing: -0.005em;
-                                                    color: #091e42;
-                                                    line-height: 20px;
-                                                    margin-top: 16px;
-                                                    text-align: left;
+                                                      font-size: 14px;
+                                                      font-weight: 400;
+                                                      letter-spacing: -0.005em;
+                                                      color: #091e42;
+                                                      line-height: 20px;
+                                                      margin-top: 16px;
+                                                      text-align: left;
                                                     "
-                                                >
+                                                  >
                                                     Start planning and tracking work
-                                                    with
-                                                    ${userName}
-                                                    and your team. You can share your
-                                                    work and view what your team is
+                                                    with and your team. You can share
+                                                    your work and view what your team is
                                                     doing.
-                                                </div>
+                                                  </div>
                                                 </td>
-                                            </tr>
-                                            <tr>
+                                              </tr>
+                                              <tr>
                                                 <td>
-                                                <div
+                                                  <div
                                                     style="
-                                                    display: flex;
-                                                    margin-top: 24px;
+                                                      display: flex;
+                                                      margin-top: 24px;
                                                     "
-                                                >
-                                                    
-                                                    <a
-                                                    href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
-                                                    style="
-                                                        box-sizing: border-box;
-                                                        border-radius: 3px;
-                                                        border-width: 0;
-                                                        border: none;
-                                                        display: inline-flex;
-                                                        font-style: normal;
-                                                        font-size: inherit;
-                                                        line-height: 24px;
-                                                        margin: 0;
-                                                        outline: none;
-                                                        padding: 4px 12px;
-                                                        text-align: center;
-                                                        vertical-align: middle;
-                                                        white-space: nowrap;
-                                                        text-decoration: none;
-                                                        background: #0052cc;
-                                                        color: #ffffff;
-                                                    "
-                                                    target="_blank"
-                                                    >Accept Invite</a
-                                                    >
-                                                </div>
+                                                  >
+                                                      <a
+                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS}
+                                                        style="
+                                                          cursor: pointer;
+                                                          box-sizing: border-box;
+                                                          border-radius: 3px;
+                                                          border-width: 0;
+                                                          border: none;
+                                                          display: inline-flex;
+                                                          font-style: normal;
+                                                          font-size: inherit;
+                                                          line-height: 24px;
+                                                          margin: 0;
+                                                          outline: none;
+                                                          padding: 4px 12px;
+                                                          text-align: center;
+                                                          vertical-align: middle;
+                                                          white-space: nowrap;
+                                                          text-decoration: none;
+                                                          background: #0052cc;
+                                                          color: #ffffff;
+                                                        "
+                                                        target="_blank"
+                                                      >
+                                                        Accept Invite
+                                                      </a>
+                                                  </div>
                                                 </td>
-                                            </tr>
-                                            <tr>
+                                              </tr>
+                                              <tr>
                                                 <td>
-                                                <div
+                                                  <div
                                                     style="
-                                                    font-family: -apple-system,
+                                                      font-family: -apple-system,
                                                         BlinkMacSystemFont, Segoe UI,
                                                         Roboto, Oxygen, Ubuntu,
                                                         Fira Sans, Droid Sans,
                                                         Helvetica Neue, sans-serif;
-                                                    font-size: 14px;
-                                                    font-weight: 400;
-                                                    letter-spacing: -0.005em;
-                                                    color: #091e42;
-                                                    line-height: 20px;
-                                                    margin-top: 24px;
+                                                      font-size: 14px;
+                                                      font-weight: 400;
+                                                      letter-spacing: -0.005em;
+                                                      color: #091e42;
+                                                      line-height: 20px;
+                                                      margin-top: 24px;
                                                     "
-                                                >
+                                                  >
                                                     <span
-                                                    style="
+                                                      style="
                                                         font-family: -apple-system,
-                                                        BlinkMacSystemFont, Segoe UI,
-                                                        Roboto, Oxygen, Ubuntu,
-                                                        Fira Sans, Droid Sans,
-                                                        Helvetica Neue, sans-serif;
+                                                          BlinkMacSystemFont, Segoe UI,
+                                                          Roboto, Oxygen, Ubuntu,
+                                                          Fira Sans, Droid Sans,
+                                                          Helvetica Neue, sans-serif;
                                                         font-size: 14px;
                                                         font-weight: 600;
                                                         letter-spacing: -0.003em;
                                                         color: #172b4d;
                                                         line-height: 16px;
-                                                    "
-                                                    >What is Workflow?</span
+                                                      "
+                                                      >What is Workflow?</span
                                                     >
                                                     Project and issue tracking
                                                     <a
-                                                    href="#"
-                                                    style="
+                                                      href="#"
+                                                      style="
                                                         border: none;
                                                         background: transparent;
                                                         color: #0052cc;
                                                         text-decoration: none;
-                                                    "
-                                                    target="_blank"
-                                                    >Learn more</a
+                                                      "
+                                                      target="_blank"
+                                                      >Learn more</a
                                                     >
-                                                </div>
+                                                  </div>
                                                 </td>
-                                            </tr>
+                                              </tr>
                                             </tbody>
-                                        </table>
+                                          </table>
                                         </div>
-                                    </td>
+                                      </td>
                                     </tr>
-                                </tbody>
+                                  </tbody>
                                 </table>
-                            </div>
-                            <div style="text-align: center; margin-bottom: 16px">
+                              </div>
+                              <div style="text-align: center; margin-bottom: 16px">
                                 <div
-                                style="
+                                  style="
                                     font-family: -apple-system, BlinkMacSystemFont,
-                                    Segoe UI, Roboto, Oxygen, Ubuntu, Fira Sans,
-                                    Droid Sans, Helvetica Neue, sans-serif;
+                                      Segoe UI, Roboto, Oxygen, Ubuntu, Fira Sans,
+                                      Droid Sans, Helvetica Neue, sans-serif;
                                     font-size: 14px;
                                     font-weight: normal;
                                     letter-spacing: -0.003em;
                                     color: #172b4d;
                                     line-height: 20px;
                                     margin: 16px 0;
-                                "
+                                  "
                                 >
-                                This message was sent to you by Workflow Cloud
+                                  This message was sent to you by Workflow Cloud
                                 </div>
                                 <a href="#" target="_blank"
-                                ><img
+                                  ><img
                                     src=""
                                     height="18"
                                     border="0"
                                     alt="Workflow logo"
                                     style="
-                                    border: 0;
-                                    line-height: 100%;
-                                    outline: none;
-                                    text-decoration: none;
-                                    color: #c1c7d0;
+                                      border: 0;
+                                      line-height: 100%;
+                                      outline: none;
+                                      text-decoration: none;
+                                      color: #c1c7d0;
                                     "
                                     class="CToWUd"
                                     data-bit="iit"
                                 /></a>
+                              </div>
                             </div>
-                            </div>
-                        </div>
+                          </div>
                         </td>
-                    </tr>
+                      </tr>
                     </tbody>
-                </table>
-                <img
+                  </table>
+                  <img
                     border="0"
                     width="1"
                     height="1"
@@ -676,13 +675,15 @@ const sendEmailToUser = async (req, res) => {
                     src="https://ci3.googleusercontent.com/meips/ADKq_NZ6DQbB1OP8gLtvDmpz_bVZf1rV1NpEeOA_jLwaogOm078H3NOkjIbAekoX93rka2upbORc5d8Sh5T5t8-XieRSIVpPHm_f5OMzN9YzoltR6z1nXloPMluTYeYaiVL5GJFkd_FyxY9HD_aWp8pEeu-ihvPWVa3L6yFUb3T1GKFiHAgORPOqMBwUrRZS9oBvmNLUnlo3ryDXMg2xEbJQlHNJZTnv6TO9rTpkqP7DslKmv55QiT1-1rs=s0-d-e1-ft#https://atlas-trk.prd.msg.ss-inf.net/q/5b45ZDS6G4Y3DYxywsuOCw~~/AAAAAQA~/RgRnRyZ6PlcLYXRsYXNzaWFudXNCCmVfeqFkZYRH9npSGm5ndXllbmJpbmgxOTExMDNAZ21haWwuY29tWAQAAAAA"
                     class="CToWUd"
                     data-bit="iit"
-                />
-                <div class="yj6qo"></div>
-                <div class="adL"></div>
+                  />
+                  <div class="yj6qo"></div>
+                  <div class="adL"></div>
                 </div>
+              </div>
+              <div class="yj6qo"></div>
             </div>
-            <div class="yj6qo"></div>
-            </div>
+          </body>
+          </html>
             `,
         };
 
@@ -711,27 +712,27 @@ const sendEmailToUser = async (req, res) => {
 
 const addMembersToProject = async (req, res) => {
     try {
-        const { _id, _idUser } = req.body;
+        const { _id } = req.params;
+        const { email } = req.query;
 
         // tìm dự án và người dùng
         const project = await modelWorkProject.findById({ _id });
-        const user = await userModel.findById({ _id: _idUser });
 
-        if (!project || !user) {
+        if (!project) {
             return res.status(400).json({
                 message: '_id or _idUser not found',
             });
         }
 
-        // check id user trong project
-        const findUserInProject = project.memberID.find((idUser) => idUser.toString() === user._id.toString());
+        // check user trong project
+        const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
         if (findUserInProject) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
         }
+        project.emailUser.push(email.toString());
 
-        project.memberID.push(user._id);
         await project.save();
         res.json({
             message: 'Added user successfully',
@@ -741,6 +742,45 @@ const addMembersToProject = async (req, res) => {
         res.status(500).json({
             error,
         });
+    }
+};
+
+const updatePermissions = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { _idUser, role } = req.body;
+
+        if (!_id || !_idUser) {
+            return res.status(400).json({
+                message: '_id or _idUser not found',
+            });
+        }
+
+        const project = await modelWorkProject.findById({ _id });
+        const user = await modelUser.findById({ _id: _idUser });
+
+        
+        switch (role) {
+            case 'manager':
+                project.managerID.push(user._id);
+                break;
+            case 'member':
+                project.managerID.filter((id) => id.toString() !== user._id.toString());
+                break;
+
+            default:
+                return res.status(400).json({
+                    message: 'incorrect rights',
+                });
+        }
+
+        await project.save();
+        res.json({
+            message: 'Updated permissions successfully',
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error });
     }
 };
 
@@ -757,4 +797,5 @@ module.exports = {
     addMembersToProject,
     ListMember,
     ProjectDetail,
+    updatePermissions,
 };
