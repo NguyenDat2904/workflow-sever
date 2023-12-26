@@ -3,11 +3,10 @@ const UsersModal = require('../models/modelUser');
 const token = require('../helpers/tokenHelpers');
 const { transporter } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
-const {google}=require("googleapis")
+const { google } = require('googleapis');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-const { oauth2 } = require('googleapis/build/src/apis/oauth2');
+const cloudinary = require('cloudinary').v2;
 const Login = async (req, res) => {
     try {
         const { userName, passWord } = req.body;
@@ -48,75 +47,75 @@ const Login = async (req, res) => {
 //login google
 const LoginGoogle = async (req, res) => {
     try {
-            const tokenGoogle = req.headers['tokengoogle'];
-            if(!tokenGoogle){
-                return res.status(404).json({
-                    message:"is not token google"
-                })
-            }
-            const oauth2Client=new google.auth.OAuth2({
-                clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com'
+        const tokenGoogle = req.headers['tokengoogle'];
+        if (!tokenGoogle) {
+            return res.status(404).json({
+                message: 'is not token google',
             });
-            oauth2Client.setCredentials({access_token:tokenGoogle})
-            const oauth2=google.oauth2({
-                auth:oauth2Client,
-                version:"v2",
-            })
-            const info=await oauth2.userinfo.get();
-            const payload=info.data;
-            if(!payload){
-                return res.status(404).json({
-                    message:"something went wrong"
-                })
-            };
-            const check = await checkEmail.checkEmail(payload.email);
-            if (!check) {
-                const newUser = new UsersModal({
-                    name: payload.name,
-                    email: payload.email,
-                    phone: '',
-                    userName: '',
-                    passWord: '',
-                    role: 'normal',
-                    img: payload.picture,
-                    refreshToken: '',
-                    gender: '',
-                    birthDay: null,
-                    desc: '',
-                    imgCover: '',
-                    jopTitle: '',
-                    department: '',
-                    organization: '',
-                    location: '',
-                    backgroundProfile: '',
-                    textInBackgroundProfile: '',
-                });
-                const refreshToken = token(newUser, '720h');
-                newUser.refreshToken = refreshToken;
-                await newUser.save();
-                const accessToken = token(newUser, '24h');
-              return  res.status(200).json({
-                    _id: newUser._id,
-                    role: newUser.role,
-                    name: newUser.name,
-                    email: newUser.email,
-                    refreshToken,
-                    accessToken,
-                });
-            } else {
-                const refreshToken = token(check, '720h');
-                check.refreshToken = refreshToken;
-                await check.save()
-                const accessToken = token(check, '24h');
-              return  res.status(200).json({
-                    _id: check._id,
-                    role: check.role,
-                    name: check.name,
-                    email: check.email,
-                    refreshToken,
-                    accessToken,
-                });
-            }
+        }
+        const oauth2Client = new google.auth.OAuth2({
+            clientId: '927156751612-1uvnfve8d0oo0l9ekmoeenf09ji6llub.apps.googleusercontent.com',
+        });
+        oauth2Client.setCredentials({ access_token: tokenGoogle });
+        const oauth2 = google.oauth2({
+            auth: oauth2Client,
+            version: 'v2',
+        });
+        const info = await oauth2.userinfo.get();
+        const payload = info.data;
+        if (!payload) {
+            return res.status(404).json({
+                message: 'something went wrong',
+            });
+        }
+        const check = await checkEmail.checkEmail(payload.email);
+        if (!check) {
+            const newUser = new UsersModal({
+                name: payload.name,
+                email: payload.email,
+                phone: '',
+                userName: '',
+                passWord: '',
+                role: 'normal',
+                img: payload.picture,
+                refreshToken: '',
+                gender: '',
+                birthDay: null,
+                desc: '',
+                imgCover: '',
+                jopTitle: '',
+                department: '',
+                organization: '',
+                location: '',
+                backgroundProfile: '',
+                textInBackgroundProfile: '',
+            });
+            const refreshToken = token(newUser, '720h');
+            newUser.refreshToken = refreshToken;
+            await newUser.save();
+            const accessToken = token(newUser, '24h');
+            return res.status(200).json({
+                _id: newUser._id,
+                role: newUser.role,
+                name: newUser.name,
+                email: newUser.email,
+                refreshToken,
+                accessToken,
+            });
+        } else {
+            const refreshToken = token(check, '720h');
+            check.refreshToken = refreshToken;
+            await check.save();
+            const accessToken = token(check, '24h');
+            return res.status(200).json({
+                _id: check._id,
+                role: check.role,
+                name: check.name,
+                email: check.email,
+                refreshToken,
+                accessToken,
+            });
+        }
     } catch (error) {
         console.log(error);
         return res.status(404).json({
@@ -312,9 +311,12 @@ const uploadImg = async (req, res) => {
     try {
         const { _id } = req.params;
         const files = req.files;
-        const updatedData = req.body;
-        console.log(files);
         const users = await UsersModal.findById(_id);
+        cloudinary.config({
+            cloud_name: 'djybyg1o3',
+            api_key: '515998948284271',
+            api_secret: '53vkRUxGp4_JXSjQVIFfED6u-tk',
+        });
         if (!users) {
             return res.status(404).json({
                 message: 'is not id',
@@ -325,23 +327,22 @@ const uploadImg = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
         if (files.img) {
-            updatedData.img = `${process.env.LOCALHOST}/images/${files.img[0].filename}`;
-            users.img = updatedData.img;
-            users.backgroundProfile = '';
-            users.textInBackgroundProfile = '';
+            cloudinary.uploader.upload(files.img[0].path)
+            .then(async(result)=>{
+                users.img=result.secure_url
+                await users.save();
+            });
         }
         if (files.imgCover) {
-            updatedData.imgCover = `${process.env.LOCALHOST}/images/${files.imgCover[0].filename}`;
-            users.imgCover = updatedData.imgCover;
+            cloudinary.uploader.upload(files.imgCover[0].path)
+            .then(async(result)=>{
+                users.imgCover=result.secure_url
+                await users.save();
+               
+            });
         }
-        await users.save();
-        res.status(200).json({
-            message: 'successfully',
-            image: updatedData.img,
-            image_cover: updatedData.imgCover,
-        });
+        return res.status(200).json({img:users.img,imgCover:users.imgCover})
     } catch (error) {
-        console.log(error);
         res.status(404).json({
             message: 'error upload img',
         });
