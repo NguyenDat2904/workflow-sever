@@ -316,6 +316,7 @@ const uploadImg = async (req, res) => {
             cloud_name: 'djybyg1o3',
             api_key: '515998948284271',
             api_secret: '53vkRUxGp4_JXSjQVIFfED6u-tk',
+            secure: true
         });
         if (!users) {
             return res.status(404).json({
