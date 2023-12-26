@@ -23,7 +23,7 @@ const upload = multer({
     storage: storage,
 });
 /* GET users listing. */
-router.patch('/uploadimg/:_id',refreshTokenMiddlerware, authMidddlerware, upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
+router.patch('/uploadimg/:_id', upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
 router.patch('/updateUser/background/:_id', refreshTokenMiddlerware, authMidddlerware, Login.updateBackgroundAndContent);
 router.patch('/updateUser/:_id', refreshTokenMiddlerware, authMidddlerware, Login.updateInfoUser);
 router.post('/login', Login.Login);
