@@ -5,7 +5,7 @@ const Login = require('../controllers/usersController');
 const veryfyEmail=require("../middlewares/checkVerifyToken")
 const authMidddlerware = require('../middlewares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
-
+const newAccess=require("../controllers/newToken")
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/images');
@@ -23,14 +23,15 @@ const upload = multer({
     storage: storage,
 });
 /* GET users listing. */
-router.patch('/uploadimg/:_id', upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
-router.patch('/updateUser/background/:_id', refreshTokenMiddlerware, authMidddlerware, Login.updateBackgroundAndContent);
-router.patch('/updateUser/:_id', refreshTokenMiddlerware, authMidddlerware, Login.updateInfoUser);
+router.get('/new-access/:_id',refreshTokenMiddlerware,newAccess)
+router.patch('/uploadimg/:_id',authMidddlerware, upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
+router.patch('/updateUser/background/:_id',  authMidddlerware, Login.updateBackgroundAndContent);
+router.patch('/updateUser/:_id',  authMidddlerware, Login.updateInfoUser);
 router.post('/login', Login.Login);
 router.post('/forgot', Login.Forgot);
 router.patch('/forgot/changePassword/:_id',veryfyEmail, Login.NewPassword);
 router.post('/loginGoogle', Login.LoginGoogle);
-router.patch('/profile/changePassword/:_id', refreshTokenMiddlerware, authMidddlerware, Login.ProfileChangePassword);
-router.get('/:_id', refreshTokenMiddlerware, authMidddlerware, Login.getUser);
+router.patch('/profile/changePassword/:_id', authMidddlerware, Login.ProfileChangePassword);
+router.get('/:_id', authMidddlerware, Login.getUser);
 
 module.exports = router;
