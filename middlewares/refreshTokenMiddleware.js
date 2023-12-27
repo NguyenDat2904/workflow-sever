@@ -12,7 +12,7 @@ const RefreshToken = (req, res, next) => {
         next();
     } catch (error) {
         res.status(404).json({
-            message: error,
+            message: "refresh token expired",
         });
     }
 };
