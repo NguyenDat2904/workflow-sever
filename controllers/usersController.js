@@ -316,7 +316,7 @@ const uploadImg = async (req, res) => {
             cloud_name: 'djybyg1o3',
             api_key: '515998948284271',
             api_secret: '53vkRUxGp4_JXSjQVIFfED6u-tk',
-            secure: true
+            secure: true,
         });
         if (!users) {
             return res.status(404).json({
@@ -328,21 +328,20 @@ const uploadImg = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
         if (files.img) {
-            cloudinary.uploader.upload(files.img[0].path)
-            .then(async(result)=>{
-                users.img=result.secure_url
-                await users.save();
-            });
+            const cloudinaryResponse = await cloudinary.uploader.upload(files.img[0].path);
+            if (cloudinaryResponse) {
+                users.img = cloudinaryResponse.secure_url;
+            }
         }
         if (files.imgCover) {
-            cloudinary.uploader.upload(files.imgCover[0].path)
-            .then(async(result)=>{
-                users.imgCover=result.secure_url
-                await users.save();
-               
-            });
+            const cloudinaryResponse = await cloudinary.uploader.upload(files.imgCover[0].path);
+
+            if (cloudinaryResponse) {
+                users.imgCover = cloudinaryResponse.secure_url;
+            }
         }
-        return res.status(200).json({img:users.img,imgCover:users.imgCover})
+        await users.save();
+        return res.status(200).json({ img: users.img, imgCover: users.imgCover });
     } catch (error) {
         res.status(404).json({
             message: 'error upload img',
