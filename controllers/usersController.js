@@ -24,7 +24,7 @@ const Login = async (req, res) => {
                 message: 'Wrong password',
             });
         }
-        const refreshToken = token(userEmail, '720h');
+        const refreshToken = token(userEmail, '720h','refreshToken');
         userEmail.refreshToken = refreshToken;
         await userEmail.save();
         const accessToken = token(userEmail, '24h');
