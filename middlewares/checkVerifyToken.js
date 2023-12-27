@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const Token = require('../helpers/tokenHelpers');
 require('dotenv').config();
 
 const checkVerifyToken = (req, res, next) => {
@@ -16,9 +15,6 @@ const checkVerifyToken = (req, res, next) => {
                 err,
             });
         } else {
-            const assetToken = Token(user, '24h');
-            user.assetToken = assetToken;
-            req.user = user;
             next();
         }
     });
