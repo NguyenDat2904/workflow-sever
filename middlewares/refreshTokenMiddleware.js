@@ -8,11 +8,11 @@ const RefreshToken = (req, res, next) => {
                 message: 'RefeshToken is incorrect',
             });
         }
-        jwt.verify(refreshToken, process.env.SECRET_KEY);
+        jwt.verify(refreshToken, process.env.REFRESH_KEY);
         next();
     } catch (error) {
         res.status(404).json({
-            message: error,
+            message: "refresh token expired",
         });
     }
 };
