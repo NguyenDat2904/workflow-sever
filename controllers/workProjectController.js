@@ -16,6 +16,7 @@ const getWorkProject = async (req, res) => {
         const { deleteProject } = req.body;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
+        const limit = parseInt(req.query.limit) || 25;
         if (!_id || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
@@ -43,8 +44,8 @@ const getWorkProject = async (req, res) => {
                       ? { codeProject: sortOrder }
                       : {},
             )
-            .skip((page - 1) * 25)
-            .limit(25);
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         if (!workProject) {
             return res.status(404).json({
