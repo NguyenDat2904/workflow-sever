@@ -16,6 +16,7 @@ const getWorkProject = async (req, res) => {
         const { deleteProject } = req.body;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
+        const limit = parseInt(req.query.limit) || 25;
         if (!_id || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
@@ -43,8 +44,8 @@ const getWorkProject = async (req, res) => {
                       ? { codeProject: sortOrder }
                       : {},
             )
-            .skip((page - 1) * 25)
-            .limit(25);
+            .skip((page - 1) * limit)
+            .limit(limit);
 
         if (!workProject) {
             return res.status(404).json({
@@ -749,24 +750,46 @@ const addMembersToProject = async (req, res) => {
 const updatePermissions = async (req, res) => {
     try {
         const { _id } = req.params;
-        const { _idUser, role } = req.body;
+        const { _idUserUpdate, role } = req.body;
 
-        if (!_id || !_idUser) {
+        if (!_id || !_idUserUpdate) {
             return res.status(400).json({
-                message: '_id or _idUser not found',
+                message: '_id or _idUserUpdate not found',
             });
         }
 
         const project = await modelWorkProject.findById({ _id });
-        const user = await modelUser.findById({ _id: _idUser });
+        const user = await modelUser.findById({ _id: _idUserUpdate });
 
-        
+        if (!project || !user) {
+            return res.status(400).json({
+                message: '_id or _idUser does not exist',
+            });
+        }
+
+        const isUserInProject = project.emailUser.find((emailUser) => emailUser === user.email);
+        const isUserManager = project.managerID.find((id) => id.toString() === user._id.toString());
+        const isUserSupervisor = project.supervisor.find((id) => id.toString() === user._id.toString());
+
+        if (!isUserInProject) {
+            return res.status(400).json({
+                message: 'the user do not exist in the project',
+            });
+        }
+
         switch (role) {
+            case 'admin':
+                project.adminID = user._id;
+                break;
             case 'manager':
-                project.managerID.push(user._id);
+                if (project.managerID.length <= 3 && !isUserManager) project.managerID.push(user._id);
+                break;
+            case 'supervisor':
+                if (!isUserSupervisor) project.supervisor.push(user._id);
                 break;
             case 'member':
-                project.managerID.filter((id) => id.toString() !== user._id.toString());
+                if (isUserManager)
+                    project.managerID = project.managerID.filter((id) => id.toString() !== user._id.toString());
                 break;
 
             default:
