@@ -23,7 +23,7 @@ const getWorkProject = async (req, res) => {
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
-    
+
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
             .find({ memberID: _id, deleteProject: deleteProject })
@@ -67,14 +67,14 @@ const getWorkProject = async (req, res) => {
 // project detail
 const ProjectDetail = async (req, res) => {
     try {
-        const {codeProject} = req.params;
+        const { codeProject } = req.params;
         if (!codeProject) {
             return res.status(404).json({
                 message: 'is not codeProject project ',
             });
         }
         const project = await modelWorkProject
-            .findOne({codeProject})
+            .findOne({ codeProject })
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -99,7 +99,7 @@ const ProjectDetail = async (req, res) => {
         }
         return res.status(200).json(project);
     } catch (error) {
-      console.log(error)
+        console.log(error);
         return res.status(404).json({
             message: 'can not get project detail',
         });
@@ -299,7 +299,7 @@ const DeleteExistingMembers = async (req, res) => {
 const editProjectInformation = async (req, res) => {
     try {
         const { _id } = req.params;
-        const { codeProject, nameProject } = req.body;
+        const { codeProject, nameProject, imgProject } = req.body;
 
         // check id project
         if (!_id) {
@@ -329,13 +329,16 @@ const editProjectInformation = async (req, res) => {
             });
         }
 
-        if (codeProject && nameProject) {
+        if (codeProject && nameProject && imgProject) {
             project.codeProject = codeProject;
             project.nameProject = nameProject;
+            project.imgProject = imgProject;
         } else if (codeProject) {
             project.codeProject = codeProject;
         } else if (nameProject) {
             project.nameProject = nameProject;
+        } else if (imgProject) {
+            project.imgProject = imgProject;
         }
 
         await project.save();
