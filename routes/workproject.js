@@ -24,7 +24,7 @@ router.post('/workdetail', authMidddlerware, WorkProjectController.getWorkDetail
 router.post('/listwork', authMidddlerware, WorkProjectController.getListWork);
 router.post('/project/:_id', authMidddlerware, WorkProjectController.getWorkProject);
 router.post('/send-email-to-user/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.sendEmailToUser);
-router.post('/list-member/:_id', authMidddlerware, WorkProjectController.ListMember);
+router.post('/list-member', WorkProjectController.ListMember);
 
 // get
 router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail);

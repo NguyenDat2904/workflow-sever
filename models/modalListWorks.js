@@ -8,12 +8,14 @@ const ModelListWork = new Schema(
         typeOfWork: { type: String },
         priority: { type: String },
         dateCreated: { type: Date },
-        deadline: { type: String },
+        deadline: { type: Date },
         actualEndDate: { type: Date },
         creatorID: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
         workDetrailID: [{ type: mongoose.Types.ObjectId, ref: 'workdetails' }],
         implementerMenberID: [{ type: String }],
-        sprint:{type:String}
+        sprint:{type:String},
+        statusWork:{type:String},
+        description:{type:String}
     },
     { timestamps: true },
     { collection: 'listworks' },

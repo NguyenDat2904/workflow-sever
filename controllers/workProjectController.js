@@ -353,7 +353,25 @@ const editProjectInformation = async (req, res) => {
 //list member
 const ListMember = async (req, res) => {
     try {
-    } catch (error) {}
+      const {codeProject}=req.body
+      if(!codeProject){
+        return res.status(400).json({
+          message:"is not codeProject"
+        })
+      }
+      const memberProject=await modelWorkProject.findOne({codeProject})
+      .populate({
+        path:"memberID",
+        select: '-refreshToken -passWord',
+      })
+      return res.status(200).json({
+        memberProject:memberProject.memberID
+      })
+    } catch (error) {
+      return res.status(404).json({
+        message:"can not get member project"
+      })
+    }
 };
 
 const sendEmailToUser = async (req, res) => {
