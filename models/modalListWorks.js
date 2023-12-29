@@ -13,6 +13,7 @@ const ModelListWork = new Schema(
         creatorID: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
         workDetrailID: [{ type: mongoose.Types.ObjectId, ref: 'workdetails' }],
         implementerMenberID: [{ type: String }],
+        sprint:{type:String}
     },
     { timestamps: true },
     { collection: 'listworks' },

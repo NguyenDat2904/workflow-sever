@@ -23,7 +23,7 @@ const getWorkProject = async (req, res) => {
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
-        console.log(totalUsers);
+    
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
             .find({ memberID: _id, deleteProject: deleteProject })
@@ -67,14 +67,14 @@ const getWorkProject = async (req, res) => {
 // project detail
 const ProjectDetail = async (req, res) => {
     try {
-        const { _id } = req.params;
-        if (!_id) {
+        const {codeProject} = req.params;
+        if (!codeProject) {
             return res.status(404).json({
-                message: 'is not Id project ',
+                message: 'is not codeProject project ',
             });
         }
         const project = await modelWorkProject
-            .findById(_id)
+            .findOne({codeProject})
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -99,6 +99,7 @@ const ProjectDetail = async (req, res) => {
         }
         return res.status(200).json(project);
     } catch (error) {
+      console.log(error)
         return res.status(404).json({
             message: 'can not get project detail',
         });
