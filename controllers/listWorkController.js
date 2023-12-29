@@ -38,8 +38,15 @@ const ListWorkProject=async(req,res)=>{
                 message:"codeProject does not exist"
             })
         }
-
+        return res.status(200).json({
+            dataListWork:checkCodeProject.listWorkID,
+            page:skipPage,
+            totalPage
+        })
     } catch (error) {
-        
+        return res.status(404).json({
+            message:"can not get list work"
+        })
     }
 }
+module
