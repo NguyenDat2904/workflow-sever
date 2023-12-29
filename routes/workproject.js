@@ -7,7 +7,7 @@ const checkVerifyToken = require('../middlewares/checkVerifyToken');
 const ListProjectController=require('../controllers/listWorkController')
 
 // list work
-router.post('/list-work',ListProjectController.ListWorkProject) 
+router.post('/list-work',authMidddlerware,ListProjectController.ListWorkProject) 
 //
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
@@ -24,7 +24,7 @@ router.post('/workdetail', authMidddlerware, WorkProjectController.getWorkDetail
 router.post('/listwork', authMidddlerware, WorkProjectController.getListWork);
 router.post('/project/:_id', authMidddlerware, WorkProjectController.getWorkProject);
 router.post('/send-email-to-user/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.sendEmailToUser);
-router.post('/list-member', WorkProjectController.ListMember);
+router.post('/list-member',authMidddlerware, WorkProjectController.ListMember);
 
 // get
 router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail);
