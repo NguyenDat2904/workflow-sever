@@ -4,7 +4,11 @@ const WorkProjectController = require('../controllers/workProjectController');
 const authMidddlerware = require('../middlewares/authMiddleware');
 const checkUserPermissions = require('../middlewares/checkUserPermissions');
 const checkVerifyToken = require('../middlewares/checkVerifyToken');
+const ListProjectController=require('../controllers/listWorkController')
 
+// list work
+router.post('/list-work',ListProjectController.ListWorkProject) 
+//
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
 
