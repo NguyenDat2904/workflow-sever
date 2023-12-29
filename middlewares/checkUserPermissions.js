@@ -1,45 +1,38 @@
 const modelWorkProject = require('../models/modelWorkProject');
+const { ADMIN, MANAGER_PROJECT, MEMBER } = require('../configs/permissions');
 
-const checkUserPermissions = async (req, res, next) => {
+const checkUserPermissions = (action) => async (req, res, next) => {
     try {
-        const { _id } = req.params;
-        const { _idUser } = req.body;
-        if (!_id || !_idUser) {
+        const { keyProject } = req.params;
+        const { _id } = req.user;
+        if (!keyProject || !_id) {
             return res.status(404).json({
-                message: 'is not _id',
+                message: 'keyProject or _id not found',
             });
         }
 
         // get project
-        const listProject = await modelWorkProject.findById({ _id: _id });
-        if (!listProject) {
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        if (!project) {
             return res.status(404).json({
-                message: 'not found user',
+                message: 'not found project',
             });
         }
 
         // check user permissions
-        if (listProject.adminID.toString() === _idUser) {
-            req.user = {};
-            req.user.role = 'admin';
-            return next();
+        if (project.adminID.toString() === _id) {
+            if (ADMIN.includes(action)) return next();
         }
 
-        const checkManager = listProject.managerID.find((idUser) => {
-            return idUser.toString() === _idUser;
+        const isManager = project.managerID.find((idUser) => {
+            return idUser.toString() === _id;
         });
-
-        if (checkManager) {
-            req.user = {};
-            req.user.role = 'manager';
-            next();
+        if (isManager) {
+            if (MANAGER_PROJECT.includes(action)) return next();
         }
-
-        if (listProject.adminID.toString() !== _idUser && !checkManager) {
-            return res.status(400).json({
-                message: 'this user does not have permissions',
-            });
-        }
+        res.status(400).json({
+            message: 'the user has no rights',
+        });
     } catch (error) {
         console.log(error);
         return res.status(404).json({

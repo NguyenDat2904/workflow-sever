@@ -361,11 +361,11 @@ const ListMember = async (req, res) => {
 
 const sendEmailToUser = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { idProject } = req.params;
         const { email, userName } = req.body;
 
         // check user in project
-        const project = await modelWorkProject.findById({ _id });
+        const project = await modelWorkProject.findById({ _id: idProject });
         const user = await userModel.findOne({ email });
         if (user) {
             const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
@@ -550,7 +550,7 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                       <a
-                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS}
+                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
                                                         style="
                                                           cursor: pointer;
                                                           box-sizing: border-box;
@@ -720,12 +720,12 @@ const addMembersToProject = async (req, res) => {
         const { _id } = req.params;
         const { email } = req.query;
 
-        // tìm dự án và người dùng
+        // tìm dự án
         const project = await modelWorkProject.findById({ _id });
 
         if (!project) {
             return res.status(400).json({
-                message: '_id or _idUser not found',
+                message: '_id not found',
             });
         }
 

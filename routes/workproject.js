@@ -21,7 +21,7 @@ router.patch(
     checkUserPermissions,
     WorkProjectController.updatePermissions,
 );
-router.patch('/add-members-to-project/:_id', checkVerifyToken, WorkProjectController.addMembersToProject);
+router.patch('/add-members-to-project/:_id', authMidddlerware, WorkProjectController.addMembersToProject);
 router.patch(
     '/update-permissions/:_id',
     authMidddlerware,
