@@ -8,7 +8,6 @@ const ListProjectController = require('../controllers/listWorkController');
 
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
-
 router.patch(
     '/edit-project/:_id',
     authMidddlerware,
