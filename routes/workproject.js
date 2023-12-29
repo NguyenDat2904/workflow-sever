@@ -8,7 +8,7 @@ const checkVerifyToken = require('../middlewares/checkVerifyToken');
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
 
-router.patch('/editProject/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.editProjectInformation);
+router.patch('/edit-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.editProjectInformation);
 router.patch('/delete-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.deleteProject);
 router.patch('/update-permissions/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.updatePermissions);
 router.patch('/add-members-to-project/:_id', checkVerifyToken, WorkProjectController.addMembersToProject);
