@@ -42,7 +42,7 @@ router.post(
     checkUserPermissions,
     getdataproject.sendEmailToUser,
 );
-router.get('/project-detail/:_id', authMidddlerware, getdataproject.ProjectDetail);
+router.get('/project-detail/:codeProject', authMidddlerware, getdataproject.ProjectDetail);
 
 router.delete(
     '/delete-existing-members/:_id',
