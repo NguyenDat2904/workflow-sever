@@ -23,7 +23,7 @@ router.post('/send-email-to-user/:_id', authMidddlerware, checkUserPermissions, 
 router.post('/list-member/:_id', authMidddlerware, WorkProjectController.ListMember);
 
 // get
-router.get('/project-detail/:_id', authMidddlerware, WorkProjectController.ProjectDetail);
+router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail);
 
 // delete
 router.delete(
