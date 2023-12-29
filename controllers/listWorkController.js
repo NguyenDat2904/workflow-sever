@@ -43,4 +43,11 @@ const ListWorkProject=async(req,res)=>{
     }
 }
 // add new work
+const addNewWork=async(req,res)=>{
+    try {
+        const {nameProject,typeOfWork,statusWork,nameWork,description,sprint}=req.body
+    } catch (error) {
+        
+    }
+}
 module.exports= {ListWorkProject}
