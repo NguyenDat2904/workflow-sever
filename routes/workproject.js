@@ -4,15 +4,33 @@ const WorkProjectController = require('../controllers/workProjectController');
 const authMidddlerware = require('../middlewares/authMiddleware');
 const checkUserPermissions = require('../middlewares/checkUserPermissions');
 const checkVerifyToken = require('../middlewares/checkVerifyToken');
+const ListProjectController = require('../controllers/listWorkController');
+
+// list work
+router.post('/list-work', ListProjectController.ListWorkProject);
 
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
-
-router.patch('/edit-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.editProjectInformation);
+router.patch(
+    '/edit-project/:_id',
+    authMidddlerware,
+    checkUserPermissions,
+    WorkProjectController.editProjectInformation,
+);
 router.patch('/delete-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.deleteProject);
-router.patch('/update-permissions/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.updatePermissions);
+router.patch(
+    '/update-permissions/:_id',
+    authMidddlerware,
+    checkUserPermissions,
+    WorkProjectController.updatePermissions,
+);
 router.patch('/add-members-to-project/:_id', checkVerifyToken, WorkProjectController.addMembersToProject);
-router.patch('/update-permissions/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.updatePermissions);
+router.patch(
+    '/update-permissions/:_id',
+    authMidddlerware,
+    checkUserPermissions,
+    WorkProjectController.updatePermissions,
+);
 
 // post
 router.post('/add-new-project/:_id', authMidddlerware, WorkProjectController.addNewWork);
