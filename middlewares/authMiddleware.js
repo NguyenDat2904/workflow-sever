@@ -9,23 +9,21 @@ const authMiddlerware = (req, res, next) => {
                 message: 'Token is incorrect',
             });
         }
-        jwt.verify(authHeader, process.env.SECRET_KEY, (err) => {
+        jwt.verify(authHeader, process.env.SECRET_KEY, (err, user) => {
             if (err) {
                 if ((err.name = 'TokenExpiredError')) {
                     return res.status(401).json({
                         message: 'Token expired',
                     });
-                }
-                else{
+                } else {
                     res.status(400).json({ error: 'Invalid token' });
                     return;
                 }
-            }
-            else{
-                 next();
+            } else {
+                req.user = user;
+                next();
             }
         });
-       
     } catch (error) {
         return res.status(404).json({
             message: error,

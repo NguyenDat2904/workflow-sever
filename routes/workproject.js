@@ -6,9 +6,6 @@ const checkUserPermissions = require('../middlewares/checkUserPermissions');
 const checkVerifyToken = require('../middlewares/checkVerifyToken');
 const ListProjectController = require('../controllers/listWorkController');
 
-// list work
-router.post('/list-work', ListProjectController.ListWorkProject);
-
 // patch
 router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.restoreProject);
 router.patch(
@@ -33,6 +30,7 @@ router.patch(
 );
 
 // post
+router.post('/list-work', ListProjectController.ListWorkProject);
 router.post('/add-new-project/:_id', authMidddlerware, WorkProjectController.addNewWork);
 router.post('/workdetail', authMidddlerware, WorkProjectController.getWorkDetail);
 router.post('/listwork', authMidddlerware, WorkProjectController.getListWork);
