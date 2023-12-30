@@ -11,23 +11,18 @@ router.patch('/restore-project/:_id', authMidddlerware, checkUserPermissions, Wo
 router.patch(
     '/edit-project/:_id',
     authMidddlerware,
-    checkUserPermissions,
+    checkUserPermissions('update-project'),
     WorkProjectController.editProjectInformation,
 );
 router.patch('/delete-project/:_id', authMidddlerware, checkUserPermissions, WorkProjectController.deleteProject);
 router.patch(
     '/update-permissions/:_id',
     authMidddlerware,
-    checkUserPermissions,
+    checkUserPermissions('update-project'),
     WorkProjectController.updatePermissions,
 );
-router.patch('/add-members-to-project/:_id', authMidddlerware, WorkProjectController.addMembersToProject);
-router.patch(
-    '/update-permissions/:_id',
-    authMidddlerware,
-    checkUserPermissions,
-    WorkProjectController.updatePermissions,
-);
+router.patch('/add-members-to-project/:_id', checkVerifyToken, WorkProjectController.addMembersToProject);
+
 
 // post
 router.post('/list-work', ListProjectController.ListWorkProject);

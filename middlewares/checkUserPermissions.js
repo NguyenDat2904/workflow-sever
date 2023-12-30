@@ -4,8 +4,8 @@ const { ADMIN, MANAGER_PROJECT, MEMBER } = require('../configs/permissions');
 const checkUserPermissions = (action) => async (req, res, next) => {
     try {
         const { keyProject } = req.params;
-        const { _id } = req.user;
-        if (!keyProject || !_id) {
+        const { email } = req.user;
+        if (!keyProject || !email) {
             return res.status(404).json({
                 message: 'keyProject or _id not found',
             });
@@ -20,23 +20,22 @@ const checkUserPermissions = (action) => async (req, res, next) => {
         }
 
         // check user permissions
-        if (project.adminID.toString() === _id) {
-            if (ADMIN.includes(action)) return next();
+        if (project.userManagers.includes(email) && !MANAGER_PROJECT.includes(action)) {
+            return res.status(403).json({
+                message: 'the user has not rights',
+            });
         }
 
-        const isManager = project.managerID.find((idUser) => {
-            return idUser.toString() === _id;
-        });
-        if (isManager) {
-            if (MANAGER_PROJECT.includes(action)) return next();
+        if (project.userMembers.includes(email) && !MEMBER.includes(action)) {
+            return res.status(403).json({
+                message: 'the user has not rights',
+            });
         }
-        res.status(400).json({
-            message: 'the user has no rights',
-        });
+        next();
     } catch (error) {
         console.log(error);
-        return res.status(404).json({
-            message: 'error check admin',
+        return res.status(error.status).json({
+            error,
         });
     }
 };

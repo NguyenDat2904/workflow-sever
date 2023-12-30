@@ -20,11 +20,8 @@ const MANAGER_PROJECT = [
 ];
 const MEMBER = ['update-issue'];
 
-const SUPERVISOR = [];
-
 module.exports = {
     ADMIN,
     MANAGER_PROJECT,
     MEMBER,
-    SUPERVISOR,
 };

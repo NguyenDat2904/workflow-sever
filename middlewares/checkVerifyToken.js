@@ -8,13 +8,14 @@ const checkVerifyToken = (req, res, next) => {
             message: 'Token is incorrect',
         });
     }
-    jwt.verify(token, process.env.SECRET_KEY, async (err, user) => {
+    jwt.verify(token, process.env.SECRET_KEY_EMAIL, async (err, user) => {
         if (err) {
             console.log(err);
             return res.status(400).json({
                 err,
             });
         } else {
+            req.user = user;
             next();
         }
     });

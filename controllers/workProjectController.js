@@ -361,14 +361,14 @@ const ListMember = async (req, res) => {
 
 const sendEmailToUser = async (req, res) => {
     try {
-        const { idProject } = req.params;
-        const { email, userName } = req.body;
+        const { keyProject } = req.params;
+        const { email, userName, role } = req.body;
 
         // check user in project
-        const project = await modelWorkProject.findById({ _id: idProject });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
         if (user) {
-            const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
+            const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
             if (findUserInProject) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
@@ -377,8 +377,8 @@ const sendEmailToUser = async (req, res) => {
         }
 
         // token hết hạn sau 3p
-        const payload = { email };
-        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
+        const payload = { email, role, userName };
+        const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
 
         // gửi mail
         const mailOptions = {
@@ -717,11 +717,11 @@ const sendEmailToUser = async (req, res) => {
 
 const addMembersToProject = async (req, res) => {
     try {
-        const { _id } = req.params;
-        const { email } = req.query;
+        const { keyProject } = req.params;
+        const { email, role } = req.user;
 
         // tìm dự án
-        const project = await modelWorkProject.findById({ _id });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
 
         if (!project) {
             return res.status(400).json({
@@ -730,13 +730,28 @@ const addMembersToProject = async (req, res) => {
         }
 
         // check user trong project
-        const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
+        const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
         if (findUserInProject) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
         }
-        project.emailUser.push(email.toString());
+
+        // add user
+        switch (role) {
+            case 'admin':
+                project.userAdmin.push(email.toString());
+                project.userMembers.push(email.toString());
+                break;
+            case 'manager':
+                project.userManagers.push(email.toString());
+                project.userMembers.push(email.toString());
+                break;
+
+            default:
+                project.userMembers.push(email.toString());
+                break;
+        }
 
         await project.save();
         res.json({
