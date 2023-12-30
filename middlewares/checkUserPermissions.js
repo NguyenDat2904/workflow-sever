@@ -2,16 +2,17 @@ const modelWorkProject = require('../models/modelWorkProject');
 
 const checkUserPermissions = async (req, res, next) => {
     try {
-        const { _id } = req.params;
-        const { _idUser } = req.body;
-        if (!_id || !_idUser) {
+        const { keyProject } = req.params;
+        const { _id } = req.user;
+        console.log(_id)
+        if (!keyProject || !_id) {
             return res.status(404).json({
                 message: 'is not _id',
             });
         }
-
+        console.log(_id)
         // get project
-        const listProject = await modelWorkProject.findById({ _id: _id });
+        const listProject = await modelWorkProject.findOne({ codeProject: keyProject });
         if (!listProject) {
             return res.status(404).json({
                 message: 'not found user',
@@ -19,14 +20,13 @@ const checkUserPermissions = async (req, res, next) => {
         }
 
         // check user permissions
-        if (listProject.adminID.toString() === _idUser) {
+        if (listProject.adminID.toString() === _id) {
             req.user = {};
             req.user.role = 'admin';
             return next();
         }
-
         const checkManager = listProject.managerID.find((idUser) => {
-            return idUser.toString() === _idUser;
+            return idUser.toString() === _id;
         });
 
         if (checkManager) {
@@ -35,7 +35,7 @@ const checkUserPermissions = async (req, res, next) => {
             next();
         }
 
-        if (listProject.adminID.toString() !== _idUser && !checkManager) {
+        if (listProject.adminID.toString() !== _id && !checkManager) {
             return res.status(400).json({
                 message: 'this user does not have permissions',
             });

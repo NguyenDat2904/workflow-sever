@@ -2,7 +2,7 @@ const token=require('../helpers/tokenHelpers')
 const users=require('../models/modelUser')
 const newToken=async(req,res)=>{
     try {
-        const {_id}=req.params
+        const {_id}=req.user
         if(!_id){
             return res.status(400).json({
                 message:"is not _id"
