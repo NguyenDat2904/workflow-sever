@@ -7,6 +7,7 @@ const ModelWorkDetail = new Schema(
         implementerID: { type: mongoose.Types.ObjectId, ref: 'users' },
         descWork: { type: String },
         status: { type: String },
+        listWorkID:{type:String}
     },
     { timestamps: true },
     { collection: 'workdetails' },

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const ModelListWork = new Schema(
+const IssueModel = new Schema(
     {
         nameWork: { type: String },
         jobCode: { type: String },
-        typeOfWork: { type: String },
+        issueType: { type: String,enum:['EPIC','TASK','USER_STORY','BUG'] ,default:'USER_STORY'},
         priority: { type: String },
         dateCreated: { type: Date },
         deadline: { type: Date },
@@ -14,10 +14,11 @@ const ModelListWork = new Schema(
         workDetrailID: [{ type: mongoose.Types.ObjectId, ref: 'workdetails' }],
         implementerMenberID: [{ type: String }],
         sprint:{type:String},
-        statusWork:{type:String},
-        description:{type:String}
+        status:{type:String},
+        description:{type:String},
+        parentIssue:{type:String}
     },
     { timestamps: true },
     { collection: 'listworks' },
 );
-module.exports = mongoose.model('listworks', ModelListWork);
+module.exports = mongoose.model('listworks', IssueModel);
