@@ -368,6 +368,7 @@ const ListMember = async (req, res) => {
             memberProject: memberProject.userMembers,
         });
     } catch (error) {
+      console.log(error)
         return res.status(404).json({
             message: 'can not get member project',
         });
