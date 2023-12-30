@@ -26,11 +26,12 @@ const AuthController = {
 
             const payload = {
                 userName,
+                email,
             };
 
             // hết hạn sau 3p
-            const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
-            
+            const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
+
             const mailOptions = {
                 from: `${process.env.USER_EMAIL}`,
                 to: `${email}`,

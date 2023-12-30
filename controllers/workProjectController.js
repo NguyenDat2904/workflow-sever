@@ -11,7 +11,7 @@ require('dotenv').config();
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { sortKey,deleteProject } = req.query;
+        const { sortKey, deleteProject } = req.query;
         const { _id } = req.user;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
@@ -108,14 +108,14 @@ const ProjectDetail = async (req, res) => {
 const getListWork = async (req, res) => {
     try {
         const { nameProject } = req.query;
-        const {_id}=req.user
-        if (!nameProject||!_id) {
+        const { _id } = req.user;
+        if (!nameProject || !_id) {
             return res.status(404).json({
                 message: 'not found id or nameProject',
             });
         }
         //check project
-        const checkProject = await modelWorkProject.find({memberID:_id, nameProject: nameProject }).populate({
+        const checkProject = await modelWorkProject.find({ memberID: _id, nameProject: nameProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -143,7 +143,7 @@ const getWorkDetail = async (req, res) => {
                 message: 'not found id',
             });
         }
-        const WorkDetail = await modelListWork.find({ parentIssue:parentIssue});
+        const WorkDetail = await modelListWork.find({ parentIssue: parentIssue });
         if (!WorkDetail) {
             return res.status(404).json({
                 message: 'project not found',
@@ -212,7 +212,7 @@ const deleteProject = async (req, res) => {
                 message: 'is not id',
             });
         }
-        const findProjectID = await modelWorkProject.findOne({codeProject:keyProject});
+        const findProjectID = await modelWorkProject.findOne({ codeProject: keyProject });
         if (!findProjectID) {
             return res.status(400).json({
                 message: 'user not found',
@@ -223,9 +223,9 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-            const checkAfterTimeOut = await modelWorkProject.findOne({codeProject:keyProject});
+            const checkAfterTimeOut = await modelWorkProject.findOne({ codeProject: keyProject });
             if (checkAfterTimeOut.deleteProject === true) {
-                await modelWorkProject.findOneAndDelete({codeProject:keyProject});
+                await modelWorkProject.findOneAndDelete({ codeProject: keyProject });
             }
         }, 3600000);
         return res.status(200).json({
@@ -247,7 +247,7 @@ const restoreProject = async (req, res) => {
                 message: 'Is nos keyProject ',
             });
         }
-        const checkId = await modelWorkProject.findOne({codeProject:keyProject});
+        const checkId = await modelWorkProject.findOne({ codeProject: keyProject });
         if (!checkId) {
             return res.status(401).json({
                 message: 'not found project want restore',
@@ -272,7 +272,7 @@ const restoreProject = async (req, res) => {
 //Delete existing members in the project
 const DeleteExistingMembers = async (req, res) => {
     try {
-        const { keyProject,_idMemberDelete } = req.params;
+        const { keyProject, _idMemberDelete } = req.params;
         if (!keyProject || !_idMemberDelete) {
             return res.status(404).json({
                 message: 'Is nos id or _idMemberDelete',
@@ -305,7 +305,7 @@ const editProjectInformation = async (req, res) => {
                 message: 'not found id',
             });
         }
-        const project = await modelWorkProject.findOne({codeProject: keyProject }).populate({
+        const project = await modelWorkProject.findOne({ codeProject: keyProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -354,37 +354,36 @@ const editProjectInformation = async (req, res) => {
 //list member
 const ListMember = async (req, res) => {
     try {
-      const {codeProject}=req.query
-      if(!codeProject){
-        return res.status(400).json({
-          message:"is not codeProject"
-        })
-      }
-      const memberProject=await modelWorkProject.findOne({codeProject})
-      .populate({
-        path:"memberID",
-        select: '-refreshToken -passWord',
-      })
-      return res.status(200).json({
-        memberProject:memberProject.memberID
-      })
+        const { codeProject } = req.query;
+        if (!codeProject) {
+            return res.status(400).json({
+                message: 'is not codeProject',
+            });
+        }
+        const memberProject = await modelWorkProject.findOne({ codeProject }).populate({
+            path: 'memberID',
+            select: '-refreshToken -passWord',
+        });
+        return res.status(200).json({
+            memberProject: memberProject.memberID,
+        });
     } catch (error) {
-      return res.status(404).json({
-        message:"can not get member project"
-      })
+        return res.status(404).json({
+            message: 'can not get member project',
+        });
     }
 };
 
 const sendEmailToUser = async (req, res) => {
     try {
-        const { _id } = req.user;
-        const { email, userName } = req.body;
+        const { keyProject } = req.params;
+        const { email, userName, role } = req.body;
 
         // check user in project
-        const project = await modelWorkProject.findById({ _id });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
         if (user) {
-            const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
+            const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
             if (findUserInProject) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
@@ -393,8 +392,8 @@ const sendEmailToUser = async (req, res) => {
         }
 
         // token hết hạn sau 3p
-        const payload = { email };
-        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: 3 * 60 * 1000 });
+        const payload = { email, role, userName };
+        const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
 
         // gửi mail
         const mailOptions = {
@@ -566,7 +565,7 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                       <a
-                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS}
+                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
                                                         style="
                                                           cursor: pointer;
                                                           box-sizing: border-box;
@@ -734,25 +733,40 @@ const sendEmailToUser = async (req, res) => {
 const addMembersToProject = async (req, res) => {
     try {
         const { keyProject } = req.params;
-        const { email } = req.query;
+        const { email, role } = req.user;
 
-        // tìm dự án và người dùng
-        const project = await modelWorkProject.findOne({ codeProject:keyProject });
+        // tìm dự án
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
 
         if (!project) {
             return res.status(400).json({
-                message: '_id or _idUser not found',
+                message: '_id not found',
             });
         }
 
         // check user trong project
-        const findUserInProject = project.emailUser.find((emailUser) => emailUser === email);
+        const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
         if (findUserInProject) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
         }
-        project.emailUser.push(email.toString());
+
+        // add user
+        switch (role) {
+            case 'admin':
+                project.userAdmin.push(email.toString());
+                project.userMembers.push(email.toString());
+                break;
+            case 'manager':
+                project.userManagers.push(email.toString());
+                project.userMembers.push(email.toString());
+                break;
+
+            default:
+                project.userMembers.push(email.toString());
+                break;
+        }
 
         await project.save();
         res.json({
@@ -761,7 +775,7 @@ const addMembersToProject = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            error,
+            error: error.message,
         });
     }
 };
@@ -777,7 +791,7 @@ const updatePermissions = async (req, res) => {
             });
         }
 
-        const project = await modelWorkProject.findOne({ codeProject:keyProject });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await modelUser.findById({ _id: _idUserUpdate });
 
         if (!project || !user) {

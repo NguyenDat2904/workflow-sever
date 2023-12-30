@@ -1,49 +1,41 @@
 const modelWorkProject = require('../models/modelWorkProject');
+const { ADMIN, MANAGER_PROJECT, MEMBER } = require('../configs/permissions');
 
-const checkUserPermissions = async (req, res, next) => {
+const checkUserPermissions = (action) => async (req, res, next) => {
     try {
         const { keyProject } = req.params;
-        const { _id } = req.user;
-        console.log(_id)
-        if (!keyProject || !_id) {
+        const { email } = req.user;
+        if (!keyProject || !email) {
             return res.status(404).json({
-                message: 'is not _id',
+                message: 'keyProject or email not found',
             });
         }
-        console.log(_id)
+
         // get project
-        const listProject = await modelWorkProject.findOne({ codeProject: keyProject });
-        if (!listProject) {
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        if (!project) {
             return res.status(404).json({
-                message: 'not found user',
+                message: 'not found project',
             });
         }
 
         // check user permissions
-        if (listProject.adminID.toString() === _id) {
-            req.user = {};
-            req.user.role = 'admin';
-            return next();
-        }
-        const checkManager = listProject.managerID.find((idUser) => {
-            return idUser.toString() === _id;
-        });
-
-        if (checkManager) {
-            req.user = {};
-            req.user.role = 'manager';
-            next();
-        }
-
-        if (listProject.adminID.toString() !== _id && !checkManager) {
-            return res.status(400).json({
-                message: 'this user does not have permissions',
+        if (project.userManagers.includes(email) && !MANAGER_PROJECT.includes(action)) {
+            return res.status(403).json({
+                message: 'the user has not rights',
             });
         }
+
+        if (project.userMembers.includes(email) && !MEMBER.includes(action)) {
+            return res.status(403).json({
+                message: 'the user has not rights',
+            });
+        }
+        next();
     } catch (error) {
         console.log(error);
-        return res.status(404).json({
-            message: 'error check admin',
+        return res.status(error.status).json({
+            error,
         });
     }
 };

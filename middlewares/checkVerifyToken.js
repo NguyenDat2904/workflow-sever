@@ -15,6 +15,7 @@ const checkVerifyToken = (req, res, next) => {
                 err,
             });
         } else {
+            req.user = user;
             next();
         }
     });
