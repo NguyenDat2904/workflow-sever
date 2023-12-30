@@ -11,9 +11,8 @@ require('dotenv').config();
 //lấy project
 const getWorkProject = async (req, res) => {
     try {
-        const { sortKey } = req.query;
-        const { _id } = req.params;
-        const { deleteProject } = req.body;
+        const { sortKey, deleteProject } = req.query;
+        const { _id } = req.user;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
@@ -108,15 +107,15 @@ const ProjectDetail = async (req, res) => {
 // lấy list công việc của hàm getWorkProject đã lọc công việc theo id user trả về
 const getListWork = async (req, res) => {
     try {
-        const { nameProject } = req.body;
-
-        if (!nameProject) {
+        const { nameProject } = req.query;
+        const { _id } = req.user;
+        if (!nameProject || !_id) {
             return res.status(404).json({
-                message: 'not found id',
+                message: 'not found id or nameProject',
             });
         }
         //check project
-        const checkProject = await modelWorkProject.findOne({ nameProject: nameProject }).populate({
+        const checkProject = await modelWorkProject.find({ memberID: _id, nameProject: nameProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -138,13 +137,13 @@ const getListWork = async (req, res) => {
 //lấy công việc chi tiết của user qua lọc của hàm getListWork theo project
 const getWorkDetail = async (req, res) => {
     try {
-        const { workDetrailID } = req.body;
-        if (!workDetrailID) {
+        const { parentIssue } = req.params;
+        if (!parentIssue) {
             return res.status(404).json({
                 message: 'not found id',
             });
         }
-        const WorkDetail = await modalWorkDetail.find({ _id: { $in: workDetrailID } });
+        const WorkDetail = await modelListWork.find({ parentIssue: parentIssue });
         if (!WorkDetail) {
             return res.status(404).json({
                 message: 'project not found',
@@ -160,7 +159,7 @@ const getWorkDetail = async (req, res) => {
 // add new work
 const addNewWork = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const { nameProject, codeProject } = req.body;
 
         if (!_id || !nameProject || !codeProject) {
@@ -207,13 +206,13 @@ const addNewWork = async (req, res) => {
 //delete project
 const deleteProject = async (req, res) => {
     try {
-        const { _id } = req.params;
-        if (!_id) {
+        const { keyProject } = req.params;
+        if (!keyProject) {
             return res.status(400).json({
                 message: 'is not id',
             });
         }
-        const findProjectID = await modelWorkProject.findById(_id);
+        const findProjectID = await modelWorkProject.findOne({ codeProject: keyProject });
         if (!findProjectID) {
             return res.status(400).json({
                 message: 'user not found',
@@ -224,9 +223,9 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-            const checkAfterTimeOut = await modelWorkProject.findById(_id);
+            const checkAfterTimeOut = await modelWorkProject.findOne({ codeProject: keyProject });
             if (checkAfterTimeOut.deleteProject === true) {
-                await modelWorkProject.findByIdAndDelete(_id);
+                await modelWorkProject.findOneAndDelete({ codeProject: keyProject });
             }
         }, 3600000);
         return res.status(200).json({
@@ -242,13 +241,13 @@ const deleteProject = async (req, res) => {
 //restore project
 const restoreProject = async (req, res) => {
     try {
-        const { _id } = req.params;
-        if (!_id) {
+        const { keyProject } = req.params;
+        if (!keyProject) {
             return res.status(404).json({
-                message: 'Is nos id or restoreProject',
+                message: 'Is nos keyProject ',
             });
         }
-        const checkId = await modelWorkProject.findById(_id);
+        const checkId = await modelWorkProject.findOne({ codeProject: keyProject });
         if (!checkId) {
             return res.status(401).json({
                 message: 'not found project want restore',
@@ -273,15 +272,14 @@ const restoreProject = async (req, res) => {
 //Delete existing members in the project
 const DeleteExistingMembers = async (req, res) => {
     try {
-        const { _id } = req.params;
-        const { _idMemberDelete } = req.body;
-        if (!_id || !_idMemberDelete) {
+        const { keyProject, _idMemberDelete } = req.params;
+        if (!keyProject || !_idMemberDelete) {
             return res.status(404).json({
                 message: 'Is nos id or _idMemberDelete',
             });
         }
         const project = await modelWorkProject.findOneAndUpdate(
-            { _id: _id },
+            { codeProject: keyProject },
             { $pull: { memberID: _idMemberDelete } },
             { new: true },
         );
@@ -298,16 +296,16 @@ const DeleteExistingMembers = async (req, res) => {
 
 const editProjectInformation = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { keyProject } = req.params;
         const { codeProject, nameProject, imgProject } = req.body;
 
         // check id project
-        if (!_id) {
+        if (!keyProject) {
             return res.status(404).json({
                 message: 'not found id',
             });
         }
-        const project = await modelWorkProject.findById({ _id }).populate({
+        const project = await modelWorkProject.findOne({ codeProject: keyProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
@@ -356,7 +354,24 @@ const editProjectInformation = async (req, res) => {
 //list member
 const ListMember = async (req, res) => {
     try {
-    } catch (error) {}
+        const { codeProject } = req.query;
+        if (!codeProject) {
+            return res.status(400).json({
+                message: 'is not codeProject',
+            });
+        }
+        const memberProject = await modelWorkProject.findOne({ codeProject }).populate({
+            path: 'memberID',
+            select: '-refreshToken -passWord',
+        });
+        return res.status(200).json({
+            memberProject: memberProject.memberID,
+        });
+    } catch (error) {
+        return res.status(404).json({
+            message: 'can not get member project',
+        });
+    }
 };
 
 const sendEmailToUser = async (req, res) => {
@@ -760,23 +775,23 @@ const addMembersToProject = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            error,
+            error: error.message,
         });
     }
 };
 
 const updatePermissions = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { keyProject } = req.params;
         const { _idUserUpdate, role } = req.body;
 
-        if (!_id || !_idUserUpdate) {
+        if (!keyProject || !_idUserUpdate) {
             return res.status(400).json({
                 message: '_id or _idUserUpdate not found',
             });
         }
 
-        const project = await modelWorkProject.findById({ _id });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await modelUser.findById({ _id: _idUserUpdate });
 
         if (!project || !user) {

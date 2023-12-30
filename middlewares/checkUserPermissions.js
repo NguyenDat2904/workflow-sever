@@ -7,7 +7,7 @@ const checkUserPermissions = (action) => async (req, res, next) => {
         const { email } = req.user;
         if (!keyProject || !email) {
             return res.status(404).json({
-                message: 'keyProject or _id not found',
+                message: 'keyProject or email not found',
             });
         }
 

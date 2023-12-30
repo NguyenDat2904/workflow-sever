@@ -2,7 +2,7 @@ const modelProject = require('../models/modelWorkProject');
 const ListWorkProject = async (req, res) => {
     try {
         //id user
-        const { codeProject } = req.body;
+        const { codeProject } = req.params;
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         if (!codeProject) {
@@ -14,9 +14,6 @@ const ListWorkProject = async (req, res) => {
         const totalPage = Math.ceil(lengthListWork.listWorkID.length / 3);
         const checkCodeProject = await modelProject.findOne({ codeProject }).populate({
             path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
             options: {
                 sort: { createdAt: -1 },
                 skip: (skipPage - 1) * limitPage,
@@ -39,5 +36,14 @@ const ListWorkProject = async (req, res) => {
             message: 'can not get list work',
         });
     }
-};
+}
+// add new work
+const addNewWork=async(req,res)=>{
+    try {
+        const {nameProject,typeOfWork,statusWork,nameWork,description,sprint}=req.body
+    } catch (error) {
+        
+    }
+}
+
 module.exports = { ListWorkProject };

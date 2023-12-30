@@ -309,7 +309,7 @@ const updateBackgroundAndContent = async (req, res) => {
 };
 const uploadImg = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const files = req.files;
         const users = await UsersModal.findById(_id);
         cloudinary.config({
