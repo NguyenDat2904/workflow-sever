@@ -745,8 +745,7 @@ const addMembersToProject = async (req, res) => {
         }
 
         // check user trong project
-        const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
-        if (findUserInProject) {
+        if (project.userMembers.includes(email)) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
