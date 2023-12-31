@@ -180,7 +180,7 @@ const Forgot = async (req, res) => {
 const NewPassword = async (req, res) => {
     //check user email
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const { passWord } = req.body;
         const checkId = await UsersModal.findById(_id);
         if (!checkId) {

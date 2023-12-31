@@ -29,7 +29,7 @@ router.patch('/updateUser/background',  authMidddlerware, Login.updateBackground
 router.patch('/updateUser',  authMidddlerware, Login.updateInfoUser);
 router.post('/login', Login.Login);
 router.post('/forgot', Login.Forgot);
-router.patch('/forgot/changePassword/:_id',veryfyEmail, Login.NewPassword);
+router.patch('/forgot/changePassword',veryfyEmail, Login.NewPassword);
 router.post('/loginGoogle', Login.LoginGoogle);
 router.patch('/profile/changePassword', authMidddlerware, Login.ProfileChangePassword);
 router.get('/', authMidddlerware, Login.getUser);
