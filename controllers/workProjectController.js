@@ -115,13 +115,12 @@ const getListWork = async (req, res) => {
             });
         }
         //check project
-        const checkProject = await modelWorkProject.find({ userMembers: _id, nameProject: nameProject }).populate({
+        const checkProject = await modelWorkProject.findOne({ userMembers: _id, nameProject: nameProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
             },
         });
-
         if (!checkProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -143,7 +142,7 @@ const getWorkDetail = async (req, res) => {
                 message: 'not found id',
             });
         }
-        const WorkDetail = await modelListWork.find({ parentIssue: parentIssue });
+        const WorkDetail = await modelListWork.findOne({ parentIssue: parentIssue });
         if (!WorkDetail) {
             return res.status(404).json({
                 message: 'project not found',
