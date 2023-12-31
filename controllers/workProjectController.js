@@ -33,7 +33,7 @@ const getWorkProject = async (req, res) => {
                 },
             })
             .populate({
-                path: 'adminID',
+                path: 'userAdmin',
                 select: '-refreshToken -passWord',
             })
             .sort(
@@ -41,7 +41,7 @@ const getWorkProject = async (req, res) => {
                     ? { nameProject: sortOrder }
                     : sortKey === 'codeProject'
                       ? { codeProject: sortOrder }
-                      : -1,
+                      : {createdAt:-1},
             )
             .skip((page - 1) * limit)
             .limit(limit);
