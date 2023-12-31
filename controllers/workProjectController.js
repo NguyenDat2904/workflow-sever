@@ -25,7 +25,7 @@ const getWorkProject = async (req, res) => {
 
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject
-            .find({ memberID: _id, deleteProject: deleteProject })
+            .find({ userMembers: _id, deleteProject: deleteProject })
             .populate({
                 path: 'listWorkID',
                 populate: {
@@ -33,7 +33,7 @@ const getWorkProject = async (req, res) => {
                 },
             })
             .populate({
-                path: 'adminID',
+                path: 'userAdmin',
                 select: '-refreshToken -passWord',
             })
             .sort(
@@ -41,7 +41,7 @@ const getWorkProject = async (req, res) => {
                     ? { nameProject: sortOrder }
                     : sortKey === 'codeProject'
                       ? { codeProject: sortOrder }
-                      : {},
+                      : {createdAt:-1},
             )
             .skip((page - 1) * limit)
             .limit(limit);
@@ -88,7 +88,7 @@ const ProjectDetail = async (req, res) => {
                 select: '-refreshToken -passWord',
             })
             .populate({
-                path: 'memberID',
+                path: 'userMembers',
                 select: '-refreshToken -passWord',
             });
         if (!project) {
@@ -115,13 +115,12 @@ const getListWork = async (req, res) => {
             });
         }
         //check project
-        const checkProject = await modelWorkProject.find({ memberID: _id, nameProject: nameProject }).populate({
+        const checkProject = await modelWorkProject.findOne({ userMembers: _id, nameProject: nameProject }).populate({
             path: 'listWorkID',
             populate: {
                 path: 'creatorID',
             },
         });
-
         if (!checkProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -143,7 +142,7 @@ const getWorkDetail = async (req, res) => {
                 message: 'not found id',
             });
         }
-        const WorkDetail = await modelListWork.find({ parentIssue: parentIssue });
+        const WorkDetail = await modelListWork.findOne({ parentIssue: parentIssue });
         if (!WorkDetail) {
             return res.status(404).json({
                 message: 'project not found',
@@ -167,8 +166,8 @@ const addNewWork = async (req, res) => {
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.find({ memberID: _id, codeProject: codeProject });
-        const checkNameProject = await modelWorkProject.find({ memberID: _id, nameProject: nameProject });
+        const checkCodeProject = await modelWorkProject.find({  codeProject: codeProject });
+        const checkNameProject = await modelWorkProject.find({  nameProject: nameProject });
 
         if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
@@ -179,9 +178,9 @@ const addNewWork = async (req, res) => {
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
-            managerID: [],
-            adminID: { _id },
-            memberID: [_id],
+            userManagers: [],
+            userAdmin: { _id },
+            userMembers: [_id],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -280,7 +279,7 @@ const DeleteExistingMembers = async (req, res) => {
         }
         const project = await modelWorkProject.findOneAndUpdate(
             { codeProject: keyProject },
-            { $pull: { memberID: _idMemberDelete } },
+            { $pull: { userMembers: _idMemberDelete } },
             { new: true },
         );
         return res.status(200).json({
@@ -361,13 +360,14 @@ const ListMember = async (req, res) => {
             });
         }
         const memberProject = await modelWorkProject.findOne({ codeProject }).populate({
-            path: 'memberID',
+            path: 'userMembers',
             select: '-refreshToken -passWord',
         });
         return res.status(200).json({
-            memberProject: memberProject.memberID,
+            memberProject: memberProject.userMembers,
         });
     } catch (error) {
+      console.log(error)
         return res.status(404).json({
             message: 'can not get member project',
         });
