@@ -25,13 +25,13 @@ const upload = multer({
 /* GET users listing. */
 router.get('/new-access',refreshTokenMiddlerware,newAccess)
 router.patch('/uploadimg',authMidddlerware, upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
-router.patch('/updateUser/background/:_id',  authMidddlerware, Login.updateBackgroundAndContent);
-router.patch('/updateUser/:_id',  authMidddlerware, Login.updateInfoUser);
+router.patch('/updateUser/background',  authMidddlerware, Login.updateBackgroundAndContent);
+router.patch('/updateUser',  authMidddlerware, Login.updateInfoUser);
 router.post('/login', Login.Login);
 router.post('/forgot', Login.Forgot);
 router.patch('/forgot/changePassword/:_id',veryfyEmail, Login.NewPassword);
 router.post('/loginGoogle', Login.LoginGoogle);
-router.patch('/profile/changePassword/:_id', authMidddlerware, Login.ProfileChangePassword);
-router.get('/:_id', authMidddlerware, Login.getUser);
+router.patch('/profile/changePassword', authMidddlerware, Login.ProfileChangePassword);
+router.get('/', authMidddlerware, Login.getUser);
 
 module.exports = router;

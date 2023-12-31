@@ -205,7 +205,7 @@ const NewPassword = async (req, res) => {
 //profile change password
 const ProfileChangePassword = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const { oldPassword, newPassword } = req.body;
         const checkIdUser = await UsersModal.findById(_id);
         const checkOldPassword = await bcrypt.compareSync(oldPassword, checkIdUser.passWord);
@@ -230,7 +230,7 @@ const ProfileChangePassword = async (req, res) => {
 //cập nhật thông tin user
 const updateInfoUser = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const { nameFill, contenEditing } = req.body;
         if (!_id || !nameFill) {
             res.status(404).json({
@@ -285,7 +285,7 @@ const updateInfoUser = async (req, res) => {
 //upload background content
 const updateBackgroundAndContent = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         const { backgroundProfile, contentProfile } = req.body;
         const users = await UsersModal.findById(_id);
         if (!users) {
@@ -351,7 +351,7 @@ const uploadImg = async (req, res) => {
 //get user
 const getUser = async (req, res) => {
     try {
-        const { _id } = req.params;
+        const { _id } = req.user;
         if (!_id) {
             res.status(404).json({
                 message: 'is not id',
