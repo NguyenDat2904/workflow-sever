@@ -32,16 +32,12 @@ const getWorkProject = async (req, res) => {
                     path: 'creatorID',
                 },
             })
-            .populate({
-                path: 'userAdmin',
-                select: '-refreshToken -passWord',
-            })
             .sort(
                 sortKey === 'nameProject'
                     ? { nameProject: sortOrder }
                     : sortKey === 'codeProject'
                       ? { codeProject: sortOrder }
-                      : {createdAt:-1},
+                      : { createdAt: -1 },
             )
             .skip((page - 1) * limit)
             .limit(limit);
@@ -72,29 +68,53 @@ const ProjectDetail = async (req, res) => {
                 message: 'is not codeProject project ',
             });
         }
-        const project = await modelWorkProject
-            .findOne({ codeProject })
-            .populate({
-                path: 'listWorkID',
-          
-                populate: {
-                    path: 'workDetrailID',
+        const project = await modelWorkProject.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userManagers',
+                    foreignField: 'email',
+                    as: 'infoUserManagers',
                 },
-            })
-            .populate({
-                path: 'userAdmin',
-                select: '-refreshToken -passWord',
-            })
-            .populate({
-                path: 'userMembers',
-                select: '-refreshToken -passWord',
-            });
-        if (!project) {
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'listWorkID',
+                    foreignField: '_id',
+                    as: 'infoListWorkID',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userMembers',
+                    foreignField: 'email',
+                    as: 'infoUserMembers',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userAdmin',
+                    foreignField: 'email',
+                    as: 'infoUserAdmin',
+                },
+            },
+            {
+                $unwind: '$infoUserAdmin',
+            },
+            { $project: { infoUserManagers: { passWord: 0 } } },
+            { $project: { infoUserMembers: { passWord: 0 } } },
+            { $project: { infoUserAdmin: { passWord: 0 } } },
+            { $match: { codeProject: codeProject } },
+        ]);
+        if (project.length===0) {
             return res.status(404).json({
                 message: 'not found project',
             });
         }
-        return res.status(200).json(project);
+        return res.status(200).json(project[0]);
     } catch (error) {
         console.log(error);
         return res.status(404).json({
@@ -127,7 +147,6 @@ const getListWork = async (req, res) => {
         res.status(200).json(checkProject);
     } catch (error) {
         res.status(404).json({
-
             message: 'can not get data list work  ',
         });
     }
@@ -165,8 +184,8 @@ const addNewWork = async (req, res) => {
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.find({  codeProject: codeProject });
-        const checkNameProject = await modelWorkProject.find({  nameProject: nameProject });
+        const checkCodeProject = await modelWorkProject.find({ codeProject: codeProject });
+        const checkNameProject = await modelWorkProject.find({ nameProject: nameProject });
 
         if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
@@ -358,15 +377,25 @@ const ListMember = async (req, res) => {
                 message: 'is not codeProject',
             });
         }
-        const memberProject = await modelWorkProject.findOne({ codeProject }).populate({
-            path: 'userMembers',
-            select: '-refreshToken -passWord',
-        });
-        return res.status(200).json({
-            memberProject: memberProject.userMembers,
-        });
+        const memberProject = await modelWorkProject
+        .aggregate([
+          {
+            $lookup: {
+                from: 'users',
+                localField: 'userMembers',
+                foreignField: 'email',
+                as: 'infoUserMembers',
+            },
+        },
+       
+          { $match: { codeProject: codeProject } },
+        ])
+        console.log(memberProject.userMembers)
+        return res.status(200).json(
+            memberProject[0].infoUserMembers,
+        );
     } catch (error) {
-      console.log(error)
+        console.log(error);
         return res.status(404).json({
             message: 'can not get member project',
         });
