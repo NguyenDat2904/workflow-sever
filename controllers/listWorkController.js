@@ -13,10 +13,20 @@ const ListIssuesProject = async (req, res) => {
                 message: 'is not id or jobCode',
             });
         }
-        
-        const lengthListWork = await modelSprint.find({projectID:_idProject});
+        const lengthListWork = await modelListWork.find({projectID:_idProject,parentIssue:null});
         const totalPage = Math.ceil(lengthListWork.length / 3);
-        const checkCodeProject = await modelSprint.find({projectID:_idProject})
+        const checkCodeProject = await modelListWork.find({projectID:_idProject,parentIssue:null})
+        .populate({
+            path:'sprint'
+        })
+        .populate({
+            path:'assignee',
+            select:'-passWord'
+        })
+        .populate({
+            path:'reporter',
+            select:'-passWord'
+        })
         .sort({ createdAt: -1 })
         .skip( (skipPage - 1) * limitPage)
         .limit(limitPage);
@@ -40,33 +50,49 @@ const ListIssuesProject = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const { nameProject, priority, issueType, statusWork, nameWork, description, sprint } = req.body;
-        const { _id } = req.user;
-        const checkProject = await modelProject.findOne({ userMembers: _id, nameProject });
-
+        const { 
+            projectID,
+            issueType,
+            summary,
+            description,
+            assigneeID,
+            reporterID,
+            priority,
+            sprintID,
+            storyPointEstimate,
+            startDate,
+            dueDate,
+        } = req.body;
+        if(!summary){
+            return res.status(400).json({
+                message:'A summary is required'
+            })
+        }
+        const newStartDate = new Date(startDate)
+        const newDueDate = new Date(dueDate)
         const newIssues = new modelListWork({
-            nameWork: nameWork,
-            jobCode: '',
-            issueType: issueType,
-            priority: priority,
-            dateCreated: null,
-            deadline: null,
-            actualEndDate: null,
-            creatorID: [_id],
-            implementerMenberID: null,
-            sprint: sprint,
-            status: statusWork,
-            description: description,
-            parentIssue: '',
+            projectID,
+            issueType,
+            status:"TODO",
+            summary,
+            description,
+            assignee:assigneeID,
+            reporter:reporterID,
+            priority,
+            sprint:sprintID,
+            storyPointEstimate,
+            startDate: newStartDate||new Date(),
+            dueDate:newDueDate,
+            parentIssue:null,
         });
         await newIssues.save();
-        checkProject.listWorkID.push(newIssues._id);
-        await checkProject.save();
         return res.status(200).json({
             message: 'add new issue successfully',
+            data:newIssues
         });
     } catch (error) {
-        return req.status(404).json({
+        console.log(error)
+        return res.status(404).json({
             message: 'can not add work',
         });
     }
