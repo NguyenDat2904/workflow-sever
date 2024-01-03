@@ -1,33 +1,42 @@
 const modelProject = require('../models/modelWorkProject');
-const modelListWork =require('../models/modalListWorks')
+const modelListWork = require('../models/modalListWorks');
+const modelSprint = require('../models/modelSprint');
+
 const ListIssuesProject = async (req, res) => {
     try {
         //id user
-        const { codeProject } = req.params;
+        const { _idProject } = req.params;
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
-        if (!codeProject) {
+        if (!_idProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const lengthListWork = await modelProject.findOne({ codeProject });
-        const totalPage = Math.ceil(lengthListWork.listWorkID.length / 3);
-        const checkCodeProject = await modelProject.findOne({ codeProject }).populate({
-            path: 'listWorkID',
-            options: {
-                sort: { createdAt: -1 },
-                skip: (skipPage - 1) * limitPage,
-                limit: limitPage,
-            },
-        });
+        const lengthListWork = await modelListWork.find({projectID:_idProject,parentIssue:null});
+        const totalPage = Math.ceil(lengthListWork.length / 3);
+        const checkCodeProject = await modelListWork.find({projectID:_idProject,parentIssue:null})
+        .populate({
+            path:'sprint'
+        })
+        .populate({
+            path:'assignee',
+            select:'-passWord'
+        })
+        .populate({
+            path:'reporter',
+            select:'-passWord'
+        })
+        .sort({ createdAt: -1 })
+        .skip( (skipPage - 1) * limitPage)
+        .limit(limitPage);
         if (!checkCodeProject) {
             return req.status(400).json({
                 message: 'codeProject does not exist',
             });
         }
         return res.status(200).json({
-            dataListWork: checkCodeProject.listWorkID,
+            dataListIssues: checkCodeProject,
             page: skipPage,
             totalPage,
         });
@@ -37,40 +46,91 @@ const ListIssuesProject = async (req, res) => {
             message: 'can not get list work',
         });
     }
-}
+};
 // add new work
-const addNewIssues=async(req,res)=>{
+const addNewIssues = async (req, res) => {
     try {
-        const {nameProject,priority,issueType,statusWork,nameWork,description,sprint}=req.body
-        const {_id}=req.user
-        const checkProject= await modelProject.findOne({userMembers:_id,nameProject})
-        
-        const newIssues= new modelListWork({
-            nameWork: nameWork,
-            jobCode:'',
-            issueType: issueType,
-            priority: priority,
-            dateCreated: null,
-            deadline: null,
-            actualEndDate: null,
-            creatorID: [_id],
-            implementerMenberID: null,
-            sprint:sprint,
-            status:statusWork,
-            description:description,
-            parentIssue:''
-        })
-        await newIssues.save()
-        checkProject.listWorkID.push(newIssues._id)
-        await checkProject.save()
+        const { 
+            projectID,
+            issueType,
+            summary,
+            description,
+            assigneeID,
+            reporterID,
+            priority,
+            sprintID,
+            storyPointEstimate,
+            startDate,
+            dueDate,
+        } = req.body;
+        if(!summary){
+            return res.status(400).json({
+                message:'A summary is required'
+            })
+        }
+        const newStartDate = new Date(startDate)
+        const newDueDate = new Date(dueDate)
+        const newIssues = new modelListWork({
+            projectID,
+            issueType,
+            status:"TODO",
+            summary,
+            description,
+            assignee:assigneeID,
+            reporter:reporterID,
+            priority,
+            sprint:sprintID,
+            storyPointEstimate,
+            startDate: newStartDate||new Date(),
+            dueDate:newDueDate,
+            parentIssue:null,
+        });
+        await newIssues.save();
         return res.status(200).json({
-            message:"add new issue successfully"
-        })
+            message: 'add new issue successfully',
+            data:newIssues
+        });
     } catch (error) {
-        return req.status(404).json({
-            message:"can not add work"
+        console.log(error)
+        return res.status(404).json({
+            message: 'can not add work',
+        });
+    }
+};
+// add sprint
+const addNewSprint = async (req, res) => {
+    try {
+        const { projectID, name, startDate, endDate, sprintGoal, status } = req.body;
+        if (!projectID||!name|| !startDate|| !endDate|| !sprintGoal|| !status) {
+            return res.status(400).json({
+                message: 'not enough information',
+            });
+        }
+        const checkName= await modelSprint.findOne({name})
+        if(checkName){
+            return res.status(400).json({
+                message:'name already exists'
+            })
+        }
+        const newStartDate=new Date(startDate)
+        const newEndDate=new Date(endDate)
+        const newIssue = new modelSprint({
+            projectID,
+            name,
+            startDate:newStartDate||new Date(),
+            endDate:newEndDate,
+            sprintGoal,
+            status,
+        });
+        await newIssue.save()
+    return res.status(200).json({
+        message:'add new successfully',
+        data:newIssue
+    })
+    } catch (error) {
+        return res.status(404).json({
+            message:'can not add new'
         })
     }
-}
-
-module.exports = { ListIssuesProject ,addNewIssues};
+};
+module.exports = { ListIssuesProject, addNewIssues,addNewSprint};
