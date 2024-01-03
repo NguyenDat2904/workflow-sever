@@ -42,6 +42,7 @@ const getWorkProject = async (req, res) => {
                 },
             },
             { $project: { infoUserAdmin: { passWord: 0 } } },
+            {$unwind:'$infoUserAdmin'},
             {
                 $sort:
                     sortKey === 'nameProject'
