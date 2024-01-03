@@ -11,7 +11,6 @@ const IssueModel = new Schema(
         deadline: { type: Date },
         actualEndDate: { type: Date },
         creatorID: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
-        workDetrailID: [{ type: mongoose.Types.ObjectId, ref: 'workdetails' }],
         implementerMenberID: [{ type: String }],
         sprint:{type:String},
         status:{type:String},

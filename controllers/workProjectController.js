@@ -76,15 +76,13 @@ const ProjectDetail = async (req, res) => {
             .findOne({ codeProject })
             .populate({
                 path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
+          
                 populate: {
                     path: 'workDetrailID',
                 },
             })
             .populate({
-                path: 'adminID',
+                path: 'userAdmin',
                 select: '-refreshToken -passWord',
             })
             .populate({
@@ -129,6 +127,7 @@ const getListWork = async (req, res) => {
         res.status(200).json(checkProject);
     } catch (error) {
         res.status(404).json({
+
             message: 'can not get data list work  ',
         });
     }
