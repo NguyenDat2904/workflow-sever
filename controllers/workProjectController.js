@@ -76,15 +76,13 @@ const ProjectDetail = async (req, res) => {
             .findOne({ codeProject })
             .populate({
                 path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
-                },
+
                 populate: {
                     path: 'workDetrailID',
                 },
             })
             .populate({
-                path: 'adminID',
+                path: 'userAdmin',
                 select: '-refreshToken -passWord',
             })
             .populate({
@@ -179,9 +177,9 @@ const addNewWork = async (req, res) => {
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
-            userManagers: [],
-            userAdmin: isUser.email,
-            userMembers: [],
+            listManagers: [],
+            admin: isemail,
+            listMembers: [],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -379,7 +377,7 @@ const sendEmailToUser = async (req, res) => {
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
         if (user) {
-            const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
+            const findUserInProject = project.listMembers.find((emailUser) => emailUser === email);
             if (findUserInProject) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
@@ -721,7 +719,7 @@ const sendEmailToUser = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            error,
+            error: error.message,
         });
     }
 };
@@ -732,7 +730,7 @@ const addMembersToProject = async (req, res) => {
         const { email, role } = req.user;
 
         // tìm dự án
-        const project = await modelWorkProject.findOne({ codeProject: keyProject })
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
 
         if (!project) {
             return res.status(400).json({
@@ -741,9 +739,9 @@ const addMembersToProject = async (req, res) => {
         }
 
         // check user trong project
-        const isUserAdmin = project.userAdmin === email.toString();
-        const isUserManager = project.userManagers.includes(email.toString());
-        const isUserMember = project.userMembers.includes(email.toString());
+        const isUserAdmin = project.admin === email.toString();
+        const isUserManager = project.listManagers.includes(email.toString());
+        const isUserMember = project.listMembers.includes(email.toString());
 
         if (isUserAdmin || isUserManager || isUserMember) {
             return res.status(400).json({
@@ -754,15 +752,18 @@ const addMembersToProject = async (req, res) => {
         // add user
         switch (role) {
             case 'admin':
-                project.userAdmin = email.toString();
+                project.admin = email;
                 break;
             case 'manager':
-                if (!isUserManager) project.userManagers.push(email.toString());
+                project.listManagers.push(email);
                 break;
-
+            case 'member':
+                project.listMembers.push(email);
+                break;
             default:
-                project.userMembers.push(email.toString());
-                break;
+                return res.status(400).json({
+                    message: 'role not found',
+                });
         }
 
         await project.save();
@@ -796,24 +797,37 @@ const updatePermissions = async (req, res) => {
                 message: 'keyProject or email does not exist',
             });
         }
-        const isUserManager = project.userManagers.includes(user.email);
-        const isUserMember = project.userMembers.includes(user.email);
+        const isUserManager = project.listManagers.includes(email);
+        const isUserMember = project.listMembers.includes(email);
 
         switch (role) {
             case 'admin':
-                project.userAdmin = user.email;
+                if (!project.listMembers.includes(project.admin)) project.listMembers.push(project.admin);
+                if (isUserManager) {
+                    const index = project.listManagers.indexOf(email);
+                    project.listManagers.splice(index, 1);
+                }
+                if (isUserMember) {
+                    const index = project.listMembers.indexOf(email);
+                    project.listMembers.splice(index, 1);
+                }
+                project.admin = email;
                 break;
             case 'manager':
-                if (project.userManagers.length <= 3 && !isUserManager) {
-                    project.userManagers.push(user.email);
+                if (project.listManagers.length <= 3 && !isUserManager) {
+                    if (isUserMember) {
+                        const index = project.listMembers.indexOf(email);
+                        project.listMembers.splice(index, 1);
+                    }
+                    project.listManagers.push(email);
                 }
                 break;
             case 'member':
                 if (isUserManager) {
-                    const index = project.userManagers.indexOf(email);
-                    project.userManagers.splice(index, 1);
+                    const index = project.listManagers.indexOf(email);
+                    project.listManagers.splice(index, 1);
                 }
-                if (!isUserMember) project.userMembers.push(user.email);
+                if (!isUserMember && project.admin !== email) project.listMembers.push(email);
                 break;
 
             default:
