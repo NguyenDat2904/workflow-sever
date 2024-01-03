@@ -839,20 +839,8 @@ const updatePermissions = async (req, res) => {
         const isUserMember = project.listMembers.includes(email);
 
         switch (role) {
-            case 'admin':
-                if (!project.listMembers.includes(project.admin)) project.listMembers.push(project.admin);
-                if (isUserManager) {
-                    const index = project.listManagers.indexOf(email);
-                    project.listManagers.splice(index, 1);
-                }
-                if (isUserMember) {
-                    const index = project.listMembers.indexOf(email);
-                    project.listMembers.splice(index, 1);
-                }
-                project.admin = email;
-                break;
             case 'manager':
-                if (project.listManagers.length <= 3 && !isUserManager) {
+                if (project.listManagers.length <= 3 && !isUserManager && project.admin !== email) {
                     if (isUserMember) {
                         const index = project.listMembers.indexOf(email);
                         project.listMembers.splice(index, 1);
