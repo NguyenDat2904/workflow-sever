@@ -12,40 +12,48 @@ require('dotenv').config();
 const getWorkProject = async (req, res) => {
     try {
         const { sortKey, deleteProject } = req.query;
-        const { _id } = req.user;
+        const { email } = req.user;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        if (!_id || deleteProject === '') {
+        if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
-
         const totalPages = Math.ceil(totalUsers / 25);
-        const workProject = await modelWorkProject
-            .find({ userMembers: _id, deleteProject: deleteProject })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
+        const workProject = await modelWorkProject.aggregate([
+            { $match: { userMembers: email, deleteProject: deleteProject === true ? true : false } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userAdmin',
+                    foreignField: 'email',
+                    as: 'infoUserAdmin',
                 },
-            })
-            .populate({
-                path: 'userAdmin',
-                select: '-refreshToken -passWord',
-            })
-            .sort(
-                sortKey === 'nameProject'
-                    ? { nameProject: sortOrder }
-                    : sortKey === 'codeProject'
-                      ? { codeProject: sortOrder }
-                      : { createdAt: -1 },
-            )
-            .skip((page - 1) * limit)
-            .limit(limit);
-
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'listWorkID',
+                    foreignField: '_id',
+                    as: 'infoListWork',
+                },
+            },
+            { $project: { infoUserAdmin: { passWord: 0 } } },
+            {$unwind:'$infoUserAdmin'},
+            {
+                $sort:
+                    sortKey === 'nameProject'
+                        ? { nameProject: sortOrder }
+                        : sortKey === 'codeProject'
+                          ? { codeProject: sortOrder }
+                          : { createdAt: -1 },
+            },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+        ]);
         if (!workProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -72,29 +80,53 @@ const ProjectDetail = async (req, res) => {
                 message: 'is not codeProject project ',
             });
         }
-        const project = await modelWorkProject
-            .findOne({ codeProject })
-            .populate({
-                path: 'listWorkID',
-
-                populate: {
-                    path: 'workDetrailID',
+        const project = await modelWorkProject.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userManagers',
+                    foreignField: 'email',
+                    as: 'infoUserManagers',
                 },
-            })
-            .populate({
-                path: 'userAdmin',
-                select: '-refreshToken -passWord',
-            })
-            .populate({
-                path: 'userMembers',
-                select: '-refreshToken -passWord',
-            });
-        if (!project) {
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'listWorkID',
+                    foreignField: '_id',
+                    as: 'infoListWorkID',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userMembers',
+                    foreignField: 'email',
+                    as: 'infoUserMembers',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userAdmin',
+                    foreignField: 'email',
+                    as: 'infoUserAdmin',
+                },
+            },
+            {
+                $unwind: '$infoUserAdmin',
+            },
+            { $project: { infoUserManagers: { passWord: 0 } } },
+            { $project: { infoUserMembers: { passWord: 0 } } },
+            { $project: { infoUserAdmin: { passWord: 0 } } },
+            { $match: { codeProject: codeProject } },
+        ]);
+        if (project.length === 0) {
             return res.status(404).json({
                 message: 'not found project',
             });
         }
-        return res.status(200).json(project);
+        return res.status(200).json(project[0]);
     } catch (error) {
         console.log(error);
         return res.status(404).json({
@@ -166,7 +198,6 @@ const addNewWork = async (req, res) => {
         }
         const checkCodeProject = await modelWorkProject.find({ codeProject: codeProject });
         const checkNameProject = await modelWorkProject.find({ nameProject: nameProject });
-        const isUser = await modelUser.findById({ _id });
 
         if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
@@ -353,13 +384,20 @@ const ListMember = async (req, res) => {
                 message: 'is not codeProject',
             });
         }
-        const memberProject = await modelWorkProject.findOne({ codeProject }).populate({
-            path: 'userMembers',
-            select: '-refreshToken -passWord',
-        });
-        return res.status(200).json({
-            memberProject: memberProject.userMembers,
-        });
+        const memberProject = await modelWorkProject.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userMembers',
+                    foreignField: 'email',
+                    as: 'infoUserMembers',
+                },
+            },
+
+            { $match: { codeProject: codeProject } },
+        ]);
+        console.log(memberProject.userMembers);
+        return res.status(200).json(memberProject[0].infoUserMembers);
     } catch (error) {
         console.log(error);
         return res.status(404).json({
