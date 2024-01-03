@@ -41,7 +41,7 @@ const getWorkProject = async (req, res) => {
                     ? { nameProject: sortOrder }
                     : sortKey === 'codeProject'
                       ? { codeProject: sortOrder }
-                      : {createdAt:-1},
+                      : { createdAt: -1 },
             )
             .skip((page - 1) * limit)
             .limit(limit);
@@ -166,8 +166,9 @@ const addNewWork = async (req, res) => {
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.find({  codeProject: codeProject });
-        const checkNameProject = await modelWorkProject.find({  nameProject: nameProject });
+        const checkCodeProject = await modelWorkProject.find({ codeProject: codeProject });
+        const checkNameProject = await modelWorkProject.find({ nameProject: nameProject });
+        const isUser = await modelUser.findById({ _id });
 
         if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
@@ -179,8 +180,8 @@ const addNewWork = async (req, res) => {
             nameProject: nameProject,
             listWorkID: [],
             userManagers: [],
-            userAdmin: { _id },
-            userMembers: [_id],
+            userAdmin: isUser.email,
+            userMembers: [],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -298,18 +299,13 @@ const editProjectInformation = async (req, res) => {
         const { keyProject } = req.params;
         const { codeProject, nameProject, imgProject } = req.body;
 
-        // check id project
+        // check keyProject project
         if (!keyProject) {
             return res.status(404).json({
-                message: 'not found id',
+                message: 'not found keyProject',
             });
         }
-        const project = await modelWorkProject.findOne({ codeProject: keyProject }).populate({
-            path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
-        });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
 
         // check project
         if (!project) {
@@ -320,7 +316,7 @@ const editProjectInformation = async (req, res) => {
 
         // check codeProject
         const checkCodeProject = await modelWorkProject.findOne({ codeProject });
-        if (checkCodeProject && checkCodeProject._id.toString() !== _id) {
+        if (checkCodeProject && checkCodeProject.codeProject !== keyProject) {
             return res.status(400).json({
                 message: 'codeProject already exists',
             });
@@ -367,7 +363,7 @@ const ListMember = async (req, res) => {
             memberProject: memberProject.userMembers,
         });
     } catch (error) {
-      console.log(error)
+        console.log(error);
         return res.status(404).json({
             message: 'can not get member project',
         });
@@ -736,7 +732,7 @@ const addMembersToProject = async (req, res) => {
         const { email, role } = req.user;
 
         // tìm dự án
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject })
 
         if (!project) {
             return res.status(400).json({
@@ -745,7 +741,11 @@ const addMembersToProject = async (req, res) => {
         }
 
         // check user trong project
-        if (project.userMembers.includes(email)) {
+        const isUserAdmin = project.userAdmin === email.toString();
+        const isUserManager = project.userManagers.includes(email.toString());
+        const isUserMember = project.userMembers.includes(email.toString());
+
+        if (isUserAdmin || isUserManager || isUserMember) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
@@ -754,12 +754,10 @@ const addMembersToProject = async (req, res) => {
         // add user
         switch (role) {
             case 'admin':
-                project.userAdmin.push(email.toString());
-                project.userMembers.push(email.toString());
+                project.userAdmin = email.toString();
                 break;
             case 'manager':
-                project.userManagers.push(email.toString());
-                project.userMembers.push(email.toString());
+                if (!isUserManager) project.userManagers.push(email.toString());
                 break;
 
             default:
@@ -782,46 +780,40 @@ const addMembersToProject = async (req, res) => {
 const updatePermissions = async (req, res) => {
     try {
         const { keyProject } = req.params;
-        const { _idUserUpdate, role } = req.body;
+        const { email, role } = req.body;
 
-        if (!keyProject || !_idUserUpdate) {
+        if (!keyProject || !email || !role) {
             return res.status(400).json({
-                message: '_id or _idUserUpdate not found',
+                message: 'keyProject or email or role not found',
             });
         }
 
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
-        const user = await modelUser.findById({ _id: _idUserUpdate });
+        const user = await modelUser.findOne({ email });
 
         if (!project || !user) {
             return res.status(400).json({
-                message: '_id or _idUser does not exist',
+                message: 'keyProject or email does not exist',
             });
         }
-
-        const isUserInProject = project.emailUser.find((emailUser) => emailUser === user.email);
-        const isUserManager = project.managerID.find((id) => id.toString() === user._id.toString());
-        const isUserSupervisor = project.supervisor.find((id) => id.toString() === user._id.toString());
-
-        if (!isUserInProject) {
-            return res.status(400).json({
-                message: 'the user do not exist in the project',
-            });
-        }
+        const isUserManager = project.userManagers.includes(user.email);
+        const isUserMember = project.userMembers.includes(user.email);
 
         switch (role) {
             case 'admin':
-                project.adminID = user._id;
+                project.userAdmin = user.email;
                 break;
             case 'manager':
-                if (project.managerID.length <= 3 && !isUserManager) project.managerID.push(user._id);
-                break;
-            case 'supervisor':
-                if (!isUserSupervisor) project.supervisor.push(user._id);
+                if (project.userManagers.length <= 3 && !isUserManager) {
+                    project.userManagers.push(user.email);
+                }
                 break;
             case 'member':
-                if (isUserManager)
-                    project.managerID = project.managerID.filter((id) => id.toString() !== user._id.toString());
+                if (isUserManager) {
+                    const index = project.userManagers.indexOf(email);
+                    project.userManagers.splice(index, 1);
+                }
+                if (!isUserMember) project.userMembers.push(user.email);
                 break;
 
             default:
