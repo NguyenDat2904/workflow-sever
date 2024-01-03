@@ -5,10 +5,10 @@ const ModelWorkProject = new Schema(
     {
         nameProject: { type: String },
         listWorkID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'listworks' }],
-        userMembers: [{ type: String, ref: 'users' }],
+        listMembers: [{ type: String, ref: 'users' }],
         codeProject: { type: String },
-        userManagers: [{ type: String, ref: 'users' }],
-        userAdmin: { type: String, ref: 'users' },
+        listManagers: [{ type: String, ref: 'users' }],
+        admin: { type: String, ref: 'users' },
         startDay: { type: Date },
         endDate: { type: Date },
         expected: { type: String },

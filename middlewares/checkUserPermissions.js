@@ -20,22 +20,22 @@ const checkUserPermissions = (action) => async (req, res, next) => {
         }
 
         // check user permissions
-        if (project.userManagers.includes(email) && !MANAGER_PROJECT.includes(action)) {
+        if (project.listManagers.includes(email) && !MANAGER_PROJECT.includes(action)) {
             return res.status(403).json({
-                message: 'the user has not rights',
+                message: 'manager has not rights',
             });
         }
 
-        if (project.userMembers.includes(email) && !MEMBER.includes(action)) {
+        if (project.listMembers.includes(email) && !MEMBER.includes(action)) {
             return res.status(403).json({
-                message: 'the user has not rights',
+                message: 'member has not rights',
             });
         }
         next();
     } catch (error) {
         console.log(error);
-        return res.status(error.status).json({
-            error,
+        return res.status(500).json({
+            error: error.message,
         });
     }
 };

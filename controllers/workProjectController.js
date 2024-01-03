@@ -208,9 +208,9 @@ const addNewWork = async (req, res) => {
         const newProject = new modelWorkProject({
             nameProject: nameProject,
             listWorkID: [],
-            userManagers: [],
-            userAdmin: { _id },
-            userMembers: [_id],
+            listManagers: [],
+            admin: isemail,
+            listMembers: [],
             codeProject: codeProject,
             startDay: new Date(),
             endDate: null,
@@ -328,18 +328,13 @@ const editProjectInformation = async (req, res) => {
         const { keyProject } = req.params;
         const { codeProject, nameProject, imgProject } = req.body;
 
-        // check id project
+        // check keyProject project
         if (!keyProject) {
             return res.status(404).json({
-                message: 'not found id',
+                message: 'not found keyProject',
             });
         }
-        const project = await modelWorkProject.findOne({ codeProject: keyProject }).populate({
-            path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
-        });
+        const project = await modelWorkProject.findOne({ codeProject: keyProject });
 
         // check project
         if (!project) {
@@ -350,7 +345,7 @@ const editProjectInformation = async (req, res) => {
 
         // check codeProject
         const checkCodeProject = await modelWorkProject.findOne({ codeProject });
-        if (checkCodeProject && checkCodeProject._id.toString() !== _id) {
+        if (checkCodeProject && checkCodeProject.codeProject !== keyProject) {
             return res.status(400).json({
                 message: 'codeProject already exists',
             });
@@ -420,7 +415,7 @@ const sendEmailToUser = async (req, res) => {
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
         if (user) {
-            const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
+            const findUserInProject = project.listMembers.find((emailUser) => emailUser === email);
             if (findUserInProject) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
@@ -762,7 +757,7 @@ const sendEmailToUser = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            error,
+            error: error.message,
         });
     }
 };
@@ -782,8 +777,11 @@ const addMembersToProject = async (req, res) => {
         }
 
         // check user trong project
-        const findUserInProject = project.userMembers.find((emailUser) => emailUser === email);
-        if (findUserInProject) {
+        const isUserAdmin = project.admin === email.toString();
+        const isUserManager = project.listManagers.includes(email.toString());
+        const isUserMember = project.listMembers.includes(email.toString());
+
+        if (isUserAdmin || isUserManager || isUserMember) {
             return res.status(400).json({
                 message: 'The user already exists in the project',
             });
@@ -792,17 +790,18 @@ const addMembersToProject = async (req, res) => {
         // add user
         switch (role) {
             case 'admin':
-                project.userAdmin.push(email.toString());
-                project.userMembers.push(email.toString());
+                project.admin = email;
                 break;
             case 'manager':
-                project.userManagers.push(email.toString());
-                project.userMembers.push(email.toString());
+                project.listManagers.push(email);
                 break;
-
+            case 'member':
+                project.listMembers.push(email);
+                break;
             default:
-                project.userMembers.push(email.toString());
-                break;
+                return res.status(400).json({
+                    message: 'role not found',
+                });
         }
 
         await project.save();
@@ -820,46 +819,53 @@ const addMembersToProject = async (req, res) => {
 const updatePermissions = async (req, res) => {
     try {
         const { keyProject } = req.params;
-        const { _idUserUpdate, role } = req.body;
+        const { email, role } = req.body;
 
-        if (!keyProject || !_idUserUpdate) {
+        if (!keyProject || !email || !role) {
             return res.status(400).json({
-                message: '_id or _idUserUpdate not found',
+                message: 'keyProject or email or role not found',
             });
         }
 
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
-        const user = await modelUser.findById({ _id: _idUserUpdate });
+        const user = await modelUser.findOne({ email });
 
         if (!project || !user) {
             return res.status(400).json({
-                message: '_id or _idUser does not exist',
+                message: 'keyProject or email does not exist',
             });
         }
-
-        const isUserInProject = project.emailUser.find((emailUser) => emailUser === user.email);
-        const isUserManager = project.managerID.find((id) => id.toString() === user._id.toString());
-        const isUserSupervisor = project.supervisor.find((id) => id.toString() === user._id.toString());
-
-        if (!isUserInProject) {
-            return res.status(400).json({
-                message: 'the user do not exist in the project',
-            });
-        }
+        const isUserManager = project.listManagers.includes(email);
+        const isUserMember = project.listMembers.includes(email);
 
         switch (role) {
             case 'admin':
-                project.adminID = user._id;
+                if (!project.listMembers.includes(project.admin)) project.listMembers.push(project.admin);
+                if (isUserManager) {
+                    const index = project.listManagers.indexOf(email);
+                    project.listManagers.splice(index, 1);
+                }
+                if (isUserMember) {
+                    const index = project.listMembers.indexOf(email);
+                    project.listMembers.splice(index, 1);
+                }
+                project.admin = email;
                 break;
             case 'manager':
-                if (project.managerID.length <= 3 && !isUserManager) project.managerID.push(user._id);
-                break;
-            case 'supervisor':
-                if (!isUserSupervisor) project.supervisor.push(user._id);
+                if (project.listManagers.length <= 3 && !isUserManager) {
+                    if (isUserMember) {
+                        const index = project.listMembers.indexOf(email);
+                        project.listMembers.splice(index, 1);
+                    }
+                    project.listManagers.push(email);
+                }
                 break;
             case 'member':
-                if (isUserManager)
-                    project.managerID = project.managerID.filter((id) => id.toString() !== user._id.toString());
+                if (isUserManager) {
+                    const index = project.listManagers.indexOf(email);
+                    project.listManagers.splice(index, 1);
+                }
+                if (!isUserMember && project.admin !== email) project.listMembers.push(email);
                 break;
 
             default:

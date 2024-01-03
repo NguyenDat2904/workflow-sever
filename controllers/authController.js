@@ -27,8 +27,9 @@ const AuthController = {
             const payload = {
                 userName,
                 email,
+                fullName,
             };
-
+            console.log(process.env.SECRET_KEY_EMAIL);
             // hết hạn sau 3p
             const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
 
