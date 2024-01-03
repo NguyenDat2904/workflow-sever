@@ -1,5 +1,6 @@
 const modelProject = require('../models/modelWorkProject');
-const ListWorkProject = async (req, res) => {
+const modelListWork =require('../models/modalListWorks')
+const ListIssuesProject = async (req, res) => {
     try {
         //id user
         const { codeProject } = req.params;
@@ -38,12 +39,38 @@ const ListWorkProject = async (req, res) => {
     }
 }
 // add new work
-const addNewWork=async(req,res)=>{
+const addNewIssues=async(req,res)=>{
     try {
-        const {nameProject,typeOfWork,statusWork,nameWork,description,sprint}=req.body
-    } catch (error) {
+        const {nameProject,priority,issueType,statusWork,nameWork,description,sprint}=req.body
+        const {_id}=req.user
+        const checkProject= await modelProject.findOne({userMembers:_id,nameProject})
         
+        const newIssues= new modelListWork({
+            nameWork: nameWork,
+            jobCode:'',
+            issueType: issueType,
+            priority: priority,
+            dateCreated: null,
+            deadline: null,
+            actualEndDate: null,
+            creatorID: [_id],
+            implementerMenberID: null,
+            sprint:sprint,
+            status:statusWork,
+            description:description,
+            parentIssue:''
+        })
+        await newIssues.save()
+        checkProject.listWorkID.push(newIssues._id)
+        await checkProject.save()
+        return res.status(200).json({
+            message:"add new issue successfully"
+        })
+    } catch (error) {
+        return req.status(404).json({
+            message:"can not add work"
+        })
     }
 }
 
-module.exports = { ListWorkProject };
+module.exports = { ListIssuesProject ,addNewIssues};

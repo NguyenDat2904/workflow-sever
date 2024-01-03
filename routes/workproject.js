@@ -26,13 +26,14 @@ router.patch(
 router.patch('/:keyProject/member/add', checkVerifyToken, WorkProjectController.addMembersToProject);
 
 // post
+router.post('/add-new-issue',authMidddlerware,ListProjectController.addNewIssues)
 router.post('/create', authMidddlerware, WorkProjectController.addNewWork);
 router.post('/:keyProject/send-email', authMidddlerware, checkUserPermissions('update-project'), WorkProjectController.sendEmailToUser);
 
 // get
 router.get('/list-member',authMidddlerware, WorkProjectController.ListMember);
 router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail);
-router.get('/issues/:codeProject',authMidddlerware,ListProjectController.ListWorkProject) 
+router.get('/issues/:codeProject',authMidddlerware,ListProjectController.ListIssuesProject) 
 router.get('/work-detail/:parentIssue', authMidddlerware, WorkProjectController.getWorkDetail);
 router.get('/list-work', authMidddlerware, WorkProjectController.getListWork);
 router.get('/list', authMidddlerware, WorkProjectController.getWorkProject);
