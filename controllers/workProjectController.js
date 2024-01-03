@@ -12,36 +12,48 @@ require('dotenv').config();
 const getWorkProject = async (req, res) => {
     try {
         const { sortKey, deleteProject } = req.query;
-        const { _id } = req.user;
+        const { email } = req.user;
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        if (!_id || deleteProject === '') {
+        if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
         const totalUsers = await modelWorkProject.countDocuments();
-
         const totalPages = Math.ceil(totalUsers / 25);
-        const workProject = await modelWorkProject
-            .find({ userMembers: _id, deleteProject: deleteProject })
-            .populate({
-                path: 'listWorkID',
-                populate: {
-                    path: 'creatorID',
+        const workProject = await modelWorkProject.aggregate([
+            { $match: { userMembers: email, deleteProject: deleteProject === true ? true : false } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userAdmin',
+                    foreignField: 'email',
+                    as: 'infoUserAdmin',
                 },
-            })
-            .sort(
-                sortKey === 'nameProject'
-                    ? { nameProject: sortOrder }
-                    : sortKey === 'codeProject'
-                      ? { codeProject: sortOrder }
-                      : { createdAt: -1 },
-            )
-            .skip((page - 1) * limit)
-            .limit(limit);
-
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'listWorkID',
+                    foreignField: '_id',
+                    as: 'infoListWork',
+                },
+            },
+            { $project: { infoUserAdmin: { passWord: 0 } } },
+            {$unwind:'$infoUserAdmin'},
+            {
+                $sort:
+                    sortKey === 'nameProject'
+                        ? { nameProject: sortOrder }
+                        : sortKey === 'codeProject'
+                          ? { codeProject: sortOrder }
+                          : { createdAt: -1 },
+            },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+        ]);
         if (!workProject) {
             return res.status(404).json({
                 message: 'project not found',
@@ -109,7 +121,7 @@ const ProjectDetail = async (req, res) => {
             { $project: { infoUserAdmin: { passWord: 0 } } },
             { $match: { codeProject: codeProject } },
         ]);
-        if (project.length===0) {
+        if (project.length === 0) {
             return res.status(404).json({
                 message: 'not found project',
             });
@@ -377,23 +389,20 @@ const ListMember = async (req, res) => {
                 message: 'is not codeProject',
             });
         }
-        const memberProject = await modelWorkProject
-        .aggregate([
-          {
-            $lookup: {
-                from: 'users',
-                localField: 'userMembers',
-                foreignField: 'email',
-                as: 'infoUserMembers',
+        const memberProject = await modelWorkProject.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userMembers',
+                    foreignField: 'email',
+                    as: 'infoUserMembers',
+                },
             },
-        },
-       
-          { $match: { codeProject: codeProject } },
-        ])
-        console.log(memberProject.userMembers)
-        return res.status(200).json(
-            memberProject[0].infoUserMembers,
-        );
+
+            { $match: { codeProject: codeProject } },
+        ]);
+        console.log(memberProject.userMembers);
+        return res.status(200).json(memberProject[0].infoUserMembers);
     } catch (error) {
         console.log(error);
         return res.status(404).json({
