@@ -24,21 +24,13 @@ const getWorkProject = async (req, res) => {
         const totalUsers = await modelWorkProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject.aggregate([
-            { $match: { userMembers: email, deleteProject: deleteProject === true ? true : false } },
+            { $match: { listMembers: email, deleteProject: deleteProject === true ? true : false } },
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'userAdmin',
+                    localField: 'admin',
                     foreignField: 'email',
                     as: 'infoUserAdmin',
-                },
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'listWorkID',
-                    foreignField: '_id',
-                    as: 'infoListWork',
                 },
             },
             { $project: { infoUserAdmin: { passWord: 0 } } },
@@ -84,7 +76,7 @@ const ProjectDetail = async (req, res) => {
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'userManagers',
+                    localField: 'listManagers',
                     foreignField: 'email',
                     as: 'infoUserManagers',
                 },
@@ -92,15 +84,7 @@ const ProjectDetail = async (req, res) => {
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'listWorkID',
-                    foreignField: '_id',
-                    as: 'infoListWorkID',
-                },
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'userMembers',
+                    localField: 'listMembers',
                     foreignField: 'email',
                     as: 'infoUserMembers',
                 },
@@ -108,7 +92,7 @@ const ProjectDetail = async (req, res) => {
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'userAdmin',
+                    localField: 'admin',
                     foreignField: 'email',
                     as: 'infoUserAdmin',
                 },
@@ -188,10 +172,10 @@ const getWorkDetail = async (req, res) => {
 // add new work
 const addNewWork = async (req, res) => {
     try {
-        const { _id } = req.user;
+        const {email } = req.user;
         const { nameProject, codeProject } = req.body;
 
-        if (!_id || !nameProject || !codeProject) {
+        if ( !nameProject || !codeProject) {
             return res.status(400).json({
                 message: 'is not nameProject or codeProject or id',
             });
@@ -209,7 +193,7 @@ const addNewWork = async (req, res) => {
             nameProject: nameProject,
             listWorkID: [],
             listManagers: [],
-            admin: isemail,
+            admin: email,
             listMembers: [],
             codeProject: codeProject,
             startDay: new Date(),
