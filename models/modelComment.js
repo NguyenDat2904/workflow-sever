@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const CommentModal = new Schema(
     {
-        issueID: { type: mongoose.Schema.Types.ObjectId, ref: 'workprojects' },
+        issueID: { type: mongoose.Schema.Types.ObjectId, ref: 'listworks' },
         authorID: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
         content: { type: String },
         commentTime: { type: Date },
