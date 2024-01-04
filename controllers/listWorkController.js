@@ -119,6 +119,41 @@ const addNewIssues = async (req, res) => {
         });
     }
 };
+// list issue
+const ListSprint=async(req,res)=>{
+    try {
+        const {_idProject}=req.params
+        const skip=parseInt(req.query.skip)||1
+        const limit=parseInt(req.query.limit)||25
+        const search=req.query.search||''
+        if(!_idProject){
+            return res.status(400).json({
+                message:'is not id project'
+            })
+        }
+        const totalSprint= await modelSprint.find({projectID:_idProject})
+        const totalPage=Math.ceil(totalSprint.length/limit)
+        const sprintProject=await modelSprint.find({projectID:_idProject,$or:[{name:{$regex:search}},{sprintGoal:{$regex:search}},{status:{$regex:search}}]})
+        .sort({ createdAt: -1 })
+        .skip((skip -1 ) * limit)
+        .limit(limit)
+        if(!sprintProject.length===0){
+            return res.status(400).json({
+                message:'Not available sprint'
+            })
+        }
+        return res.status(200).json({
+            sprint:sprintProject,
+            page:skip,
+            totalPage
+        })
+    } catch (error) {
+        console.log(error)
+        return res. status(404).json({
+            message:'Can not issue '
+        })
+    }
+}
 // add sprint
 const addNewSprint = async (req, res) => {
     try {
@@ -240,4 +275,4 @@ const deleteIssue = async (req, res) => {
     });
 };
 
-module.exports = {editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren ,deleteIssue};
+module.exports = {ListSprint,editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren ,deleteIssue};
