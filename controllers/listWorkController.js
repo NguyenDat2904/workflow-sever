@@ -1,4 +1,4 @@
-const modelProject = require('../models/modelWorkProject');
+
 const modelListWork = require('../models/modalListWorks');
 const modelSprint = require('../models/modelSprint');
 
@@ -13,23 +13,23 @@ const ListIssuesProject = async (req, res) => {
                 message: 'is not id or jobCode',
             });
         }
-        const lengthListWork = await modelListWork.find({projectID:_idProject,parentIssue:null});
+        const lengthListWork = await modelListWork.find({ projectID: _idProject, parentIssue: null });
         const totalPage = Math.ceil(lengthListWork.length / 3);
-        const checkCodeProject = await modelListWork.find({projectID:_idProject,parentIssue:null})
-        .populate({
-            path:'sprint'
-        })
-        .populate({
-            path:'assignee',
-            select:'-passWord'
-        })
-        .populate({
-            path:'reporter',
-            select:'-passWord'
-        })
-        .sort({ createdAt: -1 })
-        .skip( (skipPage - 1) * limitPage)
-        .limit(limitPage);
+        const checkCodeProject = await modelListWork.find({ projectID: _idProject, parentIssue: null })
+            .populate({
+                path: 'sprint'
+            })
+            .populate({
+                path: 'assignee',
+                select: '-passWord'
+            })
+            .populate({
+                path: 'reporter',
+                select: '-passWord'
+            })
+            .sort({ createdAt: -1 })
+            .skip((skipPage - 1) * limitPage)
+            .limit(limitPage);
         if (!checkCodeProject) {
             return req.status(400).json({
                 message: 'codeProject does not exist',
@@ -47,10 +47,32 @@ const ListIssuesProject = async (req, res) => {
         });
     }
 };
+//issuesChildren
+const issuesChildren = async (req, res) => {
+    try {
+        const { _idIssueParent } = req.params
+        if (!_idIssueParent) {
+            return res.status(400).json({
+                message: 'is not id issue'
+            })
+        }
+        const checkIssueParent = await modelListWork.find({ parentIssue: _idIssueParent })
+        if (checkIssueParent.length === 0) {
+            return res.status(400).json({
+                message: 'is not issue children'
+            })
+        }
+        return res.status(200).json(checkIssueParent)
+    } catch (error) {
+        return res.status(404).json({
+            message: 'can not get issue parent'
+        })
+    }
+}
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const { 
+        const {
             projectID,
             issueType,
             summary,
@@ -63,9 +85,9 @@ const addNewIssues = async (req, res) => {
             startDate,
             dueDate,
         } = req.body;
-        if(!summary){
+        if (!summary) {
             return res.status(400).json({
-                message:'A summary is required'
+                message: 'A summary is required'
             })
         }
         const newStartDate = new Date(startDate)
@@ -73,22 +95,22 @@ const addNewIssues = async (req, res) => {
         const newIssues = new modelListWork({
             projectID,
             issueType,
-            status:"TODO",
+            status: "TODO",
             summary,
             description,
-            assignee:assigneeID,
-            reporter:reporterID,
+            assignee: assigneeID,
+            reporter: reporterID,
             priority,
-            sprint:sprintID,
+            sprint: sprintID,
             storyPointEstimate,
-            startDate: newStartDate||new Date(),
-            dueDate:newDueDate,
-            parentIssue:null,
+            startDate: newStartDate || new Date(),
+            dueDate: newDueDate,
+            parentIssue: null,
         });
         await newIssues.save();
         return res.status(200).json({
             message: 'add new issue successfully',
-            data:newIssues
+            data: newIssues
         });
     } catch (error) {
         console.log(error)
@@ -101,36 +123,89 @@ const addNewIssues = async (req, res) => {
 const addNewSprint = async (req, res) => {
     try {
         const { projectID, name, startDate, endDate, sprintGoal, status } = req.body;
-        if (!projectID||!name|| !startDate|| !endDate|| !sprintGoal|| !status) {
+        if (!projectID || !name || !startDate || !endDate || !sprintGoal || !status) {
             return res.status(400).json({
                 message: 'not enough information',
             });
         }
-        const checkName= await modelSprint.findOne({name})
-        if(checkName){
+        const checkName = await modelSprint.findOne({ name })
+        if (checkName) {
             return res.status(400).json({
-                message:'name already exists'
+                message: 'name already exists'
             })
         }
-        const newStartDate=new Date(startDate)
-        const newEndDate=new Date(endDate)
+        const newStartDate = new Date(startDate)
+        const newEndDate = new Date(endDate)
         const newIssue = new modelSprint({
             projectID,
             name,
-            startDate:newStartDate||new Date(),
-            endDate:newEndDate,
+            startDate: newStartDate || new Date(),
+            endDate: newEndDate,
             sprintGoal,
             status,
         });
         await newIssue.save()
-    return res.status(200).json({
-        message:'add new successfully',
-        data:newIssue
-    })
+        return res.status(200).json({
+            message: 'add new successfully',
+            data: newIssue
+        })
     } catch (error) {
         return res.status(404).json({
-            message:'can not add new'
+            message: 'can not add new'
         })
     }
 };
-module.exports = { ListIssuesProject, addNewIssues,addNewSprint};
+//edit information
+const editInformationIssue = async (req, res) => {
+    try {
+        const { idIssue } = req.params
+        const { fillName, content } = req.body
+        if (!fillName || !content) {
+            return res.status(400).json({
+                message: 'is not fillName or content'
+            })
+        }
+        const newDueDate=new Date(content)
+        const checkIssue = await modelListWork.findById({ _id: idIssue })
+        switch (fillName) {
+            case 'summary':
+                checkIssue.summary = content
+
+                break;
+            case 'status':
+                checkIssue.status = content
+
+                break;
+            case 'priority':
+                checkIssue.priority = content
+
+                break;
+            case 'assignee':
+                checkIssue.assignee = content
+
+                break;
+            case 'reporter':
+                checkIssue.reporter = content
+
+                break;
+            case 'startDate':
+                checkIssue.startDate = newDueDate
+
+                break;
+            case 'dueDate':
+                checkIssue.dueDate = newDueDate
+                break;
+            default:
+                return res.status(400).json({
+                    message:'FillName does not exist'
+                })
+        }
+        await checkIssue.save()
+        return res.status(200).json(checkIssue)
+    } catch (error) {
+        return res.status(404).json({
+            message:'can not edit issue'
+        })
+    }
+}
+module.exports = {editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren };
