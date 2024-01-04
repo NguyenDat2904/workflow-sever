@@ -118,57 +118,8 @@ const ProjectDetail = async (req, res) => {
         });
     }
 };
-// lấy list công việc của hàm getWorkProject đã lọc công việc theo id user trả về
-const getListWork = async (req, res) => {
-    try {
-        const { nameProject } = req.query;
-        const { _id } = req.user;
-        if (!nameProject || !_id) {
-            return res.status(404).json({
-                message: 'not found id or nameProject',
-            });
-        }
-        //check project
-        const checkProject = await modelWorkProject.findOne({ userMembers: _id, nameProject: nameProject }).populate({
-            path: 'listWorkID',
-            populate: {
-                path: 'creatorID',
-            },
-        });
-        if (!checkProject) {
-            return res.status(404).json({
-                message: 'project not found',
-            });
-        }
-        res.status(200).json(checkProject);
-    } catch (error) {
-        res.status(404).json({
-            message: 'can not get data list work  ',
-        });
-    }
-};
-//lấy công việc chi tiết của user qua lọc của hàm getListWork theo project
-const getWorkDetail = async (req, res) => {
-    try {
-        const { parentIssue } = req.params;
-        if (!parentIssue) {
-            return res.status(404).json({
-                message: 'not found id',
-            });
-        }
-        const WorkDetail = await modelListWork.findOne({ parentIssue: parentIssue });
-        if (!WorkDetail) {
-            return res.status(404).json({
-                message: 'project not found',
-            });
-        }
-        res.status(200).json(WorkDetail);
-    } catch (error) {
-        return res.status(404).json({
-            message: 'can not get data work detail ',
-        });
-    }
-};
+
+
 // add new work
 const addNewWork = async (req, res) => {
     try {
@@ -855,13 +806,34 @@ const updatePermissions = async (req, res) => {
         res.status(500).json({ error });
     }
 };
-
+//Delete the project directly
+const DeleteTheProjectDirectly=async(req,res)=>{
+  try {
+    const {idProject}=req.params
+    if(!idProject){
+      return res.status(400).json({
+        message:'is not id Project'
+      })
+    }
+    const deleteProject=await modelWorkProject.findByIdAndDelete({_id:idProject})
+    if(!deleteProject){
+      return res.status(400).json({
+        message:'Could not find a project to delete'
+      })
+    }
+    return res.status(200).json({
+      message:'delete project successfully'
+    })
+  } catch (error) {
+    return res.status(404).json({
+      message:'Can not delete project'
+    })
+  }
+}
 module.exports = {
     DeleteExistingMembers,
     restoreProject,
     getWorkProject,
-    getListWork,
-    getWorkDetail,
     editProjectInformation,
     deleteProject,
     addNewWork,
@@ -870,4 +842,5 @@ module.exports = {
     ListMember,
     ProjectDetail,
     updatePermissions,
+    DeleteTheProjectDirectly
 };

@@ -40,8 +40,6 @@ router.post(
 // get
 router.get('/list-member', authMidddlerware, WorkProjectController.ListMember);
 router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail); 
-router.get('/work-detail/:parentIssue', authMidddlerware, WorkProjectController.getWorkDetail);
-router.get('/list-work', authMidddlerware, WorkProjectController.getListWork);
 router.get('/list', authMidddlerware, WorkProjectController.getWorkProject);
 
 // delete
@@ -50,5 +48,11 @@ router.delete(
     authMidddlerware,
     checkUserPermissions('delete-project'),
     WorkProjectController.DeleteExistingMembers,
+);
+router.delete(
+    '/:keyProject/delete-the-project-directly/:idProject',
+    authMidddlerware,
+    checkUserPermissions('delete-project'),
+    WorkProjectController.DeleteTheProjectDirectly,
 );
 module.exports = router;
