@@ -90,8 +90,8 @@ const addNewIssues = async (req, res) => {
                 message: 'A summary is required'
             })
         }
-        const newStartDate = new Date(startDate)
-        const newDueDate = new Date(dueDate)
+        const newStartDate = new Date(startDate);
+        const newDueDate = new Date(dueDate);
         const newIssues = new modelListWork({
             projectID,
             issueType,
@@ -113,7 +113,7 @@ const addNewIssues = async (req, res) => {
             data: newIssues
         });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(404).json({
             message: 'can not add work',
         });
@@ -208,4 +208,36 @@ const editInformationIssue = async (req, res) => {
         })
     }
 }
-module.exports = {editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren };
+//delete issue
+const deleteIssue = async (req, res) => {
+    const { issueID, keyProject } = req.params;
+
+    if (!issueID) {
+        return res.status(400).json({
+            message: 'issueID not found',
+        });
+    }
+    const project = await modelProject.findOne({ codeProject: keyProject });
+    if (!project) {
+        return res.status(400).json({
+            message: 'keyProject not found',
+        });
+    }
+
+    const issue = await modelListWork.findByIdAndDelete({ _id: issueID });
+    if (!issue) {
+        return res.status(400).json({
+            message: 'Deleting issue failed',
+        });
+    }
+
+    const index = project.listWorkID.toString().indexOf(issueID);
+    project.listWorkID.splice(index, 1);
+
+    await project.save();
+    res.json({
+        message: 'Deleted issue successfully',
+    });
+};
+
+module.exports = {editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren ,deleteIssue};

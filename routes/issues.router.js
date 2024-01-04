@@ -13,5 +13,7 @@ router.post('/add-new-sprint/:keyProject',authMidddlerware,permissions('create-s
 //patch
 router.patch('/edit-information/:idIssue',authMidddlerware,ListProjectController.editInformationIssue)
 
+// delete
+router.delete('/:keyProject/:issueID', authMidddlerware, permissions('delete-issue'), ListProjectController.deleteIssue)
 
-module.exports=router
+module.exports = router;
