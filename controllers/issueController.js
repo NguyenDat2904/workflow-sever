@@ -10,6 +10,7 @@ const listIssuesProject = async (req, res) => {
         const search = req.query.search || '';
         const sprintID=req.query.sprintID
         const parentIssueID=req.query.parentIssueID
+        const assignee=req.query.assignee
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -25,6 +26,9 @@ const listIssuesProject = async (req, res) => {
                     sprint:sprintID
                 },
                  ...parentIssueID!==undefined && {parentIssue:parentIssueID==="null"?null:parentIssueID},
+                 ...assignee && {
+                    assignee:assignee
+                 },
                 $or: [
                     { summary: { $regex: search } },
                     { priority: { $regex: search } },
