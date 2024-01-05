@@ -1,4 +1,5 @@
 
+const { query } = require('express');
 const modelListWork = require('../models/modalListWorks');
 const modelSprint = require('../models/modelSprint');
 
@@ -275,5 +276,42 @@ const deleteIssue = async (req, res) => {
         message: 'Deleted issue successfully',
     });
 };
-
-module.exports = {ListSprint,editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren ,deleteIssue};
+//list issues in broad
+const listIssuesBroad=async(req,res)=>{
+    try {
+        const {idProject}=req.params
+        const skip=parseInt(req.query.skip)||1
+        const limit=parseInt(req.query.limit)||25
+        const searchIssueUser=req.query.issueUser||""
+        if(!idProject){
+            return res.status(400).json({
+                message:'is not id project'
+            })
+        }
+        const countIssue=await modelListWork.find({projectID:idProject,parentIssue:{$ne: null}})
+        const totalPage=Math.ceil(countIssue.length/limit)
+        const checkIssues= await modelListWork.find({projectID:idProject,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
+        .populate({
+            path:'parentIssue'
+        })
+        .skip((skip -1) * limit)
+        .limit(limit)
+        if(!checkIssues){
+            return res.status(400).json({
+                message:'is not issues of project'
+            })
+        }
+        return res.status(200).json({
+            issuesBroad:checkIssues,
+            page:skip,
+            totalPage
+            
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(404).json({
+            message:"can not get issues broad"
+        })
+    }
+}
+module.exports = {listIssuesBroad,ListSprint,editInformationIssue, ListIssuesProject, addNewIssues, addNewSprint, issuesChildren ,deleteIssue};

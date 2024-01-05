@@ -1,6 +1,5 @@
 const modelWorkProject = require('../models/modelWorkProject');
-const modelListWork = require('../models/modalListWorks');
-const modalWorkDetail = require('../models/modelWorkDetail');
+const modelSprint=require('../models/modelSprint')
 const dataImgProject = require('../imgProject.json');
 const userModel = require('../models/modelUser');
 const { transporter, checkEmail } = require('../helpers/email');
@@ -147,7 +146,7 @@ const addNewWork = async (req, res) => {
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelWorkProject({
             nameProject: nameProject,
-            listWorkID: [],
+            
             listManagers: [],
             admin: email,
             listMembers: [],
@@ -161,6 +160,16 @@ const addNewWork = async (req, res) => {
             imgProject: dataImgProject[randomImgProject],
         });
         await newProject.save();
+        
+        const newSprint=new modelSprint({
+          projectID:newProject._id,
+          name:'Sprint 1',
+          startDate: new Date(),
+          endDate: null,
+          sprintGoal:'',
+          status:'',
+        })
+        await newSprint.save()
         return res.status(200).json({
             message: 'Add new successfully',
             data: newProject,

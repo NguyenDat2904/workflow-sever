@@ -5,6 +5,7 @@ const permissions=require('../middlewares/checkUserPermissions')
 const ListProjectController= require('../controllers/listWorkController')
 
 //get
+router.get('/broad/:idProject',ListProjectController.listIssuesBroad)
 router.get('/of-sprint/:_idProject',authMidddlerware,ListProjectController.ListSprint)
 router.get('/children/:_idIssueParent',authMidddlerware,ListProjectController.issuesChildren)
 router.get('/:_idProject',authMidddlerware,ListProjectController.ListIssuesProject) 
