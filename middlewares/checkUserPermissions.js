@@ -12,7 +12,7 @@ const checkUserPermissions = (action) => async (req, res, next) => {
         }
 
         // get project
-        const project = await modelProject.findOne({ codeProject: codeProject });
+        const project = await modelProject.findOne({ codeProject });
         if (!project) {
             return res.status(404).json({
                 message: 'not found project',

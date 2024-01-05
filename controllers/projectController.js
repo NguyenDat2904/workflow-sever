@@ -19,7 +19,6 @@ const getProject = async (req, res) => {
                 message: 'not found id or deleteProject',
             });
         }
-
         const totalUsers = await modelProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
         const Project = await modelProject.aggregate([
@@ -60,7 +59,9 @@ const getProject = async (req, res) => {
             });
         }
         return res.status(200).json({
-            data: Project,
+            data:Project,
+            page,
+            totalPages,
         });
     } catch (error) {
         console.log(error);
@@ -147,7 +148,7 @@ const addNewWork = async (req, res) => {
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelProject({
             nameProject: nameProject,
-            listWorkID: [],
+            
             listManagers: [],
             admin: email,
             listMembers: [],
@@ -161,6 +162,16 @@ const addNewWork = async (req, res) => {
             imgProject: dataImgProject[randomImgProject],
         });
         await newProject.save();
+        
+        const newSprint=new modelSprint({
+          projectID:newProject._id,
+          name:'Sprint 1',
+          startDate: new Date(),
+          endDate: null,
+          sprintGoal:'',
+          status:'',
+        })
+        await newSprint.save()
         return res.status(200).json({
             message: 'Add new successfully',
             data: newProject,

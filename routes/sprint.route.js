@@ -5,7 +5,7 @@ const permissions = require('../middlewares/checkUserPermissions');
 const sprintController = require('../controllers/sprintController');
 
 // get
-router.get('/list/:_idProject', authMidddlerware, sprintController.listSprint);
+router.get('/list/:codeProject', authMidddlerware, sprintController.listSprint);
 
 // post
 router.post('/:codeProject/add', authMidddlerware, permissions('create-sprint'), sprintController.addNewSprint);
