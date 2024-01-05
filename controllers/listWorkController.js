@@ -136,17 +136,11 @@ const addNewSprint = async (req, res) => {
 };
 
 const deleteIssue = async (req, res) => {
-    const { issueID, keyProject } = req.params;
+    const { issueID } = req.params;
 
     if (!issueID) {
         return res.status(400).json({
             message: 'issueID not found',
-        });
-    }
-    const project = await modelProject.findOne({ codeProject: keyProject });
-    if (!project) {
-        return res.status(400).json({
-            message: 'keyProject not found',
         });
     }
 
@@ -157,10 +151,6 @@ const deleteIssue = async (req, res) => {
         });
     }
 
-    const index = project.listWorkID.toString().indexOf(issueID);
-    project.listWorkID.splice(index, 1);
-
-    await project.save();
     res.json({
         message: 'Deleted issue successfully',
     });
