@@ -24,7 +24,7 @@ const getWorkProject = async (req, res) => {
         const totalUsers = await modelWorkProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject.aggregate([
-            { $match: { listMembers: email, deleteProject: deleteProject === true ? true : false } },
+            { $match: { $or:[{admin:email, deleteProject: deleteProject === true ? true : false },{listManagers:email, deleteProject: deleteProject === true ? true : false},{listMembers:email, deleteProject: deleteProject === true ? true : false}] } },
             {
                 $lookup: {
                     from: 'users',

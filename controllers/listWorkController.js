@@ -8,6 +8,7 @@ const ListIssuesProject = async (req, res) => {
         const { _idProject } = req.params;
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
+        const search=req.query.search||''
         if (!_idProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -15,7 +16,7 @@ const ListIssuesProject = async (req, res) => {
         }
         const lengthListWork = await modelListWork.find({ projectID: _idProject, parentIssue: null });
         const totalPage = Math.ceil(lengthListWork.length / 3);
-        const checkCodeProject = await modelListWork.find({ projectID: _idProject, parentIssue: null })
+        const checkCodeProject = await modelListWork.find({ projectID: _idProject, parentIssue: null,$or:[{summary:{$regex:search}},{priority:{$regex:search}},{issueType:{$regex:search}}] })
             .populate({
                 path: 'sprint'
             })
@@ -133,7 +134,7 @@ const ListSprint=async(req,res)=>{
         }
         const totalSprint= await modelSprint.find({projectID:_idProject})
         const totalPage=Math.ceil(totalSprint.length/limit)
-        const sprintProject=await modelSprint.find({projectID:_idProject,$or:[{name:{$regex:search}},{sprintGoal:{$regex:search}},{status:{$regex:search}}]})
+        const sprintProject=await modelSprint.find({projectID:_idProject,$or:[{name:{$regex:search}},{sprintGoal:{$regex:search}}]})
         .sort({ createdAt: -1 })
         .skip((skip -1 ) * limit)
         .limit(limit)
