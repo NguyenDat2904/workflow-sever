@@ -356,7 +356,6 @@ const sendEmailToUser = async (req, res) => {
         const { keyProject } = req.params;
         const { email, userName, role } = req.body;
 
-        // check user in project
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
         if (!project) {
