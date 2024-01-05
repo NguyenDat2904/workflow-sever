@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const ModelProject = new Schema(
     {
         nameProject: { type: String },
-        listWorkID: [{ type: mongoose.Schema.Types.ObjectId, ref: 'issues' }],
         listMembers: [{ type: String, ref: 'users' }],
         codeProject: { type: String },
         listManagers: [{ type: String, ref: 'users' }],
