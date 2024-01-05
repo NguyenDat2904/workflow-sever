@@ -59,7 +59,7 @@ const getProject = async (req, res) => {
             });
         }
         return res.status(200).json({
-            Project,
+            data:Project,
             page,
             totalPages,
         });
