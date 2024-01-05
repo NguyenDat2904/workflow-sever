@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const IssueModel = new Schema(
     {
-        projectID: { type: mongoose.Types.ObjectId, ref: 'workprojects' },
+        projectID: { type: mongoose.Types.ObjectId, ref: 'projects' },
         issueType: { type: String, enum: ['EPIC', 'TASK', 'USER_STORY', 'BUG'], default: 'USER_STORY' },
         status: { type: String },
         summary: { type: String },
@@ -15,9 +15,9 @@ const IssueModel = new Schema(
         storyPointEstimate: { type: Number },
         startDate: { type: Date },
         dueDate: { type: Date },
-        parentIssue: { type: mongoose.Types.ObjectId, ref: 'listworks' },
+        parentIssue: { type: mongoose.Types.ObjectId, ref: 'issues' },
     },
     { timestamps: true },
-    { collection: 'listworks' },
+    { collection: 'issues' },
 );
-module.exports = mongoose.model('listworks', IssueModel);
+module.exports = mongoose.model('issues', IssueModel);

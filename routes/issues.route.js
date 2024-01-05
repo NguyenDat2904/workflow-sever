@@ -2,21 +2,21 @@ const express = require('express');
 const router = express.Router();
 const authMidddlerware = require('../middlewares/authMiddleware');
 const permissions = require('../middlewares/checkUserPermissions');
-const ListProjectController = require('../controllers/listWorkController');
+const issueController = require('../controllers/issueController');
 
 //get
-router.get('/children/:_idIssueParent', authMidddlerware, ListProjectController.issuesChildren);
-router.get('/:_idProject', authMidddlerware, ListProjectController.ListIssuesProject);
+router.get('/children/:_idIssueParent', authMidddlerware, issueController.issuesChildren);
+router.get('/:_idProject', authMidddlerware, issueController.ListIssuesProject);
 
 //post
-router.post('/:keyProject/add', authMidddlerware, permissions('create-issue'), ListProjectController.addNewIssues);
+router.post('/:keyProject/add', authMidddlerware, permissions('create-issue'), issueController.addNewIssues);
 
 //patch
 router.patch(
     '/:keyProject/edit-information/:idIssue',
     authMidddlerware,
     permissions('update-issue'),
-    ListProjectController.editInformationIssue,
+    issueController.editInformationIssue,
 );
 
 // delete
@@ -24,7 +24,7 @@ router.delete(
     '/:keyProject/:issueID',
     authMidddlerware,
     permissions('delete-issue'),
-    ListProjectController.deleteIssue,
+    issueController.deleteIssue,
 );
 
 module.exports = router;

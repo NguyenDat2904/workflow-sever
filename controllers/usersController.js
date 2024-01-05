@@ -1,5 +1,5 @@
 const checkEmail = require('../helpers/email');
-const UsersModal = require('../models/modelUser');
+const UsersModal = require('../models/user');
 const token = require('../helpers/tokenHelpers');
 const { transporter } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
