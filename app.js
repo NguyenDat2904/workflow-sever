@@ -9,6 +9,7 @@ const indexRouter = require('./routes/index');
 const workRouter = require('./routes/project.route');
 const issues = require('./routes/issues.route');
 const sprint = require('./routes/sprint.route');
+const comment = require('./routes/comment.route');
 
 const app = express();
 const db = require('./configs/db');
@@ -31,6 +32,7 @@ app.use('/issues', issues);
 app.use('/sprints', sprint);
 app.use('/projects', workRouter);
 app.use('/users', usersRouter);
+app.use('/comments', comment);
 app.use('/', indexRouter);
 
 // catch 404 and forward to error handler

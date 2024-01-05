@@ -72,6 +72,7 @@ const issuesChildren = async (req, res) => {
         }
         return res.status(200).json(checkIssueParent);
     } catch (error) {
+        console.log();g
         return res.status(404).json({
             message: 'can not get issue parent',
         });
