@@ -18,6 +18,7 @@ const MANAGER_PROJECT = [
     'update-sprint',
     'delete-sprint',
 ];
+
 const MEMBER = ['update-issue'];
 
 module.exports = {
