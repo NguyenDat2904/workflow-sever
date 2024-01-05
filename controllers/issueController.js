@@ -3,20 +3,21 @@ const modelIssue = require('../models/issue');
 const listIssuesProject = async (req, res) => {
     try {
         //id user
-        const { _idProject } = req.params;
+        const { codeProject } = req.params;
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        if (!_idProject) {
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const lengthIssue = await modelIssue.find({ projectID: _idProject, parentIssue: null });
+        const checkProject=await modelWorkProject.findOne({codeProject})
+        const lengthIssue = await modelIssue.find({ projectID: checkProject._id, parentIssue: null });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
             .find({
-                projectID: _idProject,
+                projectID: checkProject._id,
                 parentIssue: null,
                 $or: [
                     { summary: { $regex: search } },
@@ -210,8 +211,48 @@ const deleteIssue = async (req, res) => {
         message: 'Deleted issue successfully',
     });
 };
+//list issues in broad
+const listIssuesBroad=async(req,res)=>{
+    try {
+        const {codeProject}=req.params
+        const skip=parseInt(req.query.skip)||1
+        const limit=parseInt(req.query.limit)||25
+        const searchIssueUser=req.query.issueUser||""
+        if(!codeProject){
+            return res.status(400).json({
+                message:'is not id project'
+            })
+        }
+        const checkProject=await modelWorkProject.findOne({codeProject})
+        const countIssue=await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null}})
+        const totalPage=Math.ceil(countIssue.length/limit)
+        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
+        .populate({
+            path:'parentIssue'
+        })
+        .skip((skip -1) * limit)
+        .limit(limit)
+        if(!checkIssues){
+            return res.status(400).json({
+                message:'is not issues of project'
+            })
+        }
+        return res.status(200).json({
+            issuesBroad:checkIssues,
+            page:skip,
+            totalPage
+            
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(404).json({
+            message:"can not get issues broad"
+        })
+    }
+}
 
 module.exports = {
+    listIssuesBroad,
     editInformationIssue,
     listIssuesProject,
     addNewIssues,
