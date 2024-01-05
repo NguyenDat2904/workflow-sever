@@ -23,7 +23,7 @@ const addNewSprint = async (req, res) => {
             startDate: startDate?startDate:null,
             endDate: startDate?endDate:null,
             sprintGoal:'',
-            status:'',
+            status:'PENDING',//RUNNING AND DONE
         });
         await newIssue.save();
         return res.status(200).json({
