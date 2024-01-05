@@ -16,15 +16,20 @@ const getWorkProject = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
+        const key=req.query.key||''
         if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
+      
         const totalUsers = await modelWorkProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject.aggregate([
-            { $match: { $or:[{admin:email, deleteProject: deleteProject === true ? true : false },{listManagers:email, deleteProject: deleteProject === true ? true : false},{listMembers:email, deleteProject: deleteProject === true ? true : false}] } },
+            { $match: { $or:[{admin:email, deleteProject: deleteProject === true ? true : false },
+              {listManagers:email, deleteProject: deleteProject === true ? true : false},
+              {listMembers:email, deleteProject: deleteProject === true ? true : false}],
+            $or:[{codeProject:{$regex:key}}] } },
             {
                 $lookup: {
                     from: 'users',
