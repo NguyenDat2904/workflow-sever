@@ -8,6 +8,6 @@ const sprintController = require('../controllers/sprintController');
 router.get('/list/:_idProject', authMidddlerware, sprintController.listSprint);
 
 // post
-router.post('/:keyProject/add', authMidddlerware, permissions('create-sprint'), sprintController.addNewSprint);
+router.post('/:codeProject/add', authMidddlerware, permissions('create-sprint'), sprintController.addNewSprint);
 
 module.exports = router;

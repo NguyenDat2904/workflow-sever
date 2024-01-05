@@ -60,9 +60,7 @@ const getProject = async (req, res) => {
             });
         }
         return res.status(200).json({
-            Project,
-            page,
-            totalPages,
+            data: Project,
         });
     } catch (error) {
         console.log(error);
@@ -177,13 +175,13 @@ const addNewWork = async (req, res) => {
 //delete project
 const deleteProject = async (req, res) => {
     try {
-        const { keyProject } = req.params;
-        if (!keyProject) {
+        const { codeProject } = req.params;
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id',
             });
         }
-        const findProjectID = await modelProject.findOne({ codeProject: keyProject });
+        const findProjectID = await modelProject.findOne({ codeProject: codeProject });
         if (!findProjectID) {
             return res.status(400).json({
                 message: 'user not found',
@@ -194,9 +192,9 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-            const checkAfterTimeOut = await modelProject.findOne({ codeProject: keyProject });
+            const checkAfterTimeOut = await modelProject.findOne({ codeProject: codeProject });
             if (checkAfterTimeOut.deleteProject === true) {
-                await modelProject.findOneAndDelete({ codeProject: keyProject });
+                await modelProject.findOneAndDelete({ codeProject: codeProject });
             }
         }, 3600000);
         return res.status(200).json({
@@ -212,13 +210,13 @@ const deleteProject = async (req, res) => {
 //restore project
 const restoreProject = async (req, res) => {
     try {
-        const { keyProject } = req.params;
-        if (!keyProject) {
+        const { codeProject } = req.params;
+        if (!codeProject) {
             return res.status(404).json({
-                message: 'Is nos keyProject ',
+                message: 'Is nos codeProject ',
             });
         }
-        const checkId = await modelProject.findOne({ codeProject: keyProject });
+        const checkId = await modelProject.findOne({ codeProject: codeProject });
         if (!checkId) {
             return res.status(401).json({
                 message: 'not found project want restore',
@@ -243,14 +241,14 @@ const restoreProject = async (req, res) => {
 //Delete existing members in the project
 const deleteExistingMembers = async (req, res) => {
     try {
-        const { keyProject, _idMemberDelete } = req.params;
-        if (!keyProject || !_idMemberDelete) {
+        const { codeProject, _idMemberDelete } = req.params;
+        if (!codeProject || !_idMemberDelete) {
             return res.status(404).json({
                 message: 'Is nos id or _idMemberDelete',
             });
         }
         const project = await modelProject.findOneAndUpdate(
-            { codeProject: keyProject },
+            { codeProject: codeProject },
             { $pull: { userMembers: _idMemberDelete } },
             { new: true },
         );
@@ -267,16 +265,16 @@ const deleteExistingMembers = async (req, res) => {
 
 const editProjectInformation = async (req, res) => {
     try {
-        const { keyProject } = req.params;
-        const { codeProject, nameProject, imgProject } = req.body;
+        const { codeProject } = req.params;
+        const { nameProject, imgProject } = req.body;
 
-        // check keyProject project
-        if (!keyProject) {
+        // check codeProject project
+        if (!codeProject) {
             return res.status(404).json({
-                message: 'not found keyProject',
+                message: 'not found codeProject',
             });
         }
-        const project = await modelProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: codeProject });
 
         // check project
         if (!project) {
@@ -287,18 +285,15 @@ const editProjectInformation = async (req, res) => {
 
         // check codeProject
         const checkCodeProject = await modelProject.findOne({ codeProject });
-        if (checkCodeProject && checkCodeProject.codeProject !== keyProject) {
+        if (checkCodeProject && checkCodeProject.codeProject !== codeProject) {
             return res.status(400).json({
                 message: 'codeProject already exists',
             });
         }
 
-        if (codeProject && nameProject && imgProject) {
-            project.codeProject = codeProject;
+        if (nameProject && imgProject) {
             project.nameProject = nameProject;
             project.imgProject = imgProject;
-        } else if (codeProject) {
-            project.codeProject = codeProject;
         } else if (nameProject) {
             project.nameProject = nameProject;
         } else if (imgProject) {
@@ -349,15 +344,15 @@ const listMember = async (req, res) => {
 
 const sendEmailToUser = async (req, res) => {
     try {
-        const { keyProject } = req.params;
+        const { codeProject } = req.params;
         const { email, userName, role } = req.body;
 
         // check user in project
-        const project = await modelProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: codeProject });
         const user = await modelUser.findOne({ email });
         if (!project) {
             return res.status(400).json({
-                message: 'keyProject not found',
+                message: 'codeProject not found',
             });
         }
         // check user trong project
@@ -713,11 +708,11 @@ const sendEmailToUser = async (req, res) => {
 
 const addMembersToProject = async (req, res) => {
     try {
-        const { keyProject } = req.params;
+        const { codeProject } = req.params;
         const { email, role } = req.user;
 
         // tìm dự án
-        const project = await modelProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: codeProject });
 
         if (!project) {
             return res.status(400).json({
@@ -753,21 +748,21 @@ const addMembersToProject = async (req, res) => {
 
 const updatePermissions = async (req, res) => {
     try {
-        const { keyProject } = req.params;
+        const { codeProject } = req.params;
         const { email, role } = req.body;
 
-        if (!keyProject || !email || !role) {
+        if (!codeProject || !email || !role) {
             return res.status(400).json({
-                message: 'keyProject or email or role not found',
+                message: 'codeProject or email or role not found',
             });
         }
 
-        const project = await modelProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: codeProject });
         const user = await modelUser.findOne({ email });
 
         if (!project || !user) {
             return res.status(400).json({
-                message: 'keyProject or email does not exist',
+                message: 'codeProject or email does not exist',
             });
         }
         const isUserManager = project.listManagers.includes(email);
