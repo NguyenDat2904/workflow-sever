@@ -359,7 +359,11 @@ const sendEmailToUser = async (req, res) => {
         // check user in project
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
-        
+        if (!project) {
+            return res.status(400).json({
+                message: 'keyProject not found',
+            });
+        }
         // check user trong project
         if (user) {
             const isUserAdmin = project.admin === email.toString();
