@@ -16,20 +16,26 @@ const getWorkProject = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const key=req.query.key||''
+        const key = req.query.key || '';
         if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
             });
         }
-      
+
         const totalUsers = await modelWorkProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
         const workProject = await modelWorkProject.aggregate([
-            { $match: { $or:[{admin:email, deleteProject: deleteProject === true ? true : false },
-              {listManagers:email, deleteProject: deleteProject === true ? true : false},
-              {listMembers:email, deleteProject: deleteProject === true ? true : false}],
-            $or:[{codeProject:{$regex:key}}] } },
+            {
+                $match: {
+                    $or: [
+                        { admin: email, deleteProject: deleteProject === true ? true : false },
+                        { listManagers: email, deleteProject: deleteProject === true ? true : false },
+                        { listMembers: email, deleteProject: deleteProject === true ? true : false },
+                    ],
+                    $or: [{ codeProject: { $regex: key } }],
+                },
+            },
             {
                 $lookup: {
                     from: 'users',
@@ -39,7 +45,7 @@ const getWorkProject = async (req, res) => {
                 },
             },
             { $project: { infoUserAdmin: { passWord: 0 } } },
-            {$unwind:'$infoUserAdmin'},
+            { $unwind: '$infoUserAdmin' },
             {
                 $sort:
                     sortKey === 'nameProject'
@@ -124,14 +130,13 @@ const ProjectDetail = async (req, res) => {
     }
 };
 
-
 // add new work
 const addNewWork = async (req, res) => {
     try {
-        const {email } = req.user;
+        const { email } = req.user;
         const { nameProject, codeProject } = req.body;
 
-        if ( !nameProject || !codeProject) {
+        if (!nameProject || !codeProject) {
             return res.status(400).json({
                 message: 'is not nameProject or codeProject or id',
             });
@@ -354,9 +359,13 @@ const sendEmailToUser = async (req, res) => {
         // check user in project
         const project = await modelWorkProject.findOne({ codeProject: keyProject });
         const user = await userModel.findOne({ email });
+        
+        // check user trong project
         if (user) {
-            const findUserInProject = project.listMembers.find((emailUser) => emailUser === email);
-            if (findUserInProject) {
+            const isUserAdmin = project.admin === email.toString();
+            const isUserManager = project.listManagers.includes(email.toString());
+            const isUserMember = project.listMembers.includes(email.toString());
+            if (isUserAdmin || isUserManager || isUserMember) {
                 return res.status(400).json({
                     message: 'The user already exists in this project',
                 });
@@ -716,22 +725,8 @@ const addMembersToProject = async (req, res) => {
             });
         }
 
-        // check user trong project
-        const isUserAdmin = project.admin === email.toString();
-        const isUserManager = project.listManagers.includes(email.toString());
-        const isUserMember = project.listMembers.includes(email.toString());
-
-        if (isUserAdmin || isUserManager || isUserMember) {
-            return res.status(400).json({
-                message: 'The user already exists in the project',
-            });
-        }
-
         // add user
         switch (role) {
-            case 'admin':
-                project.admin = email;
-                break;
             case 'manager':
                 project.listManagers.push(email);
                 break;
@@ -812,29 +807,29 @@ const updatePermissions = async (req, res) => {
     }
 };
 //Delete the project directly
-const DeleteTheProjectDirectly=async(req,res)=>{
-  try {
-    const {idProject}=req.params
-    if(!idProject){
-      return res.status(400).json({
-        message:'is not id Project'
-      })
+const DeleteTheProjectDirectly = async (req, res) => {
+    try {
+        const { idProject } = req.params;
+        if (!idProject) {
+            return res.status(400).json({
+                message: 'is not id Project',
+            });
+        }
+        const deleteProject = await modelWorkProject.findByIdAndDelete({ _id: idProject });
+        if (!deleteProject) {
+            return res.status(400).json({
+                message: 'Could not find a project to delete',
+            });
+        }
+        return res.status(200).json({
+            message: 'delete project successfully',
+        });
+    } catch (error) {
+        return res.status(404).json({
+            message: 'Can not delete project',
+        });
     }
-    const deleteProject=await modelWorkProject.findByIdAndDelete({_id:idProject})
-    if(!deleteProject){
-      return res.status(400).json({
-        message:'Could not find a project to delete'
-      })
-    }
-    return res.status(200).json({
-      message:'delete project successfully'
-    })
-  } catch (error) {
-    return res.status(404).json({
-      message:'Can not delete project'
-    })
-  }
-}
+};
 module.exports = {
     DeleteExistingMembers,
     restoreProject,
@@ -847,5 +842,5 @@ module.exports = {
     ListMember,
     ProjectDetail,
     updatePermissions,
-    DeleteTheProjectDirectly
+    DeleteTheProjectDirectly,
 };
