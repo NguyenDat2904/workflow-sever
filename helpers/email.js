@@ -1,4 +1,4 @@
-const UsersModal = require('../models/modelUser');
+const UsersModal = require('../models/user');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
