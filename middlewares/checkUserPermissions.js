@@ -1,4 +1,4 @@
-const modelWorkProject = require('../models/modelWorkProject');
+const modelWorkProject = require('../models/project');
 const { ADMIN, MANAGER_PROJECT, MEMBER } = require('../configs/permissions');
 
 const checkUserPermissions = (action) => async (req, res, next) => {

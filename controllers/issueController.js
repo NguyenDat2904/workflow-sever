@@ -1,22 +1,22 @@
-
-const modelListWork = require('../models/modalListWorks');
+const modelIssue = require('../models/issue');
 const ListIssuesProject = async (req, res) => {
     try {
         //id user
-        const { _idProject } = req.params;
+        const { codeProject } = req.params;
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        if (!_idProject) {
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const lengthListWork = await modelListWork.find({ projectID: _idProject, parentIssue: null });
-        const totalPage = Math.ceil(lengthListWork.length / 3);
-        const checkCodeProject = await modelListWork
+        const checkProject=await modelWorkProject.findOne({codeProject})
+        const lengthIssue = await modelIssue.find({ projectID: checkProject._id, parentIssue: null });
+        const totalPage = Math.ceil(lengthIssue.length / 3);
+        const checkCodeProject = await modelIssue
             .find({
-                projectID: _idProject,
+                projectID: checkProject._id,
                 parentIssue: null,
                 $or: [
                     { summary: { $regex: search } },
@@ -64,7 +64,7 @@ const issuesChildren = async (req, res) => {
                 message: 'is not id issue',
             });
         }
-        const checkIssueParent = await modelListWork.find({ parentIssue: _idIssueParent });
+        const checkIssueParent = await modelIssue.find({ parentIssue: _idIssueParent });
         if (checkIssueParent.length === 0) {
             return res.status(400).json({
                 message: 'is not issue children',
@@ -100,7 +100,7 @@ const addNewIssues = async (req, res) => {
         }
         const newStartDate = new Date(startDate);
         const newDueDate = new Date(dueDate);
-        const newIssues = new modelListWork({
+        const newIssues = new modelIssue({
             projectID,
             issueType,
             status: 'TODO',
@@ -139,7 +139,7 @@ const editInformationIssue = async (req, res) => {
             });
         }
         const newDueDate = new Date(content);
-        const checkIssue = await modelListWork.findById({ _id: idIssue });
+        const checkIssue = await modelIssue.findById({ _id: idIssue });
 
         if (!checkIssue) {
             return res.status(404).json({
@@ -199,7 +199,7 @@ const deleteIssue = async (req, res) => {
         });
     }
 
-    const issue = await modelListWork.findByIdAndDelete({ _id: issueID });
+    const issue = await modelIssue.findByIdAndDelete({ _id: issueID });
     if (!issue) {
         return res.status(400).json({
             message: 'Deleting issue failed',
@@ -213,18 +213,19 @@ const deleteIssue = async (req, res) => {
 //list issues in broad
 const listIssuesBroad=async(req,res)=>{
     try {
-        const {idProject}=req.params
+        const {codeProject}=req.params
         const skip=parseInt(req.query.skip)||1
         const limit=parseInt(req.query.limit)||25
         const searchIssueUser=req.query.issueUser||""
-        if(!idProject){
+        if(!codeProject){
             return res.status(400).json({
                 message:'is not id project'
             })
         }
-        const countIssue=await modelListWork.find({projectID:idProject,parentIssue:{$ne: null}})
+        const checkProject=await modelWorkProject.findOne({codeProject})
+        const countIssue=await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null}})
         const totalPage=Math.ceil(countIssue.length/limit)
-        const checkIssues= await modelListWork.find({projectID:idProject,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
+        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
         .populate({
             path:'parentIssue'
         })

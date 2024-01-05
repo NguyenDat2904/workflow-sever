@@ -1,6 +1,6 @@
-const modelListWork = require('../models/modalListWorks');
-const modelSprint = require('../models/modelSprint');
-const modelWorkProject = require('../models/modelWorkProject');
+
+const modelSprint = require('../models/sprint');
+const modelWorkProject = require('../models/project');
 
 // add sprint
 const addNewSprint = async (req, res) => {
@@ -39,21 +39,22 @@ const addNewSprint = async (req, res) => {
 };
 
 // list issue
-const ListSprint = async (req, res) => {
+const listSprint = async (req, res) => {
     try {
-        const { _idProject } = req.params;
+        const { codeProject } = req.params;
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        if (!_idProject) {
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id project',
             });
         }
-        const totalSprint = await modelSprint.find({ projectID: _idProject });
+        const checkProject=await modelWorkProject.findOne({codeProject})
+        const totalSprint = await modelSprint.find({ projectID: checkProject._id });
         const totalPage = Math.ceil(totalSprint.length / limit);
         const sprintProject = await modelSprint
-            .find({ projectID: _idProject, $or: [{ name: { $regex: search } }, { sprintGoal: { $regex: search } }] })
+            .find({ projectID: checkProject._id, $or: [{ name: { $regex: search } }, { sprintGoal: { $regex: search } }] })
             .sort({ createdAt: -1 })
             .skip((skip - 1) * limit)
             .limit(limit);
@@ -83,4 +84,4 @@ const editInformationSprint=async(req,res)=>{
     }
 }
 
-module.exports = { ListSprint, addNewSprint };
+module.exports = { listSprint, addNewSprint };

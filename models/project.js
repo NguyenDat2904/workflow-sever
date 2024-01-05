@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const ModelWorkProject = new Schema(
+const ModelProject = new Schema(
     {
         nameProject: { type: String },
         listMembers: [{ type: String, ref: 'users' }],
@@ -17,6 +17,6 @@ const ModelWorkProject = new Schema(
         imgProject: { type: String },
     },
     { timestamps: true },
-    { collection: 'workprojects' },
+    { collection: 'projects' },
 );
-module.exports = mongoose.model('workprojects', ModelWorkProject);
+module.exports = mongoose.model('projects', ModelProject);

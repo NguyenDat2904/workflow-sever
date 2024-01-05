@@ -2,30 +2,30 @@ const express = require('express');
 const router = express.Router();
 const authMidddlerware = require('../middlewares/authMiddleware');
 const permissions = require('../middlewares/checkUserPermissions');
-const ListProjectController = require('../controllers/listWorkController');
+const issueController = require('../controllers/issueController');
 
 //get
-router.get('/broad/:idProject',authMidddlerware,ListProjectController.listIssuesBroad)
-router.get('/children/:_idIssueParent', authMidddlerware, ListProjectController.issuesChildren);
-router.get('/:_idProject', authMidddlerware, ListProjectController.ListIssuesProject);
+router.get('/broad/:codeProject',authMidddlerware,issueController.listIssuesBroad)
+router.get('/children/:_idIssueParent', authMidddlerware, issueController.issuesChildren);
+router.get('/:codeProject', authMidddlerware, issueController.ListIssuesProject);
 
 //post
-router.post('/:keyProject/add', authMidddlerware, permissions('create-issue'), ListProjectController.addNewIssues);
+router.post('/:codeProject/add', authMidddlerware, permissions('create-issue'), issueController.addNewIssues);
 
 //patch
 router.patch(
-    '/:keyProject/edit-information/:idIssue',
+    '/:codeProject/edit-information/:idIssue',
     authMidddlerware,
     permissions('update-issue'),
-    ListProjectController.editInformationIssue,
+    issueController.editInformationIssue,
 );
 
 // delete
 router.delete(
-    '/:keyProject/:issueID',
+    '/:codeProject/:issueID',
     authMidddlerware,
     permissions('delete-issue'),
-    ListProjectController.deleteIssue,
+    issueController.deleteIssue,
 );
 
 module.exports = router;

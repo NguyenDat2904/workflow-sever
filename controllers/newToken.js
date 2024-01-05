@@ -1,28 +1,28 @@
-const token=require('../helpers/tokenHelpers')
-const users=require('../models/modelUser')
-const newToken=async(req,res)=>{
+const token = require('../helpers/tokenHelpers');
+const users = require('../models/user');
+const newToken = async (req, res) => {
     try {
-        const {_id}=req.user
-        if(!_id){
+        const { _id } = req.user;
+        if (!_id) {
             return res.status(400).json({
-                message:"is not _id"
-            })
+                message: 'is not _id',
+            });
         }
-        const user=await users.findById(_id)
-        if(!user){
+        const user = await users.findById(_id);
+        if (!user) {
             return res.status(400).json({
-                message:"not found user"
-            })
+                message: 'not found user',
+            });
         }
-        const new_token= token(user,"24h")
+        const new_token = token(user, '24h');
         return res.status(200).json({
-            accessToken:new_token
-        })
+            accessToken: new_token,
+        });
     } catch (error) {
         res.status.json({
-            message:"error new token"
-        })
+            message: 'error new token',
+        });
     }
-}
+};
 
-module.exports=newToken
+module.exports = newToken;
