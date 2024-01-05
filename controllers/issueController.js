@@ -1,5 +1,4 @@
-const modelListWork = require('../models/modalListWorks');
-const modelSprint = require('../models/modelSprint');
+const modelIssue = require('../models/issue');
 
 const ListIssuesProject = async (req, res) => {
     try {
@@ -13,9 +12,9 @@ const ListIssuesProject = async (req, res) => {
                 message: 'is not id or jobCode',
             });
         }
-        const lengthListWork = await modelListWork.find({ projectID: _idProject, parentIssue: null });
-        const totalPage = Math.ceil(lengthListWork.length / 3);
-        const checkCodeProject = await modelListWork
+        const lengthIssue = await modelIssue.find({ projectID: _idProject, parentIssue: null });
+        const totalPage = Math.ceil(lengthIssue.length / 3);
+        const checkCodeProject = await modelIssue
             .find({
                 projectID: _idProject,
                 parentIssue: null,
@@ -65,7 +64,7 @@ const issuesChildren = async (req, res) => {
                 message: 'is not id issue',
             });
         }
-        const checkIssueParent = await modelListWork.find({ parentIssue: _idIssueParent });
+        const checkIssueParent = await modelIssue.find({ parentIssue: _idIssueParent });
         if (checkIssueParent.length === 0) {
             return res.status(400).json({
                 message: 'is not issue children',
@@ -101,7 +100,7 @@ const addNewIssues = async (req, res) => {
         }
         const newStartDate = new Date(startDate);
         const newDueDate = new Date(dueDate);
-        const newIssues = new modelListWork({
+        const newIssues = new modelIssue({
             projectID,
             issueType,
             status: 'TODO',
@@ -140,7 +139,7 @@ const editInformationIssue = async (req, res) => {
             });
         }
         const newDueDate = new Date(content);
-        const checkIssue = await modelListWork.findById({ _id: idIssue });
+        const checkIssue = await modelIssue.findById({ _id: idIssue });
 
         if (!checkIssue) {
             return res.status(404).json({
@@ -200,7 +199,7 @@ const deleteIssue = async (req, res) => {
         });
     }
 
-    const issue = await modelListWork.findByIdAndDelete({ _id: issueID });
+    const issue = await modelIssue.findByIdAndDelete({ _id: issueID });
     if (!issue) {
         return res.status(400).json({
             message: 'Deleting issue failed',

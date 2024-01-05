@@ -1,15 +1,12 @@
-const modelWorkProject = require('../models/modelWorkProject');
-const modelListWork = require('../models/modalListWorks');
-const modalWorkDetail = require('../models/modelWorkDetail');
+const modelProject = require('../models/project');
 const dataImgProject = require('../imgProject.json');
-const userModel = require('../models/modelUser');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
-const modelUser = require('../models/modelUser');
+const modelUser = require('../models/user');
 require('dotenv').config();
 
 //lấy project
-const getWorkProject = async (req, res) => {
+const getProject = async (req, res) => {
     try {
         const { sortKey, deleteProject } = req.query;
         const { email } = req.user;
@@ -23,9 +20,9 @@ const getWorkProject = async (req, res) => {
             });
         }
 
-        const totalUsers = await modelWorkProject.countDocuments();
+        const totalUsers = await modelProject.countDocuments();
         const totalPages = Math.ceil(totalUsers / 25);
-        const workProject = await modelWorkProject.aggregate([
+        const Project = await modelProject.aggregate([
             {
                 $match: {
                     $or: [
@@ -57,13 +54,13 @@ const getWorkProject = async (req, res) => {
             { $skip: (page - 1) * limit },
             { $limit: limit },
         ]);
-        if (!workProject) {
+        if (!Project) {
             return res.status(404).json({
                 message: 'project not found',
             });
         }
         return res.status(200).json({
-            workProject,
+            Project,
             page,
             totalPages,
         });
@@ -75,7 +72,7 @@ const getWorkProject = async (req, res) => {
     }
 };
 // project detail
-const ProjectDetail = async (req, res) => {
+const projectDetail = async (req, res) => {
     try {
         const { codeProject } = req.params;
         if (!codeProject) {
@@ -83,7 +80,7 @@ const ProjectDetail = async (req, res) => {
                 message: 'is not codeProject project ',
             });
         }
-        const project = await modelWorkProject.aggregate([
+        const project = await modelProject.aggregate([
             {
                 $lookup: {
                     from: 'users',
@@ -141,8 +138,8 @@ const addNewWork = async (req, res) => {
                 message: 'is not nameProject or codeProject or id',
             });
         }
-        const checkCodeProject = await modelWorkProject.find({ codeProject: codeProject });
-        const checkNameProject = await modelWorkProject.find({ nameProject: nameProject });
+        const checkCodeProject = await modelProject.find({ codeProject: codeProject });
+        const checkNameProject = await modelProject.find({ nameProject: nameProject });
 
         if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
             return res.status(401).json({
@@ -150,7 +147,7 @@ const addNewWork = async (req, res) => {
             });
         }
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
-        const newProject = new modelWorkProject({
+        const newProject = new modelProject({
             nameProject: nameProject,
             listWorkID: [],
             listManagers: [],
@@ -186,7 +183,7 @@ const deleteProject = async (req, res) => {
                 message: 'is not id',
             });
         }
-        const findProjectID = await modelWorkProject.findOne({ codeProject: keyProject });
+        const findProjectID = await modelProject.findOne({ codeProject: keyProject });
         if (!findProjectID) {
             return res.status(400).json({
                 message: 'user not found',
@@ -197,9 +194,9 @@ const deleteProject = async (req, res) => {
             await findProjectID.save();
         }
         setTimeout(async () => {
-            const checkAfterTimeOut = await modelWorkProject.findOne({ codeProject: keyProject });
+            const checkAfterTimeOut = await modelProject.findOne({ codeProject: keyProject });
             if (checkAfterTimeOut.deleteProject === true) {
-                await modelWorkProject.findOneAndDelete({ codeProject: keyProject });
+                await modelProject.findOneAndDelete({ codeProject: keyProject });
             }
         }, 3600000);
         return res.status(200).json({
@@ -221,7 +218,7 @@ const restoreProject = async (req, res) => {
                 message: 'Is nos keyProject ',
             });
         }
-        const checkId = await modelWorkProject.findOne({ codeProject: keyProject });
+        const checkId = await modelProject.findOne({ codeProject: keyProject });
         if (!checkId) {
             return res.status(401).json({
                 message: 'not found project want restore',
@@ -244,7 +241,7 @@ const restoreProject = async (req, res) => {
     }
 };
 //Delete existing members in the project
-const DeleteExistingMembers = async (req, res) => {
+const deleteExistingMembers = async (req, res) => {
     try {
         const { keyProject, _idMemberDelete } = req.params;
         if (!keyProject || !_idMemberDelete) {
@@ -252,7 +249,7 @@ const DeleteExistingMembers = async (req, res) => {
                 message: 'Is nos id or _idMemberDelete',
             });
         }
-        const project = await modelWorkProject.findOneAndUpdate(
+        const project = await modelProject.findOneAndUpdate(
             { codeProject: keyProject },
             { $pull: { userMembers: _idMemberDelete } },
             { new: true },
@@ -279,7 +276,7 @@ const editProjectInformation = async (req, res) => {
                 message: 'not found keyProject',
             });
         }
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: keyProject });
 
         // check project
         if (!project) {
@@ -289,7 +286,7 @@ const editProjectInformation = async (req, res) => {
         }
 
         // check codeProject
-        const checkCodeProject = await modelWorkProject.findOne({ codeProject });
+        const checkCodeProject = await modelProject.findOne({ codeProject });
         if (checkCodeProject && checkCodeProject.codeProject !== keyProject) {
             return res.status(400).json({
                 message: 'codeProject already exists',
@@ -314,14 +311,14 @@ const editProjectInformation = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(error.status).json({
+        res.status(500).json({
             message: "Can't edit project information",
             error,
         });
     }
 };
 //list member
-const ListMember = async (req, res) => {
+const listMember = async (req, res) => {
     try {
         const { codeProject } = req.query;
         if (!codeProject) {
@@ -329,7 +326,7 @@ const ListMember = async (req, res) => {
                 message: 'is not codeProject',
             });
         }
-        const memberProject = await modelWorkProject.aggregate([
+        const memberProject = await modelProject.aggregate([
             {
                 $lookup: {
                     from: 'users',
@@ -341,12 +338,11 @@ const ListMember = async (req, res) => {
 
             { $match: { codeProject: codeProject } },
         ]);
-        console.log(memberProject.userMembers);
         return res.status(200).json(memberProject[0].infoUserMembers);
     } catch (error) {
         console.log(error);
-        return res.status(404).json({
-            message: 'can not get member project',
+        return res.status(500).json({
+            error: error.message,
         });
     }
 };
@@ -356,8 +352,9 @@ const sendEmailToUser = async (req, res) => {
         const { keyProject } = req.params;
         const { email, userName, role } = req.body;
 
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
-        const user = await userModel.findOne({ email });
+        // check user in project
+        const project = await modelProject.findOne({ codeProject: keyProject });
+        const user = await modelUser.findOne({ email });
         if (!project) {
             return res.status(400).json({
                 message: 'keyProject not found',
@@ -720,7 +717,7 @@ const addMembersToProject = async (req, res) => {
         const { email, role } = req.user;
 
         // tìm dự án
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: keyProject });
 
         if (!project) {
             return res.status(400).json({
@@ -765,7 +762,7 @@ const updatePermissions = async (req, res) => {
             });
         }
 
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: keyProject });
         const user = await modelUser.findOne({ email });
 
         if (!project || !user) {
@@ -806,11 +803,11 @@ const updatePermissions = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error });
+        res.status(500).json({ error: error.message });
     }
 };
 //Delete the project directly
-const DeleteTheProjectDirectly = async (req, res) => {
+const deleteTheProjectDirectly = async (req, res) => {
     try {
         const { idProject } = req.params;
         if (!idProject) {
@@ -818,7 +815,7 @@ const DeleteTheProjectDirectly = async (req, res) => {
                 message: 'is not id Project',
             });
         }
-        const deleteProject = await modelWorkProject.findByIdAndDelete({ _id: idProject });
+        const deleteProject = await modelProject.findByIdAndDelete({ _id: idProject });
         if (!deleteProject) {
             return res.status(400).json({
                 message: 'Could not find a project to delete',
@@ -834,16 +831,16 @@ const DeleteTheProjectDirectly = async (req, res) => {
     }
 };
 module.exports = {
-    DeleteExistingMembers,
+    deleteExistingMembers,
     restoreProject,
-    getWorkProject,
+    getProject,
     editProjectInformation,
     deleteProject,
     addNewWork,
     sendEmailToUser,
     addMembersToProject,
-    ListMember,
-    ProjectDetail,
+    listMember,
+    projectDetail,
     updatePermissions,
-    DeleteTheProjectDirectly,
+    deleteTheProjectDirectly,
 };

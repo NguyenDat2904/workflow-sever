@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const SprintModal = new Schema(
     {
-        projectID: { type: mongoose.Schema.Types.ObjectId, ref: 'workprojects' },
+        projectID: { type: mongoose.Schema.Types.ObjectId, ref: 'projects' },
         name: { type: String },
         startDate: { type: Date },
         endDate: { type: Date },

@@ -1,5 +1,4 @@
-const modelListWork = require('../models/modalListWorks');
-const modelSprint = require('../models/modelSprint');
+const modelSprint = require('../models/sprint');
 
 // add sprint
 const addNewSprint = async (req, res) => {
@@ -39,7 +38,7 @@ const addNewSprint = async (req, res) => {
 };
 
 // list issue
-const ListSprint = async (req, res) => {
+const listSprint = async (req, res) => {
     try {
         const { _idProject } = req.params;
         const skip = parseInt(req.query.skip) || 1;
@@ -75,4 +74,4 @@ const ListSprint = async (req, res) => {
     }
 };
 
-module.exports = { ListSprint, addNewSprint };
+module.exports = { listSprint, addNewSprint };

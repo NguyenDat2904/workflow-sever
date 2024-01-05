@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const WorkProjectController = require('../controllers/workProjectController');
+const projectController = require('../controllers/projectController');
 const authMidddlerware = require('../middlewares/authMiddleware');
 const checkUserPermissions = require('../middlewares/checkUserPermissions');
 const checkVerifyToken = require('../middlewares/checkVerifyToken');
@@ -11,48 +11,48 @@ router.patch(
     '/:keyProject/restore-project',
     authMidddlerware,
     checkUserPermissions,
-    WorkProjectController.restoreProject,
+    projectController.restoreProject,
 );
 router.patch(
     '/:keyProject',
     authMidddlerware,
     checkUserPermissions('update-project'),
-    WorkProjectController.editProjectInformation,
+    projectController.editProjectInformation,
 );
-router.patch('/:keyProject/delete', authMidddlerware, checkUserPermissions('delete-project'), WorkProjectController.deleteProject);
+router.patch('/:keyProject/delete', authMidddlerware, checkUserPermissions('delete-project'), projectController.deleteProject);
 router.patch(
     '/:keyProject/update-permissions',
     authMidddlerware,
     checkUserPermissions('update-project'),
-    WorkProjectController.updatePermissions,
+    projectController.updatePermissions,
 );
-router.patch('/:keyProject/member/add', checkVerifyToken, WorkProjectController.addMembersToProject);
+router.patch('/:keyProject/member/add', checkVerifyToken, projectController.addMembersToProject);
 
 // post
-router.post('/create', authMidddlerware, WorkProjectController.addNewWork);
+router.post('/create', authMidddlerware, projectController.addNewWork);
 router.post(
     '/:keyProject/send-email',
     authMidddlerware,
     checkUserPermissions('update-project'),
-    WorkProjectController.sendEmailToUser,
+    projectController.sendEmailToUser,
 );
 
 // get
-router.get('/list-member', authMidddlerware, WorkProjectController.ListMember);
-router.get('/project-detail/:codeProject', authMidddlerware, WorkProjectController.ProjectDetail); 
-router.get('/list', authMidddlerware, WorkProjectController.getWorkProject);
+router.get('/list-member', authMidddlerware, projectController.listMember);
+router.get('/project-detail/:codeProject', authMidddlerware, projectController.projectDetail); 
+router.get('/list', authMidddlerware, projectController.getProject);
 
 // delete
 router.delete(
     '/:keyProject/members/:_idMemberDelete',
     authMidddlerware,
     checkUserPermissions('delete-project'),
-    WorkProjectController.DeleteExistingMembers,
+    projectController.deleteExistingMembers,
 );
 router.delete(
     '/:keyProject/delete-the-project-directly/:idProject',
     authMidddlerware,
     checkUserPermissions('delete-project'),
-    WorkProjectController.DeleteTheProjectDirectly,
+    projectController.deleteTheProjectDirectly,
 );
 module.exports = router;
