@@ -7,7 +7,7 @@ const { google } = require('googleapis');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
 const cloudinary = require('cloudinary').v2;
-const Login = async (req, res) => {
+const login = async (req, res) => {
     try {
         const { userName, passWord } = req.body;
         const userEmail = await checkEmail.checkUsers(userName);
@@ -45,7 +45,7 @@ const Login = async (req, res) => {
     }
 };
 //login google
-const LoginGoogle = async (req, res) => {
+const loginGoogle = async (req, res) => {
     try {
         const tokenGoogle = req.headers['tokengoogle'];
         if (!tokenGoogle) {
@@ -124,7 +124,7 @@ const LoginGoogle = async (req, res) => {
     }
 };
 //forgot
-const Forgot = async (req, res) => {
+const forgot = async (req, res) => {
     const { email } = req.body;
     const userEmail = await checkEmail.checkEmail(email);
     if (!userEmail) {
@@ -177,7 +177,7 @@ const Forgot = async (req, res) => {
 };
 // new passWord
 
-const NewPassword = async (req, res) => {
+const newPassword = async (req, res) => {
     //check user email
     try {
         const { _id } = req.user;
@@ -367,10 +367,10 @@ const getUser = async (req, res) => {
     }
 };
 module.exports = {
-    Login,
-    Forgot,
-    NewPassword,
-    LoginGoogle,
+    login,
+    forgot,
+    newPassword,
+    loginGoogle,
     ProfileChangePassword,
     updateInfoUser,
     uploadImg,

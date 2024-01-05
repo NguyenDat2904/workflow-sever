@@ -1,18 +1,18 @@
-const modelWorkProject = require('../models/project');
+const modelProject = require('../models/project');
 const { ADMIN, MANAGER_PROJECT, MEMBER } = require('../configs/permissions');
 
 const checkUserPermissions = (action) => async (req, res, next) => {
     try {
-        const { keyProject } = req.params;
+        const { codeProject } = req.params;
         const { email } = req.user;
-        if (!keyProject || !email) {
+        if (!codeProject || !email) {
             return res.status(404).json({
-                message: 'keyProject or email not found',
+                message: 'codeProject or email not found',
             });
         }
 
         // get project
-        const project = await modelWorkProject.findOne({ codeProject: keyProject });
+        const project = await modelProject.findOne({ codeProject: codeProject });
         if (!project) {
             return res.status(404).json({
                 message: 'not found project',

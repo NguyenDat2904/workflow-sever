@@ -6,14 +6,14 @@ const issueController = require('../controllers/issueController');
 
 //get
 router.get('/children/:_idIssueParent', authMidddlerware, issueController.issuesChildren);
-router.get('/:_idProject', authMidddlerware, issueController.ListIssuesProject);
+router.get('/:_idProject', authMidddlerware, issueController.listIssuesProject);
 
 //post
-router.post('/:keyProject/add', authMidddlerware, permissions('create-issue'), issueController.addNewIssues);
+router.post('/:codeProject/add', authMidddlerware, permissions('create-issue'), issueController.addNewIssues);
 
 //patch
 router.patch(
-    '/:keyProject/edit-information/:idIssue',
+    '/:codeProject/edit-information/:idIssue',
     authMidddlerware,
     permissions('update-issue'),
     issueController.editInformationIssue,
@@ -21,7 +21,7 @@ router.patch(
 
 // delete
 router.delete(
-    '/:keyProject/:issueID',
+    '/:codeProject/:issueID',
     authMidddlerware,
     permissions('delete-issue'),
     issueController.deleteIssue,

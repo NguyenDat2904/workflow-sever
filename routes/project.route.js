@@ -8,30 +8,30 @@ const checkVerifyToken = require('../middlewares/checkVerifyToken');
 //
 // patch
 router.patch(
-    '/:keyProject/restore-project',
+    '/:codeProject/restore-project',
     authMidddlerware,
     checkUserPermissions,
     projectController.restoreProject,
 );
 router.patch(
-    '/:keyProject',
+    '/:codeProject',
     authMidddlerware,
     checkUserPermissions('update-project'),
     projectController.editProjectInformation,
 );
-router.patch('/:keyProject/delete', authMidddlerware, checkUserPermissions('delete-project'), projectController.deleteProject);
+router.patch('/:codeProject/delete', authMidddlerware, checkUserPermissions('delete-project'), projectController.deleteProject);
 router.patch(
-    '/:keyProject/update-permissions',
+    '/:codeProject/update-permissions',
     authMidddlerware,
     checkUserPermissions('update-project'),
     projectController.updatePermissions,
 );
-router.patch('/:keyProject/member/add', checkVerifyToken, projectController.addMembersToProject);
+router.patch('/:codeProject/member/add', checkVerifyToken, projectController.addMembersToProject);
 
 // post
 router.post('/create', authMidddlerware, projectController.addNewWork);
 router.post(
-    '/:keyProject/send-email',
+    '/:codeProject/send-email',
     authMidddlerware,
     checkUserPermissions('update-project'),
     projectController.sendEmailToUser,
@@ -44,13 +44,13 @@ router.get('/list', authMidddlerware, projectController.getProject);
 
 // delete
 router.delete(
-    '/:keyProject/members/:_idMemberDelete',
+    '/:codeProject/members/:_idMemberDelete',
     authMidddlerware,
     checkUserPermissions('delete-project'),
     projectController.deleteExistingMembers,
 );
 router.delete(
-    '/:keyProject/delete-the-project-directly/:idProject',
+    '/:codeProject/delete-the-project-directly/:idProject',
     authMidddlerware,
     checkUserPermissions('delete-project'),
     projectController.deleteTheProjectDirectly,
