@@ -1,5 +1,6 @@
 const modelIssue = require('../models/issue');
-const ListIssuesProject = async (req, res) => {
+
+const listIssuesProject = async (req, res) => {
     try {
         //id user
         const { codeProject } = req.params;
@@ -249,4 +250,12 @@ const listIssuesBroad=async(req,res)=>{
         })
     }
 }
-module.exports = {listIssuesBroad,editInformationIssue, ListIssuesProject, addNewIssues, issuesChildren ,deleteIssue};
+
+module.exports = {
+    listIssuesBroad,
+    editInformationIssue,
+    listIssuesProject,
+    addNewIssues,
+    issuesChildren,
+    deleteIssue,
+};

@@ -1,11 +1,11 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const Login = require('../controllers/usersController');
-const veryfyEmail=require("../middlewares/checkVerifyToken")
+const login = require('../controllers/usersController');
+const verifyEmail = require('../middlewares/checkVerifyToken');
 const authMidddlerware = require('../middlewares/authMiddleware');
 const refreshTokenMiddlerware = require('../middlewares/refreshTokenMiddleware');
-const newAccess=require("../controllers/newToken")
+const newAccess = require('../controllers/newToken');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/images');
@@ -23,15 +23,15 @@ const upload = multer({
     storage: storage,
 });
 /* GET users listing. */
-router.get('/new-access',refreshTokenMiddlerware,newAccess)
-router.patch('/uploadimg',authMidddlerware, upload.fields([{name:"img"},{name:"imgCover"}]),Login.uploadImg);
-router.patch('/updateUser/background',  authMidddlerware, Login.updateBackgroundAndContent);
-router.patch('/updateUser',  authMidddlerware, Login.updateInfoUser);
-router.post('/login', Login.Login);
-router.post('/forgot', Login.Forgot);
-router.patch('/forgot/changePassword',veryfyEmail, Login.NewPassword);
-router.post('/loginGoogle', Login.LoginGoogle);
-router.patch('/profile/changePassword', authMidddlerware, Login.ProfileChangePassword);
-router.get('/', authMidddlerware, Login.getUser);
+router.get('/new-access', refreshTokenMiddlerware, newAccess);
+router.patch('/uploadimg', authMidddlerware, upload.fields([{ name: 'img' }, { name: 'imgCover' }]), login.uploadImg);
+router.patch('/updateUser/background', authMidddlerware, login.updateBackgroundAndContent);
+router.patch('/updateUser', authMidddlerware, login.updateInfoUser);
+router.post('/login', login.login);
+router.post('/forgot', login.forgot);
+router.patch('/forgot/changePassword', verifyEmail, login.newPassword);
+router.post('/loginGoogle', login.loginGoogle);
+router.patch('/profile/changePassword', authMidddlerware, login.ProfileChangePassword);
+router.get('/', authMidddlerware, login.getUser);
 
 module.exports = router;
