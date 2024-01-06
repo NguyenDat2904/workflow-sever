@@ -1,7 +1,7 @@
 
 const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
-
+const modelIssues=require('../models/issue')
 // add sprint
 const addNewSprint = async (req, res) => {
     try {
@@ -135,4 +135,30 @@ const deleteSprint=async(req,res)=>{
         });
     }
 }
-module.exports = {deleteSprint, listSprint,editInformationSprint, addNewSprint };
+//Active Sprint
+const activeSprint=async(req,res)=>{
+    try {
+        const {idSprintComplete,idSprintRunning}=req.params
+
+        if(!idSprintComplete){
+            return res.status(404).json({
+                message:"is not id sprint complete"
+            })
+        }
+        await modelIssues.findOneAndUpdate({sprint:idSprintRunning,status:{$ne:"DONE"}},{
+        sprint: idSprintComplete
+        },{new:true})
+        await modelSprint.findByIdAndUpdate({_id:idSprintRunning},{
+            status:'DONE'
+        },{new:true})
+        return res.status(200).json({
+            message:'active sprint success'
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message:error
+        })
+    }
+} 
+module.exports = {activeSprint,deleteSprint, listSprint,editInformationSprint, addNewSprint };

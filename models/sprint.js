@@ -8,7 +8,7 @@ const SprintModal = new Schema(
         startDate: { type: Date },
         endDate: { type: Date },
         sprintGoal: { type: String },
-        status: { type: String },
+        status: { type: String,enum:['PENDING','RUNNING','DONE'],default:'PENDING' },
         duration:{type:Number}
     },
 
