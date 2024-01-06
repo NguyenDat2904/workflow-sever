@@ -171,7 +171,7 @@ const addNewWork = async (req, res) => {
           startDate: new Date(),
           endDate: null,
           sprintGoal:'',
-          status:'',
+          status:'PENDING',
         })
         await newSprint.save()
         return res.status(200).json({

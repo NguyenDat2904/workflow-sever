@@ -11,6 +11,8 @@ router.get('/list/:codeProject', authMidddlerware, sprintController.listSprint);
 router.post('/:codeProject/add', authMidddlerware, permissions('create-sprint'), sprintController.addNewSprint);
 //put
 router.put('/:codeProject/update/:idSprint', authMidddlerware, permissions('update-sprint'),sprintController.editInformationSprint)
+//patch
+router.patch('/:codeProject/active/:idSprintComplete/:idSprintRunning',sprintController.activeSprint)
 //delete
 router.delete('/:codeProject/:idSprint',authMidddlerware, permissions('delete-sprint'),sprintController.deleteSprint)
 module.exports = router;
