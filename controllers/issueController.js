@@ -1,5 +1,6 @@
 const modelIssue = require('../models/issue');
-
+const modelSprint=require('../models/sprint')
+const modelWorkProject=require('../models/project')
 const listIssuesProject = async (req, res) => {
     try {
         //id user
@@ -7,6 +8,9 @@ const listIssuesProject = async (req, res) => {
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
+        const sprintID=req.query.sprintID
+        const parentIssueID=req.query.parentIssueID
+        const assignee=req.query.assignee
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -18,7 +22,13 @@ const listIssuesProject = async (req, res) => {
         const checkCodeProject = await modelIssue
             .find({
                 projectID: checkProject._id,
-                parentIssue: null,
+                ...sprintID && {
+                    sprint:sprintID
+                },
+                 ...parentIssueID!==undefined && {parentIssue:parentIssueID==="null"?null:parentIssueID},
+                 ...assignee && {
+                    assignee:assignee
+                 },
                 $or: [
                     { summary: { $regex: search } },
                     { priority: { $regex: search } },
@@ -73,6 +83,7 @@ const issuesChildren = async (req, res) => {
         }
         return res.status(200).json(checkIssueParent);
     } catch (error) {
+        console.log();g
         return res.status(404).json({
             message: 'can not get issue parent',
         });
@@ -82,7 +93,7 @@ const issuesChildren = async (req, res) => {
 const addNewIssues = async (req, res) => {
     try {
         const {
-            projectID,
+            
             issueType,
             summary,
             description,
@@ -93,16 +104,22 @@ const addNewIssues = async (req, res) => {
             storyPointEstimate,
             startDate,
             dueDate,
+            parentIssue,
+            
         } = req.body;
+        const {codeProject}=req.params
         if (!summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
         }
+        const project =await modelWorkProject.findOne({codeProject})
+        const issue=await modelIssue.find({projectID:project._id})
+        const nameIssue=`${codeProject}-${issue.length + 1}`
         const newStartDate = new Date(startDate);
         const newDueDate = new Date(dueDate);
         const newIssues = new modelIssue({
-            projectID,
+            projectID:project._id,
             issueType,
             status: 'TODO',
             summary,
@@ -111,10 +128,11 @@ const addNewIssues = async (req, res) => {
             reporter: reporterID,
             priority,
             sprint: sprintID,
-            storyPointEstimate,
+            storyPointEstimate:storyPointEstimate?storyPointEstimate:NaN,
             startDate: newStartDate || new Date(),
             dueDate: newDueDate,
-            parentIssue: null,
+            parentIssue:parentIssue?parentIssue: null,
+            name:nameIssue
         });
         await newIssues.save();
         return res.status(200).json({
@@ -224,9 +242,10 @@ const listIssuesBroad=async(req,res)=>{
             })
         }
         const checkProject=await modelWorkProject.findOne({codeProject})
-        const countIssue=await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null}})
+        const sprint=await modelSprint.find({projectID:checkProject._id,status:'RUNNING'})
+        const countIssue=await modelIssue.find({projectID:checkProject._id,sprint:{$in:sprint?._id},parentIssue:{$ne: null}})
         const totalPage=Math.ceil(countIssue.length/limit)
-        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
+        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}},{issueType:{$regex:searchIssueUser}},{sprint:{$regex:searchIssueUser}}]})
         .populate({
             path:'parentIssue'
         })
