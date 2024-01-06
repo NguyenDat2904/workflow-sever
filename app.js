@@ -9,8 +9,13 @@ const indexRouter = require('./routes/index');
 const workRouter = require('./routes/project.route');
 const issues = require('./routes/issues.route');
 const sprint = require('./routes/sprint.route');
+const comment = require('./routes/comment.route');
 
 const app = express();
+const http = require('http');
+const { Server } = require('socket.io');
+const server = http.createServer(app);
+const io = new Server(server);
 const db = require('./configs/db');
 
 db();
@@ -31,8 +36,12 @@ app.use('/issues', issues);
 app.use('/sprints', sprint);
 app.use('/projects', workRouter);
 app.use('/users', usersRouter);
+app.use('/comments', comment);
 app.use('/', indexRouter);
 
+io.on('connection', (socket) => {
+    console.log(socket);
+});
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
