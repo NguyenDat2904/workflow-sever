@@ -325,7 +325,7 @@ const listMember = async (req, res) => {
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'userMembers',
+                    localField: 'listMembers',
                     foreignField: 'email',
                     as: 'infoUserMembers',
                 },
@@ -333,6 +333,7 @@ const listMember = async (req, res) => {
 
             { $match: { codeProject: codeProject } },
         ]);
+        console.log("memberProject[0].infoUserMembers:", memberProject)
         return res.status(200).json(memberProject[0].infoUserMembers);
     } catch (error) {
         console.log(error);
