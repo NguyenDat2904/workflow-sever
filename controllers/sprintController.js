@@ -92,17 +92,47 @@ const editInformationSprint=async(req,res)=>{
         })
        }
      
-       const checkSprint=await modelSprint.findById({_id:idSprint})
-       const editSprint=new checkSprint({
-        name:name,
-        startDate,
-        endDate,
-        sprintGoal,
-        duration
+       const checkSprint=await modelSprint.findByIdAndUpdate({_id:idSprint},
+        {name:name?name:"",
+        startDate:startDate?startDate:null,
+        endDate:endDate?endDate:null,
+        sprintGoal:sprintGoal?sprintGoal:"",
+        duration:duration?duration:NaN
+       },{new:true})
+      
+       return res.status(200).json({
+        message:'update success',
+        data:checkSprint
        })
     } catch (error) {
-        
+        console.log(error)
+        return res.status(500).json({
+            message:error
+        })
     }
 }
-
-module.exports = { listSprint, addNewSprint };
+//delete sprint
+const deleteSprint=async(req,res)=>{
+    try {
+        const {idSprint}=req.params
+        if(!idSprint){
+            return res.status(404).json({
+                message:'is not id sprint'
+            })
+        }
+        const sprint=await modelSprint.findByIdAndDelete({_id:idSprint})
+        if (!sprint) {
+            return res.status(400).json({
+                message: 'Deleting sprint failed',
+            });
+        }
+        res.status(200).json({
+            message: 'Deleted issue successfully',
+        });
+    } catch (error) {
+        res.status(404).json({
+            message: error,
+        });
+    }
+}
+module.exports = {deleteSprint, listSprint,editInformationSprint, addNewSprint };
