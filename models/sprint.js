@@ -9,6 +9,7 @@ const SprintModal = new Schema(
         endDate: { type: Date },
         sprintGoal: { type: String },
         status: { type: String },
+        duration:{type:Number}
     },
 
     { timestamps: true },

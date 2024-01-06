@@ -1,4 +1,5 @@
 const modelProject = require('../models/project');
+const modelSprint= require('../models/sprint')
 const dataImgProject = require('../imgProject.json');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
@@ -162,10 +163,11 @@ const addNewWork = async (req, res) => {
             imgProject: dataImgProject[randomImgProject],
         });
         await newProject.save();
-        
+
+        const nameIssue=`${codeProject} Sprint 1`
         const newSprint=new modelSprint({
           projectID:newProject._id,
-          name:'Sprint 1',
+          name:nameIssue,
           startDate: new Date(),
           endDate: null,
           sprintGoal:'',
@@ -336,15 +338,29 @@ const listMember = async (req, res) => {
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'userMembers',
+                    localField: 'listMembers',
                     foreignField: 'email',
                     as: 'infoUserMembers',
                 },
+                $lookup: {
+                  from: 'users',
+                  localField: 'listManagers',
+                  foreignField: 'email',
+                  as: 'infoListManagers',
+              },
+              $lookup: {
+                from: 'users',
+                localField: 'admin',
+                foreignField: 'email',
+                as: 'infoAdmin',
+            },
             },
 
             { $match: { codeProject: codeProject } },
         ]);
-        return res.status(200).json(memberProject[0].infoUserMembers);
+        console.log(memberProject)
+        const listMB=[...memberProject[0]?.infoUserMembers ||[],...memberProject[0]?.infoListManagers||[],memberProject[0]?.infoAdmin||[]]
+        return res.status(200).json(listMB);
     } catch (error) {
         console.log(error);
         return res.status(500).json({

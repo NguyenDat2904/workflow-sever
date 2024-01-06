@@ -92,7 +92,7 @@ const issuesChildren = async (req, res) => {
 const addNewIssues = async (req, res) => {
     try {
         const {
-            projectID,
+            
             issueType,
             summary,
             description,
@@ -103,28 +103,33 @@ const addNewIssues = async (req, res) => {
             storyPointEstimate,
             startDate,
             dueDate,
+            parentIssue
         } = req.body;
+        const {codeProject}=req.params
         if (!summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
         }
+        const project =await modelWorkProject.findOne({codeProject})
+        const issue=await modelIssue.find({projectID:project._id})
+        const name =`${codeProject}-${issue.length + 1} ${summary}`
         const newStartDate = new Date(startDate);
         const newDueDate = new Date(dueDate);
         const newIssues = new modelIssue({
-            projectID,
+            projectID:project._id,
             issueType,
             status: 'TODO',
-            summary,
+            summary:name,
             description,
             assignee: assigneeID,
             reporter: reporterID,
             priority,
             sprint: sprintID,
-            storyPointEstimate,
+            storyPointEstimate:storyPointEstimate?storyPointEstimate:null,
             startDate: newStartDate || new Date(),
             dueDate: newDueDate,
-            parentIssue: null,
+            parentIssue:parentIssue?parentIssue: null,
         });
         await newIssues.save();
         return res.status(200).json({
@@ -235,9 +240,9 @@ const listIssuesBroad=async(req,res)=>{
         }
         const checkProject=await modelWorkProject.findOne({codeProject})
         const sprint=await modelSprint.find({projectID:checkProject._id,status:'RUNNING'})
-        const countIssue=await modelIssue.find({projectID:checkProject._id,sprint:{$in:sprint._id},parentIssue:{$ne: null}})
+        const countIssue=await modelIssue.find({projectID:checkProject._id,sprint:{$in:sprint?._id},parentIssue:{$ne: null}})
         const totalPage=Math.ceil(countIssue.length/limit)
-        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}}]})
+        const checkIssues= await modelIssue.find({projectID:checkProject._id,parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}},{issueType:{$regex:searchIssueUser}},{sprint:{$regex:searchIssueUser}}]})
         .populate({
             path:'parentIssue'
         })
