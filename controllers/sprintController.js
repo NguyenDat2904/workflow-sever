@@ -24,6 +24,7 @@ const addNewSprint = async (req, res) => {
             endDate: startDate?endDate:null,
             sprintGoal:'',
             status:'PENDING',//RUNNING AND DONE
+            duration:2
         });
         await newIssue.save();
         return res.status(200).json({
@@ -78,7 +79,27 @@ const listSprint = async (req, res) => {
 ////edit information sprint
 const editInformationSprint=async(req,res)=>{
     try {
-        
+        const {  name,
+        startDate,
+        endDate,
+        sprintGoal,
+        duration
+       }=req.body
+       const {idSprint}=req.params
+       if(!idSprint){
+        return res.status(404).json({
+            message:'is not codeProject'
+        })
+       }
+     
+       const checkSprint=await modelSprint.findById({_id:idSprint})
+       const editSprint=new checkSprint({
+        name:name,
+        startDate,
+        endDate,
+        sprintGoal,
+        duration
+       })
     } catch (error) {
         
     }
