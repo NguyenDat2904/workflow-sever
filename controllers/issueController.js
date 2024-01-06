@@ -103,7 +103,8 @@ const addNewIssues = async (req, res) => {
             storyPointEstimate,
             startDate,
             dueDate,
-            parentIssue
+            parentIssue,
+            
         } = req.body;
         const {codeProject}=req.params
         if (!summary) {
@@ -113,14 +114,14 @@ const addNewIssues = async (req, res) => {
         }
         const project =await modelWorkProject.findOne({codeProject})
         const issue=await modelIssue.find({projectID:project._id})
-        const name =`${codeProject}-${issue.length + 1} ${summary}`
+        const nameIssue=`${codeProject}-${issue.length + 1}`
         const newStartDate = new Date(startDate);
         const newDueDate = new Date(dueDate);
         const newIssues = new modelIssue({
             projectID:project._id,
             issueType,
             status: 'TODO',
-            summary:name,
+            summary,
             description,
             assignee: assigneeID,
             reporter: reporterID,
@@ -130,6 +131,7 @@ const addNewIssues = async (req, res) => {
             startDate: newStartDate || new Date(),
             dueDate: newDueDate,
             parentIssue:parentIssue?parentIssue: null,
+            name:nameIssue
         });
         await newIssues.save();
         return res.status(200).json({
