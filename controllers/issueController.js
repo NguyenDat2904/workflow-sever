@@ -127,7 +127,7 @@ const addNewIssues = async (req, res) => {
             reporter: reporterID,
             priority,
             sprint: sprintID,
-            storyPointEstimate:storyPointEstimate?storyPointEstimate:null,
+            storyPointEstimate:storyPointEstimate?storyPointEstimate:NaN,
             startDate: newStartDate || new Date(),
             dueDate: newDueDate,
             parentIssue:parentIssue?parentIssue: null,
