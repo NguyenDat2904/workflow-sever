@@ -5,8 +5,9 @@ const permissions = require('../middlewares/checkUserPermissions');
 const issueController = require('../controllers/issueController');
 
 //get
+router.get('/broad/:codeProject',authMidddlerware,issueController.listIssuesBroad)
 router.get('/children/:_idIssueParent', authMidddlerware, issueController.issuesChildren);
-router.get('/:_idProject', authMidddlerware, issueController.listIssuesProject);
+router.get('/:codeProject', authMidddlerware, issueController.listIssuesProject);
 
 //post
 router.post('/:codeProject/add', authMidddlerware, permissions('create-issue'), issueController.addNewIssues);
