@@ -12,7 +12,7 @@ router.post('/:codeProject/add', authMidddlerware, permissions('create-sprint'),
 //put
 router.put('/:codeProject/update/:idSprint', authMidddlerware, permissions('update-sprint'),sprintController.editInformationSprint)
 //patch
-router.patch('/:codeProject/active/:idSprintComplete/:idSprintRunning',sprintController.activeSprint)
+router.patch('/:codeProject/active/:idSprintComplete/:idSprintRunning',authMidddlerware, permissions('update-sprint'),sprintController.activeSprint)
 //delete
 router.delete('/:codeProject/:idSprint',authMidddlerware, permissions('delete-sprint'),sprintController.deleteSprint)
 module.exports = router;
