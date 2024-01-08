@@ -11,26 +11,26 @@ const issues = require('./routes/issues.route');
 const sprint = require('./routes/sprint.route');
 const comment = require('./routes/comment.route');
 const notification = require('./routes/notification.route');
-const handleComment = require('./sockers/handleComment');
+// const handleComment = require('./sockers/handleComment');
 const db = require('./configs/db');
 
 // app sever
 const app = express();
 // socket sever
-const io = require('socket.io')(5000, {
-    cors: {
-        origin: ['http://127.0.0.1:5500', 'https://workflow-ui-lake.vercel.app', 'http://localhost:3000'],
-    },
-});
+// const io = require('socket.io')(5000, {
+//     cors: {
+//         origin: ['http://127.0.0.1:5500', 'https://workflow-ui-lake.vercel.app', 'http://localhost:3000'],
+//     },
+// });
 
-const onConnection = (socket) => {
-    handleComment(io, socket);
-};
-io.on('connection', onConnection);
-io.on('error', (err) => {
-    console.log(err);
-    return err;
-});
+// const onConnection = (socket) => {
+//     handleComment(io, socket);
+// };
+// io.on('connection', onConnection);
+// io.on('error', (err) => {
+//     console.log(err);
+//     return err;
+// });
 
 db();
 require('dotenv').config();
@@ -70,4 +70,4 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-module.exports = { app, io };
+module.exports = { app };
