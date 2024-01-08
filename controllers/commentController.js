@@ -1,6 +1,6 @@
 const modelComment = require('../models/comment');
 const modelIssue = require('../models/issue');
-const { io } = require('../app');
+// const { io } = require('../app');
 
 const listComment = async (req, res) => {
     try {
