@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const Token = (user, time, key) => {
-    const payload = { _id: user.id, email: user.email };
+    const payload = { _id: user.id, email: user.email, name: user.name };
     const options = {
         expiresIn: time,
     };

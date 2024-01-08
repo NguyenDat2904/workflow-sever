@@ -1,5 +1,5 @@
 const modelProject = require('../models/project');
-const modelSprint= require('../models/sprint')
+const modelSprint = require('../models/sprint');
 const dataImgProject = require('../imgProject.json');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
@@ -60,7 +60,7 @@ const getProject = async (req, res) => {
             });
         }
         return res.status(200).json({
-            data:Project,
+            data: Project,
             page,
             totalPages,
         });
@@ -149,7 +149,7 @@ const addNewWork = async (req, res) => {
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelProject({
             nameProject: nameProject,
-            
+
             listManagers: [],
             admin: email,
             listMembers: [],
@@ -164,16 +164,16 @@ const addNewWork = async (req, res) => {
         });
         await newProject.save();
 
-        const nameIssue=`${codeProject} Sprint 1`
-        const newSprint=new modelSprint({
-          projectID:newProject._id,
-          name:nameIssue,
-          startDate: new Date(),
-          endDate: null,
-          sprintGoal:'',
-          status:'',
-        })
-        await newSprint.save()
+        const nameIssue = `${codeProject} Sprint 1`;
+        const newSprint = new modelSprint({
+            projectID: newProject._id,
+            name: nameIssue,
+            startDate: new Date(),
+            endDate: null,
+            sprintGoal: '',
+            status: '',
+        });
+        await newSprint.save();
         return res.status(200).json({
             message: 'Add new successfully',
             data: newProject,
@@ -343,23 +343,27 @@ const listMember = async (req, res) => {
                     as: 'infoUserMembers',
                 },
                 $lookup: {
-                  from: 'users',
-                  localField: 'listManagers',
-                  foreignField: 'email',
-                  as: 'infoListManagers',
-              },
-              $lookup: {
-                from: 'users',
-                localField: 'admin',
-                foreignField: 'email',
-                as: 'infoAdmin',
-            },
+                    from: 'users',
+                    localField: 'listManagers',
+                    foreignField: 'email',
+                    as: 'infoListManagers',
+                },
+                $lookup: {
+                    from: 'users',
+                    localField: 'admin',
+                    foreignField: 'email',
+                    as: 'infoAdmin',
+                },
             },
 
             { $match: { codeProject: codeProject } },
         ]);
-        console.log(memberProject)
-        const listMB=[...memberProject[0]?.infoUserMembers ||[],...memberProject[0]?.infoListManagers||[],memberProject[0]?.infoAdmin||[]]
+        console.log(memberProject);
+        const listMB = [
+            ...(memberProject[0]?.infoUserMembers || []),
+            ...(memberProject[0]?.infoListManagers || []),
+            memberProject[0]?.infoAdmin || [],
+        ];
         return res.status(200).json(listMB);
     } catch (error) {
         console.log(error);
@@ -372,7 +376,8 @@ const listMember = async (req, res) => {
 const sendEmailToUser = async (req, res) => {
     try {
         const { codeProject } = req.params;
-        const { email, userName, role } = req.body;
+        const { email, role } = req.body;
+        const { name } = req.user;
 
         // check user in project
         const project = await modelProject.findOne({ codeProject: codeProject });
@@ -527,7 +532,7 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                     <div style="line-height: 33px">
-                                                    ${userName}
+                                                    ${name}
                                                       invited you to join them in
                                                       Workflow
                                                     </div>
