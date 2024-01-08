@@ -358,7 +358,6 @@ const listMember = async (req, res) => {
 
             { $match: { codeProject: codeProject } },
         ]);
-
         const listMB = [
             ...(memberProject[0]?.infoUserMembers || []),
             ...(memberProject[0]?.infoListManagers || []),
@@ -377,7 +376,8 @@ const listMember = async (req, res) => {
 const sendEmailToUser = async (req, res) => {
     try {
         const { codeProject } = req.params;
-        const { email, userName, role } = req.body;
+        const { email, role } = req.body;
+        const { name } = req.user;
 
         // check user in project
         const project = await modelProject.findOne({ codeProject: codeProject });
@@ -400,14 +400,14 @@ const sendEmailToUser = async (req, res) => {
         }
 
         // token hết hạn sau 3p
-        const payload = { email, role, userName };
+        const payload = { email, role, name };
         const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
 
         // gửi mail
         const mailOptions = {
             from: `${process.env.USER_EMAIL}`,
             to: `${email}`,
-            subject: `${userName} invited you to join them in Workflow`,
+            subject: `${name} invited you to join them in Workflow`,
             html: `
             <html>
             <body>
@@ -532,7 +532,7 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                     <div style="line-height: 33px">
-                                                    ${userName}
+                                                    ${name}
                                                       invited you to join them in
                                                       Workflow
                                                     </div>
@@ -573,7 +573,12 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                       <a
-                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
+                                                        href=${
+                                                            process.env.URL_EMAIL_ADD_MEMBERS +
+                                                            '/add-people' +
+                                                            '?token=' +
+                                                            token
+                                                        }
                                                         style="
                                                           cursor: pointer;
                                                           box-sizing: border-box;

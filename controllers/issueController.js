@@ -1,6 +1,9 @@
 const modelIssue = require('../models/issue');
-const modelSprint=require('../models/sprint')
-const modelWorkProject=require('../models/project')
+const modelSprint = require('../models/sprint');
+const modelWorkProject = require('../models/project');
+const modelNotification = require('../models/notification');
+require('dotenv').config();
+
 const listIssuesProject = async (req, res) => {
     try {
         //id user
@@ -8,27 +11,27 @@ const listIssuesProject = async (req, res) => {
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        const sprintID=req.query.sprintID
-        const parentIssueID=req.query.parentIssueID
-        const assignee=req.query.assignee
+        const sprintID = req.query.sprintID;
+        const parentIssueID = req.query.parentIssueID;
+        const assignee = req.query.assignee;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const checkProject=await modelWorkProject.findOne({codeProject})
+        const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({ projectID: checkProject._id, parentIssue: null });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
             .find({
                 projectID: checkProject._id,
-                ...sprintID && {
-                    sprint:sprintID
-                },
-                 ...parentIssueID!==undefined && {parentIssue:parentIssueID==="null"?null:parentIssueID},
-                 ...assignee && {
-                    assignee:assignee
-                 },
+                ...(sprintID && {
+                    sprint: sprintID,
+                }),
+                ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
+                ...(assignee && {
+                    assignee: assignee,
+                }),
                 $or: [
                     { summary: { $regex: search } },
                     { priority: { $regex: search } },
@@ -83,7 +86,8 @@ const issuesChildren = async (req, res) => {
         }
         return res.status(200).json(checkIssueParent);
     } catch (error) {
-        console.log();g
+        console.log();
+        g;
         return res.status(404).json({
             message: 'can not get issue parent',
         });
@@ -92,31 +96,38 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const {
-            issueType,
-            summary,
-            sprintID,
-        } = req.body;
-        const {codeProject}=req.params
+        const { issueType, summary, sprintID } = req.body;
+        const { codeProject } = req.params;
         if (!summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
         }
-        const project =await modelWorkProject.findOne({codeProject})
-        const issue=await modelIssue.find({projectID:project._id})
-        const nameIssue=`${codeProject}-${issue.length + 1}`
+        const project = await modelWorkProject.findOne({ codeProject });
+        const issue = await modelIssue.find({ projectID: project._id });
+        const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue({
-            projectID:project._id,
+            projectID: project._id,
             issueType,
             status: 'TODO',
             summary,
             sprint: sprintID,
             startDate: new Date(),
-            name:nameIssue
+            name: nameIssue,
         });
         await newIssues.save();
-        return res.status(200).json({
+        if (assigneeID) {
+            const newNotification = new modelNotification({
+                userID: assigneeID,
+                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
+                title: `${req.user.name} assigned an issue to you`,
+                content: `${summary}`,
+                createdAt: new Date(),
+                read: false,
+            });
+            await newNotification.save();
+        }
+        res.json({
             message: 'add new issue successfully',
             data: newIssues,
         });
@@ -132,7 +143,7 @@ const addNewIssues = async (req, res) => {
 const editInformationIssue = async (req, res) => {
     try {
         const { idIssue } = req.params;
-        const updateData  = req.body;
+        const updateData = req.body;
         if (!updateData) {
             return res.status(400).json({
                 message: 'updateData is required',
@@ -147,11 +158,11 @@ const editInformationIssue = async (req, res) => {
         }
 
         // Cập nhật dữ liệu dựa trên các trường trong updateData
-    for (const field in updateData) {
-      if (checkIssue[field] !== undefined) {
-        checkIssue[field] = updateData[field];
-      }
-    }
+        for (const field in updateData) {
+            if (checkIssue[field] !== undefined) {
+                checkIssue[field] = updateData[field];
+            }
+        }
         await checkIssue.save();
         return res.status(200).json(checkIssue);
     } catch (error) {
@@ -183,49 +194,63 @@ const deleteIssue = async (req, res) => {
     });
 };
 //list issues in broad
-const listIssuesBroad=async(req,res)=>{
+const listIssuesBroad = async (req, res) => {
     try {
-        const {codeProject}=req.params
-        const skip=parseInt(req.query.skip)||1
-        const limit=parseInt(req.query.limit)||25
-        const searchIssueUser=req.query.issueUser||""
-        if(!codeProject){
+        const { codeProject } = req.params;
+        const skip = parseInt(req.query.skip) || 1;
+        const limit = parseInt(req.query.limit) || 25;
+        const searchIssueUser = req.query.issueUser || '';
+        if (!codeProject) {
             return res.status(400).json({
-                message:'is not id project'
-            })
+                message: 'is not id project',
+            });
         }
-        const checkProject=await modelWorkProject.findOne({codeProject})
-        const sprint=await modelSprint.find({projectID:checkProject._id,status:'RUNNING'})
-        const  sprintID=[]
-        sprint.forEach((element)=>{
-            sprintID.push(element._id)
-        })
-        const countIssue=await modelIssue.find({projectID:checkProject._id,sprint:{$in:sprintID},parentIssue:{$ne: null}})
-        const totalPage=Math.ceil(countIssue.length/limit)
-        const checkIssues= await modelIssue.find({projectID:checkProject._id,sprint:{$in:sprintID},parentIssue:{$ne: null},$or:[{assignee:{$regex:searchIssueUser}},{issueType:{$regex:searchIssueUser}},{sprint:{$regex:searchIssueUser}}]})
-        .populate({
-            path:'parentIssue'
-        })
-        .skip((skip -1) * limit)
-        .limit(limit)
-        if(!checkIssues){
-            return res.status(400).json({
-                message:'is not issues of project'
+        const checkProject = await modelWorkProject.findOne({ codeProject });
+        const sprint = await modelSprint.find({ projectID: checkProject._id, status: 'RUNNING' });
+        const sprintID = [];
+        sprint.forEach((element) => {
+            sprintID.push(element._id);
+        });
+        const countIssue = await modelIssue.find({
+            projectID: checkProject._id,
+            sprint: { $in: sprintID },
+            parentIssue: { $ne: null },
+        });
+        const totalPage = Math.ceil(countIssue.length / limit);
+        const checkIssues = await modelIssue
+            .find({
+                projectID: checkProject._id,
+                sprint: { $in: sprintID },
+                parentIssue: { $ne: null },
+                $or: [
+                    { assignee: { $regex: searchIssueUser } },
+                    { issueType: { $regex: searchIssueUser } },
+                    { sprint: { $regex: searchIssueUser } },
+                ],
             })
+            .populate({
+                path: 'parentIssue',
+            })
+            .skip((skip - 1) * limit)
+            .limit(limit);
+
+        if (!checkIssues) {
+            return res.status(400).json({
+                message: 'is not issues of project',
+            });
         }
         return res.status(200).json({
-            issuesBroad:checkIssues,
-            page:skip,
-            totalPage
-            
-        })
+            issuesBroad: checkIssues,
+            page: skip,
+            totalPage,
+        });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(404).json({
-            message:"can not get issues broad"
-        })
+            message: 'can not get issues broad',
+        });
     }
-}
+};
 
 module.exports = {
     listIssuesBroad,

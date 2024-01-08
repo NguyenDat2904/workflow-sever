@@ -1,5 +1,6 @@
 const modelComment = require('../models/comment');
 const modelIssue = require('../models/issue');
+const { io } = require('../app');
 
 const listComment = async (req, res) => {
     try {
@@ -41,7 +42,6 @@ const addComment = async (req, res) => {
             content,
             commentTime: new Date(),
         });
-
         await newComment.save();
         res.json({
             message: 'Successfully created new comment',

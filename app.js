@@ -10,13 +10,27 @@ const workRouter = require('./routes/project.route');
 const issues = require('./routes/issues.route');
 const sprint = require('./routes/sprint.route');
 const comment = require('./routes/comment.route');
-
-const app = express();
-const http = require('http');
-const { Server } = require('socket.io');
-const server = http.createServer(app);
-const io = new Server(server);
+const notification = require('./routes/notification.route');
+const handleComment = require('./sockers/handleComment');
 const db = require('./configs/db');
+
+// app sever
+const app = express();
+// socket sever
+const io = require('socket.io')(5000, {
+    cors: {
+        origin: ['http://127.0.0.1:5500', 'https://workflow-ui-lake.vercel.app', 'http://localhost:3000'],
+    },
+});
+
+const onConnection = (socket) => {
+    handleComment(io, socket);
+};
+io.on('connection', onConnection);
+io.on('error', (err) => {
+    console.log(err);
+    return err;
+});
 
 db();
 require('dotenv').config();
@@ -37,11 +51,9 @@ app.use('/sprints', sprint);
 app.use('/projects', workRouter);
 app.use('/users', usersRouter);
 app.use('/comments', comment);
+app.use('/notifications', notification);
 app.use('/', indexRouter);
 
-io.on('connection', (socket) => {
-    console.log(socket);
-});
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
@@ -58,4 +70,4 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-module.exports = app;
+module.exports = { app, io };
