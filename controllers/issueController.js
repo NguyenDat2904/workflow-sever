@@ -132,8 +132,8 @@ const addNewIssues = async (req, res) => {
 const editInformationIssue = async (req, res) => {
     try {
         const { idIssue } = req.params;
-        const { fillName, content } = req.body;
-        if (!fillName || !content) {
+        const fillName = req.body;
+        if (!fillName) {
             return res.status(400).json({
                 message: 'is not fillName or content',
             });
