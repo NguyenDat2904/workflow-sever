@@ -97,7 +97,7 @@ const editInformationSprint=async(req,res)=>{
         startDate:startDate?startDate:null,
         endDate:endDate?endDate:null,
         sprintGoal:sprintGoal?sprintGoal:"",
-        duration:duration?duration:NaN
+        duration:duration?duration:null
        },{new:true})
       
        return res.status(200).json({
