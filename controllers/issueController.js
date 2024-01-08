@@ -138,7 +138,6 @@ const editInformationIssue = async (req, res) => {
                 message: 'is not fillName',
             });
         }
-        const newDueDate = new Date(content);
         const checkIssue = await modelIssue.findById({ _id: idIssue });
 
         if (!checkIssue) {
@@ -149,31 +148,31 @@ const editInformationIssue = async (req, res) => {
 
         switch (fillName) {
             case 'summary':
-                checkIssue.summary = content;
+                checkIssue.summary = fillName.summary;
                 break;
 
             case 'status':
-                checkIssue.status = content;
+                checkIssue.status = fillName.status;
 
                 break;
             case 'priority':
-                checkIssue.priority = content;
+                checkIssue.priority = fillName.priority;
 
                 break;
             case 'assignee':
-                checkIssue.assignee = content;
+                checkIssue.assignee = fillName.assignee;
 
                 break;
             case 'reporter':
-                checkIssue.reporter = content;
+                checkIssue.reporter = fillName.reporter;
 
                 break;
             case 'startDate':
-                checkIssue.startDate = newDueDate;
+                checkIssue.startDate = new Date(fillName.startDate);
 
                 break;
             case 'dueDate':
-                checkIssue.dueDate = newDueDate;
+                checkIssue.dueDate = new Date(fillName.dueDate);
                 break;
             default:
                 return res.status(400).json({
