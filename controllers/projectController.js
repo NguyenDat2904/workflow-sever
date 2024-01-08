@@ -171,7 +171,7 @@ const addNewWork = async (req, res) => {
             startDate: new Date(),
             endDate: null,
             sprintGoal: '',
-            status: '',
+            status: 'PENDING',
         });
         await newSprint.save();
         return res.status(200).json({
@@ -358,13 +358,13 @@ const listMember = async (req, res) => {
 
             { $match: { codeProject: codeProject } },
         ]);
-        console.log(memberProject);
         const listMB = [
             ...(memberProject[0]?.infoUserMembers || []),
             ...(memberProject[0]?.infoListManagers || []),
             memberProject[0]?.infoAdmin || [],
         ];
-        return res.status(200).json(listMB);
+        const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
+        return res.status(200).json(result);
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -400,14 +400,14 @@ const sendEmailToUser = async (req, res) => {
         }
 
         // token hết hạn sau 3p
-        const payload = { email, role, userName };
+        const payload = { email, role, name };
         const token = jwt.sign(payload, process.env.SECRET_KEY_EMAIL, { expiresIn: 3 * 60 * 1000 });
 
         // gửi mail
         const mailOptions = {
             from: `${process.env.USER_EMAIL}`,
             to: `${email}`,
-            subject: `${userName} invited you to join them in Workflow`,
+            subject: `${name} invited you to join them in Workflow`,
             html: `
             <html>
             <body>
@@ -573,7 +573,12 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                       <a
-                                                        href=${process.env.URL_EMAIL_ADD_MEMBERS + '?token=' + token}
+                                                        href=${
+                                                            process.env.URL_EMAIL_ADD_MEMBERS +
+                                                            '/add-people' +
+                                                            '?token=' +
+                                                            token
+                                                        }
                                                         style="
                                                           cursor: pointer;
                                                           box-sizing: border-box;

@@ -96,19 +96,7 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const {
-            issueType,
-            summary,
-            description,
-            assigneeID,
-            reporterID,
-            priority,
-            sprintID,
-            storyPointEstimate,
-            startDate,
-            dueDate,
-            parentIssue,
-        } = req.body;
+        const { issueType, summary, sprintID } = req.body;
         const { codeProject } = req.params;
         if (!summary) {
             return res.status(400).json({
@@ -118,22 +106,13 @@ const addNewIssues = async (req, res) => {
         const project = await modelWorkProject.findOne({ codeProject });
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
-        const newStartDate = new Date(startDate);
-        const newDueDate = new Date(dueDate);
         const newIssues = new modelIssue({
             projectID: project._id,
             issueType,
             status: 'TODO',
             summary,
-            description,
-            assignee: assigneeID,
-            reporter: reporterID,
-            priority,
             sprint: sprintID,
-            storyPointEstimate: storyPointEstimate ? storyPointEstimate : NaN,
-            startDate: newStartDate || new Date(),
-            dueDate: newDueDate,
-            parentIssue: parentIssue ? parentIssue : null,
+            startDate: new Date(),
             name: nameIssue,
         });
         await newIssues.save();
@@ -164,14 +143,13 @@ const addNewIssues = async (req, res) => {
 const editInformationIssue = async (req, res) => {
     try {
         const { idIssue } = req.params;
-        const { fillName, content } = req.body;
-        if (!fillName || !content) {
+        const updateData = req.body;
+        if (!updateData) {
             return res.status(400).json({
-                message: 'is not fillName or content',
+                message: 'updateData is required',
             });
         }
-        const newDueDate = new Date(content);
-        const checkIssue = await modelIssue.findById({ _id: idIssue });
+        const checkIssue = await modelIssue.findById(idIssue);
 
         if (!checkIssue) {
             return res.status(404).json({
@@ -179,40 +157,13 @@ const editInformationIssue = async (req, res) => {
             });
         }
 
-        switch (fillName) {
-            case 'summary':
-                checkIssue.summary = content;
-                break;
-
-            case 'status':
-                checkIssue.status = content;
-
-                break;
-            case 'priority':
-                checkIssue.priority = content;
-
-                break;
-            case 'assignee':
-                checkIssue.assignee = content;
-
-                break;
-            case 'reporter':
-                checkIssue.reporter = content;
-
-                break;
-            case 'startDate':
-                checkIssue.startDate = newDueDate;
-
-                break;
-            case 'dueDate':
-                checkIssue.dueDate = newDueDate;
-                break;
-            default:
-                return res.status(400).json({
-                    message: 'FillName does not exist',
-                });
+        // Cập nhật dữ liệu dựa trên các trường trong updateData
+        for (const field in updateData) {
+            if (checkIssue[field] !== undefined) {
+                checkIssue[field] = updateData[field];
+            }
         }
-        const issueSaved = await checkIssue.save();
+        await checkIssue.save();
         return res.status(200).json(checkIssue);
     } catch (error) {
         console.log(error);
@@ -256,15 +207,20 @@ const listIssuesBroad = async (req, res) => {
         }
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const sprint = await modelSprint.find({ projectID: checkProject._id, status: 'RUNNING' });
+        const sprintID = [];
+        sprint.forEach((element) => {
+            sprintID.push(element._id);
+        });
         const countIssue = await modelIssue.find({
             projectID: checkProject._id,
-            sprint: { $in: sprint?._id },
+            sprint: { $in: sprintID },
             parentIssue: { $ne: null },
         });
         const totalPage = Math.ceil(countIssue.length / limit);
         const checkIssues = await modelIssue
             .find({
                 projectID: checkProject._id,
+                sprint: { $in: sprintID },
                 parentIssue: { $ne: null },
                 $or: [
                     { assignee: { $regex: searchIssueUser } },
@@ -277,6 +233,7 @@ const listIssuesBroad = async (req, res) => {
             })
             .skip((skip - 1) * limit)
             .limit(limit);
+
         if (!checkIssues) {
             return res.status(400).json({
                 message: 'is not issues of project',

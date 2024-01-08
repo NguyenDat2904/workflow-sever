@@ -1,7 +1,7 @@
 
 const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
-
+const modelIssues=require('../models/issue')
 // add sprint
 const addNewSprint = async (req, res) => {
     try {
@@ -79,27 +79,19 @@ const listSprint = async (req, res) => {
 ////edit information sprint
 const editInformationSprint=async(req,res)=>{
     try {
-        const {  name,
-        startDate,
-        endDate,
-        sprintGoal,
-        duration
-       }=req.body
+        const updateData  =req.body
        const {idSprint}=req.params
-       if(!idSprint){
+        if(!updateData){
         return res.status(404).json({
-            message:'is not codeProject'
+            message:'updateData is required'
         })
        }
-     
-       const checkSprint=await modelSprint.findByIdAndUpdate({_id:idSprint},
-        {name:name?name:"",
-        startDate:startDate?startDate:null,
-        endDate:endDate?endDate:null,
-        sprintGoal:sprintGoal?sprintGoal:"",
-        duration:duration?duration:NaN
-       },{new:true})
-      
+       if(!idSprint){
+        return res.status(404).json({
+            message:'idSprint is required'
+        })
+       }
+       const checkSprint=await modelSprint.findByIdAndUpdate(idSprint,updateData,{new:true})
        return res.status(200).json({
         message:'update success',
         data:checkSprint
@@ -135,4 +127,30 @@ const deleteSprint=async(req,res)=>{
         });
     }
 }
-module.exports = {deleteSprint, listSprint,editInformationSprint, addNewSprint };
+//Active Sprint
+const activeSprint=async(req,res)=>{
+    try {
+        const {idSprintComplete,idSprintRunning}=req.params
+
+        if(!idSprintComplete){
+            return res.status(404).json({
+                message:"is not id sprint complete"
+            })
+        }
+        await modelIssues.findOneAndUpdate({sprint:idSprintRunning,status:{$ne:"DONE"}},{
+        sprint: idSprintComplete
+        },{new:true})
+        await modelSprint.findByIdAndUpdate({_id:idSprintRunning},{
+            status:'DONE'
+        },{new:true})
+        return res.status(200).json({
+            message:'active sprint success'
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({
+            message:error
+        })
+    }
+} 
+module.exports = {activeSprint,deleteSprint, listSprint,editInformationSprint, addNewSprint };
