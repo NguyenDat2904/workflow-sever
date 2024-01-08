@@ -135,7 +135,7 @@ const editInformationIssue = async (req, res) => {
         const fillName = req.body;
         if (!fillName) {
             return res.status(400).json({
-                message: 'is not fillName or content',
+                message: 'is not fillName',
             });
         }
         const newDueDate = new Date(content);
