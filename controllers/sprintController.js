@@ -79,27 +79,19 @@ const listSprint = async (req, res) => {
 ////edit information sprint
 const editInformationSprint=async(req,res)=>{
     try {
-        const {  name,
-        startDate,
-        endDate,
-        sprintGoal,
-        duration
-       }=req.body
+        const updateData  =req.body
        const {idSprint}=req.params
-       if(!idSprint){
+        if(!updateData){
         return res.status(404).json({
-            message:'is not codeProject'
+            message:'updateData is required'
         })
        }
-     
-       const checkSprint=await modelSprint.findByIdAndUpdate({_id:idSprint},
-        {name:name?name:"",
-        startDate:startDate?startDate:null,
-        endDate:endDate?endDate:null,
-        sprintGoal:sprintGoal?sprintGoal:"",
-        duration:duration?duration:null
-       },{new:true})
-      
+       if(!idSprint){
+        return res.status(404).json({
+            message:'idSprint is required'
+        })
+       }
+       const checkSprint=await modelSprint.findByIdAndUpdate(idSprint,updateData,{new:true})
        return res.status(200).json({
         message:'update success',
         data:checkSprint
