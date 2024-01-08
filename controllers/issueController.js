@@ -93,19 +93,10 @@ const issuesChildren = async (req, res) => {
 const addNewIssues = async (req, res) => {
     try {
         const {
-            
             issueType,
             summary,
             description,
-            assigneeID,
-            reporterID,
-            priority,
             sprintID,
-            storyPointEstimate,
-            startDate,
-            dueDate,
-            parentIssue,
-            
         } = req.body;
         const {codeProject}=req.params
         if (!summary) {
@@ -123,14 +114,8 @@ const addNewIssues = async (req, res) => {
             issueType,
             status: 'TODO',
             summary,
-            description,
-            assignee: assigneeID,
-            reporter: reporterID,
-            priority,
             sprint: sprintID,
-            storyPointEstimate:storyPointEstimate?storyPointEstimate:NaN,
-            startDate: newStartDate || new Date(),
-            dueDate: newDueDate,
+            startDate: new Date(),
             parentIssue:parentIssue?parentIssue: null,
             name:nameIssue
         });
