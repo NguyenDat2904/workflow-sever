@@ -23,14 +23,14 @@ const io = require('socket.io')(5000, {
     },
 });
 
-const onConnection = (socket) => {
-    handleComment(io, socket);
-};
-io.on('connection', onConnection);
-io.on('error', (err) => {
-    console.log(err);
-    return err;
-});
+// const onConnection = (socket) => {
+//     handleComment(io, socket);
+// };
+// io.on('connection', onConnection);
+// io.on('error', (err) => {
+//     console.log(err);
+//     return err;
+// });
 
 db();
 require('dotenv').config();

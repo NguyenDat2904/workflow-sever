@@ -96,7 +96,7 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const { issueType, summary, sprintID } = req.body;
+        const { issueType, summary, sprintID, assignee } = req.body;
         const { codeProject } = req.params;
         if (!summary) {
             return res.status(400).json({
@@ -107,6 +107,7 @@ const addNewIssues = async (req, res) => {
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue({
+            assignee: assignee || '',
             projectID: project._id,
             issueType,
             status: 'TODO',
@@ -116,9 +117,9 @@ const addNewIssues = async (req, res) => {
             name: nameIssue,
         });
         await newIssues.save();
-        if (assigneeID) {
+        if (assignee) {
             const newNotification = new modelNotification({
-                userID: assigneeID,
+                userID: assignee,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
                 title: `${req.user.name} assigned an issue to you`,
                 content: `${summary}`,
@@ -142,7 +143,7 @@ const addNewIssues = async (req, res) => {
 //edit information
 const editInformationIssue = async (req, res) => {
     try {
-        const { idIssue } = req.params;
+        const { idIssue, codeProject } = req.params;
         const updateData = req.body;
         if (!updateData) {
             return res.status(400).json({
@@ -163,8 +164,19 @@ const editInformationIssue = async (req, res) => {
                 checkIssue[field] = updateData[field];
             }
         }
-        await checkIssue.save();
-        return res.status(200).json(checkIssue);
+        const issueEdit = await checkIssue.save();
+        if (checkIssue.assignee === issueEdit.assignee) {
+            const newNotification = new modelNotification({
+                userID: checkIssue.assignee,
+                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${checkIssue._id}`,
+                title: `${req.user.name} changed a your issue`,
+                content: `${checkIssue.summary}`,
+                createdAt: new Date(),
+                read: false,
+            });
+            await newNotification.save();
+        }
+        return res.status(200).json(issueEdit);
     } catch (error) {
         console.log(error);
         return res.status(404).json({
@@ -187,6 +199,17 @@ const deleteIssue = async (req, res) => {
         return res.status(400).json({
             message: 'Deleting issue failed',
         });
+    }
+    if (issue) {
+        const newNotification = new modelNotification({
+            userID: issue.assignee,
+            link: '',
+            title: `${req.user.name} deleted a your issue`,
+            content: `${issue.summary}`,
+            createdAt: new Date(),
+            read: false,
+        });
+        await newNotification.save();
     }
 
     res.json({
