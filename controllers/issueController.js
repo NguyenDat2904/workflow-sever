@@ -132,13 +132,13 @@ const addNewIssues = async (req, res) => {
 const editInformationIssue = async (req, res) => {
     try {
         const { idIssue } = req.params;
-        const fillName = req.body;
-        if (!fillName) {
+        const updateData  = req.body;
+        if (!updateData) {
             return res.status(400).json({
-                message: 'is not fillName',
+                message: 'updateData is required',
             });
         }
-        const checkIssue = await modelIssue.findById({ _id: idIssue });
+        const checkIssue = await modelIssue.findById(idIssue);
 
         if (!checkIssue) {
             return res.status(404).json({
@@ -146,39 +146,12 @@ const editInformationIssue = async (req, res) => {
             });
         }
 
-        switch (fillName) {
-            case 'summary':
-                checkIssue.summary = fillName.summary;
-                break;
-
-            case 'status':
-                checkIssue.status = fillName.status;
-
-                break;
-            case 'priority':
-                checkIssue.priority = fillName.priority;
-
-                break;
-            case 'assignee':
-                checkIssue.assignee = fillName.assignee;
-
-                break;
-            case 'reporter':
-                checkIssue.reporter = fillName.reporter;
-
-                break;
-            case 'startDate':
-                checkIssue.startDate = new Date(fillName.startDate);
-
-                break;
-            case 'dueDate':
-                checkIssue.dueDate = new Date(fillName.dueDate);
-                break;
-            default:
-                return res.status(400).json({
-                    message: 'FillName does not exist',
-                });
-        }
+        // Cập nhật dữ liệu dựa trên các trường trong updateData
+    for (const field in updateData) {
+      if (checkIssue[field] !== undefined) {
+        checkIssue[field] = updateData[field];
+      }
+    }
         await checkIssue.save();
         return res.status(200).json(checkIssue);
     } catch (error) {
