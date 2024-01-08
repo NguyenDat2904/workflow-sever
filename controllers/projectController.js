@@ -1,5 +1,5 @@
 const modelProject = require('../models/project');
-const modelSprint= require('../models/sprint')
+const modelSprint = require('../models/sprint');
 const dataImgProject = require('../imgProject.json');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
@@ -60,7 +60,7 @@ const getProject = async (req, res) => {
             });
         }
         return res.status(200).json({
-            data:Project,
+            data: Project,
             page,
             totalPages,
         });
@@ -149,7 +149,7 @@ const addNewWork = async (req, res) => {
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelProject({
             nameProject: nameProject,
-            
+
             listManagers: [],
             admin: email,
             listMembers: [],
@@ -164,16 +164,16 @@ const addNewWork = async (req, res) => {
         });
         await newProject.save();
 
-        const nameIssue=`${codeProject} Sprint 1`
-        const newSprint=new modelSprint({
-          projectID:newProject._id,
-          name:nameIssue,
-          startDate: new Date(),
-          endDate: null,
-          sprintGoal:'',
-          status:'PENDING',
-        })
-        await newSprint.save()
+        const nameIssue = `${codeProject} Sprint 1`;
+        const newSprint = new modelSprint({
+            projectID: newProject._id,
+            name: nameIssue,
+            startDate: new Date(),
+            endDate: null,
+            sprintGoal: '',
+            status: 'PENDING',
+        });
+        await newSprint.save();
         return res.status(200).json({
             message: 'Add new successfully',
             data: newProject,
@@ -343,26 +343,28 @@ const listMember = async (req, res) => {
                     as: 'infoUserMembers',
                 },
                 $lookup: {
-                  from: 'users',
-                  localField: 'listManagers',
-                  foreignField: 'email',
-                  as: 'infoListManagers',
-              },
-              $lookup: {
-                from: 'users',
-                localField: 'admin',
-                foreignField: 'email',
-                as: 'infoAdmin',
-            },
+                    from: 'users',
+                    localField: 'listManagers',
+                    foreignField: 'email',
+                    as: 'infoListManagers',
+                },
+                $lookup: {
+                    from: 'users',
+                    localField: 'admin',
+                    foreignField: 'email',
+                    as: 'infoAdmin',
+                },
             },
 
             { $match: { codeProject: codeProject } },
         ]);
 
-        const listMB=[...memberProject[0]?.infoUserMembers ||[],...memberProject[0]?.infoListManagers||[],memberProject[0]?.infoAdmin||[]]
-        const result = listMB.reduceRight((accumulator, currentValue) =>
-  accumulator.concat(currentValue),
-);
+        const listMB = [
+            ...(memberProject[0]?.infoUserMembers || []),
+            ...(memberProject[0]?.infoListManagers || []),
+            memberProject[0]?.infoAdmin || [],
+        ];
+        const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
         return res.status(200).json(result);
     } catch (error) {
         console.log(error);
