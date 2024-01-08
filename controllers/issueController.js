@@ -95,7 +95,6 @@ const addNewIssues = async (req, res) => {
         const {
             issueType,
             summary,
-            description,
             sprintID,
         } = req.body;
         const {codeProject}=req.params
