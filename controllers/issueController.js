@@ -113,7 +113,6 @@ const addNewIssues = async (req, res) => {
             summary,
             sprint: sprintID,
             startDate: new Date(),
-            parentIssue:parentIssue?parentIssue: null,
             name:nameIssue
         });
         await newIssues.save();
