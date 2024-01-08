@@ -106,8 +106,6 @@ const addNewIssues = async (req, res) => {
         const project =await modelWorkProject.findOne({codeProject})
         const issue=await modelIssue.find({projectID:project._id})
         const nameIssue=`${codeProject}-${issue.length + 1}`
-        const newStartDate = new Date(startDate);
-        const newDueDate = new Date(dueDate);
         const newIssues = new modelIssue({
             projectID:project._id,
             issueType,
