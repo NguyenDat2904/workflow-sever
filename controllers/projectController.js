@@ -358,9 +358,12 @@ const listMember = async (req, res) => {
 
             { $match: { codeProject: codeProject } },
         ]);
-        console.log(memberProject)
+
         const listMB=[...memberProject[0]?.infoUserMembers ||[],...memberProject[0]?.infoListManagers||[],memberProject[0]?.infoAdmin||[]]
-        return res.status(200).json(listMB);
+        const result = listMB.reduceRight((accumulator, currentValue) =>
+  accumulator.concat(currentValue),
+);
+        return res.status(200).json(result);
     } catch (error) {
         console.log(error);
         return res.status(500).json({
