@@ -573,7 +573,7 @@ const sendEmailToUser = async (req, res) => {
                                                     "
                                                   >
                                                       <a
-                                                        href="${process.env.URL_EMAIL_ADD_MEMBERS}/add-people?token=${token}/codeProject=${codeProject}"
+                                                        href="${process.env.URL_EMAIL_ADD_MEMBERS}/add-people?token=${token}&codeProject=${codeProject}"
                                                         style="
                                                           cursor: pointer;
                                                           box-sizing: border-box;
