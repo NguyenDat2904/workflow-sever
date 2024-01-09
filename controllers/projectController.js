@@ -11,6 +11,7 @@ const getProject = async (req, res) => {
     try {
         const { sortKey, deleteProject } = req.query;
         const { email } = req.user;
+        console.log(email)
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
@@ -26,11 +27,10 @@ const getProject = async (req, res) => {
             {
                 $match: {
                     $or: [
-                        { admin: email, deleteProject: deleteProject === true ? true : false },
-                        { listManagers: email, deleteProject: deleteProject === true ? true : false },
-                        { listMembers: email, deleteProject: deleteProject === true ? true : false },
+                        { admin: email, deleteProject: deleteProject === true ? true : false ,codeProject: { $regex: key } },
+                        { listManagers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
+                        { listMembers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
                     ],
-                    $or: [{ codeProject: { $regex: key } }],
                 },
             },
             {
