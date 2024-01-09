@@ -35,7 +35,11 @@ const app = express();
 db();
 require('dotenv').config();
 
-app.use(cors());
+app.use(
+    cors({
+        origin: '*',
+    }),
+);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
