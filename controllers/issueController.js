@@ -20,7 +20,10 @@ const listIssuesProject = async (req, res) => {
             });
         }
         const checkProject = await modelWorkProject.findOne({ codeProject });
-        const lengthIssue = await modelIssue.find({ projectID: checkProject._id, parentIssue: null });
+        const lengthIssue = await modelIssue.find({
+            projectID: checkProject._id,
+            parentIssue:parentIssueID === 'null' ? null : parentIssueID ,
+        });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
             .find({
@@ -69,6 +72,23 @@ const listIssuesProject = async (req, res) => {
         });
     }
 };
+const issueDetail = async (req, res) => {
+    try {
+        const { idIssue } = req.params;
+        if (!idIssue) {
+            return res.status(404).json({
+                message: 'is not id issue',
+            });
+        }
+        const issue = await modelIssue.findById({ _id: idIssue });
+        res.status(200).json(issue);
+    } catch (error) {
+        res.status(500).json({
+            message:error
+        });
+    }
+};
+
 //issuesChildren
 const issuesChildren = async (req, res) => {
     try {
@@ -96,7 +116,19 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const { issueType, summary, sprintID, assignee } = req.body;
+        const {
+            description,
+            reporter,
+            priority,
+            storyPointEstimate,
+            dueDate,
+            startDate,
+            parentIssue,
+            issueType,
+            summary,
+            sprintID,
+            assignee
+        } = req.body;
         const { codeProject } = req.params;
         if (!summary) {
             return res.status(400).json({
@@ -113,8 +145,14 @@ const addNewIssues = async (req, res) => {
             status: 'TODO',
             summary,
             sprint: sprintID,
-            startDate: new Date(),
             name: nameIssue,
+            parentIssue: parentIssue || null,
+            startDate: startDate || null,
+            dueDate: dueDate || null,
+            storyPointEstimate: storyPointEstimate || null,
+            priority: priority || 'Medium',
+            reporter: reporter || '',
+            description: description || '',
         });
         await newIssues.save();
         if (assignee) {
@@ -282,4 +320,5 @@ module.exports = {
     addNewIssues,
     issuesChildren,
     deleteIssue,
+    issueDetail
 };
