@@ -10,7 +10,7 @@ router.get('/', authMiddleware, notificationController.getNotifications);
 router.post('/add', authMiddleware, notificationController.addNotification);
 
 // patch
-router.patch('/:notificationID', authMiddleware, notificationController.editNotification,);
+router.patch('/edit/:notificationID', authMiddleware, notificationController.editNotification,);
 
 // delete
 router.delete('/:notificationID', authMiddleware, notificationController.deleteNotification);

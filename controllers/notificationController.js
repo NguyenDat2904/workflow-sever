@@ -8,7 +8,11 @@ const getNotifications = async (req, res) => {
     const notification = await modelNotification
         .find({ userID: _id })
         .skip((skip - 1) * limit)
-        .limit(limit);
+        .limit(limit)
+        .populate({
+            path: 'userID',
+            select: 'imgCover',
+        });
     if (!notification)
         return res.status(400).json({
             message: 'not found notification',
