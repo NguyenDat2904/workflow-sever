@@ -74,13 +74,19 @@ const listIssuesProject = async (req, res) => {
 };
 const issueDetail = async (req, res) => {
     try {
-        const { idIssue } = req.params;
-        if (!idIssue) {
+        const { nameIssue,codeProject } = req.params;
+        if (!nameIssue||!codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
             });
         }
-        const issue = await modelIssue.findById({ _id: idIssue });
+        const project =await modelWorkProject.findOne({codeProject})
+        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id});
+        if(!issue){
+            return res.status(404).json({
+                message:"not found"
+            })
+        }
         res.status(200).json(issue);
     } catch (error) {
         res.status(500).json({
