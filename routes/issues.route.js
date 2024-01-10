@@ -5,6 +5,7 @@ const permissions = require('../middlewares/checkUserPermissions');
 const issueController = require('../controllers/issueController');
 
 //get
+router.get('/detail/:idIssue',issueController.issueDetail)
 router.get('/broad/:codeProject',authMidddlerware,issueController.listIssuesBroad)
 router.get('/children/:_idIssueParent', authMidddlerware, issueController.issuesChildren);
 router.get('/:codeProject', authMidddlerware, issueController.listIssuesProject);
