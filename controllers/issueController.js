@@ -22,7 +22,7 @@ const listIssuesProject = async (req, res) => {
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
-            parentIssue:parentIssueID === 'null' ? null : parentIssueID ,
+            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
         });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
