@@ -2,6 +2,7 @@ const modelIssue = require('../models/issue');
 const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
 const modelNotification = require('../models/notification');
+const { isObjectIdOrHexString } = require('mongoose');
 require('dotenv').config();
 
 const listIssuesProject = async (req, res) => {
@@ -41,6 +42,7 @@ const listIssuesProject = async (req, res) => {
                     { issueType: { $regex: search } },
                 ],
             })
+            .populate({ path: 'projectID' })
             .populate({
                 path: 'sprint',
             })
@@ -74,14 +76,24 @@ const listIssuesProject = async (req, res) => {
 };
 const issueDetail = async (req, res) => {
     try {
-        const { nameIssue, codeProject } = req.params;
-        if (!nameIssue || !codeProject) {
+        const { codeProject } = req.params;
+
+        const { search } = req.query;
+        if (!codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
             });
         }
         const project = await modelWorkProject.findOne({ codeProject });
-        const issue = await modelIssue.findOne({ name: nameIssue, projectID: project._id });
+        const issue = await modelIssue
+            .findOne({
+                $or: [{ name: search }, { _id: isObjectIdOrHexString(search) ? search : null }],
+                projectID: project._id,
+            })
+            .populate({ path: 'sprint' })
+            .populate({ path: 'projectID' })
+            .populate({ path: 'assignee', select: '-passWord' })
+            .populate({ path: 'reporter', select: '-passWord' });
         if (!issue) {
             return res.status(404).json({
                 message: 'not found',
@@ -89,6 +101,7 @@ const issueDetail = async (req, res) => {
         }
         res.status(200).json(issue);
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: error,
         });
@@ -122,52 +135,30 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const {
-            description,
-            reporter,
-            priority,
-            storyPointEstimate,
-            dueDate,
-            startDate,
-            parentIssue,
-            issueType,
-            summary,
-            sprintID,
-            assignee,
-        } = req.body;
+        const dataIssue = req.body;
         const { codeProject } = req.params;
-        if (!summary) {
+        if (!dataIssue.summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
         }
         const project = await modelWorkProject.findOne({ codeProject });
+        if (!project) {
+            return res.status(404).json({
+                message: 'Project not found',
+            });
+        }
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
-        const newIssues = new modelIssue({
-            assignee: assignee || '',
-            projectID: project._id,
-            issueType,
-            status: 'TODO',
-            summary,
-            sprint: sprintID,
-            name: nameIssue,
-            parentIssue: parentIssue || null,
-            startDate: startDate || null,
-            dueDate: dueDate || null,
-            storyPointEstimate: storyPointEstimate || null,
-            priority: priority || 'Medium',
-            reporter: reporter || '',
-            description: description || '',
-        });
+        const newIssues = new modelIssue({ ...dataIssue, projectID: project._id, name: nameIssue });
         await newIssues.save();
-        if (assignee) {
+        if (dataIssue?.assignee) {
             const newNotification = new modelNotification({
-                userID: assignee,
-                reporter,
+                userID: dataIssue?.assignee,
+                reporter: dataIssue?.reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
                 title: `${req.user.name} assigned an issue to you`,
-                content: `${summary}`,
+                content: `${dataIssue?.summary}`,
                 createdAt: new Date(),
                 read: false,
             });
@@ -212,8 +203,8 @@ const editInformationIssue = async (req, res) => {
         const issueEdit = await checkIssue.save();
         if (checkIssue.assignee === issueEdit.assignee) {
             const newNotification = new modelNotification({
-                userID: checkIssue.assignee,
-                reporter: issueEdit.reporter,
+                userID: checkIssue?.assignee,
+                reporter: issueEdit?.reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${checkIssue._id}`,
                 title: `${req.user.name} changed a your issue`,
                 content: `${checkIssue.summary}`,
@@ -248,8 +239,8 @@ const deleteIssue = async (req, res) => {
     }
     if (issue) {
         const newNotification = new modelNotification({
-            userID: issue.assignee,
-            reporter: issue.reporter,
+            userID: issue?.assignee,
+            reporter: issue?.reporter,
             link: '',
             title: `${req.user.name} deleted a your issue`,
             content: `${issue.summary}`,
