@@ -122,19 +122,7 @@ const issuesChildren = async (req, res) => {
 // add new work
 const addNewIssues = async (req, res) => {
     try {
-        const {
-            description,
-            reporter,
-            priority,
-            storyPointEstimate,
-            dueDate,
-            startDate,
-            parentIssue,
-            issueType,
-            summary,
-            sprintID,
-            assignee
-        } = req.body;
+        const dataIssue = req.body;
         const { codeProject } = req.params;
         if (!summary) {
             return res.status(400).json({
@@ -145,33 +133,17 @@ const addNewIssues = async (req, res) => {
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue({
-            assignee: assignee || '',
+            assignee: dataIssue?.assignee || '',
             projectID: project._id,
-            issueType,
+            issueType: dataIssue?.issueType,
             status: 'TODO',
-            summary,
-            sprint: sprintID,
+            summary: dataIssue?.summary,
+            sprint: dataIssue?.sprintID,
             name: nameIssue,
-            parentIssue: parentIssue || null,
-            startDate: startDate || null,
-            dueDate: dueDate || null,
-            storyPointEstimate: storyPointEstimate || null,
-            priority: priority || 'Medium',
-            reporter: reporter || '',
-            description: description || '',
+            parentIssue: dataIssue?.parentIssue || null,
+            priority: 'Medium',
         });
         await newIssues.save();
-        if (assignee) {
-            const newNotification = new modelNotification({
-                userID: assignee,
-                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
-                title: `${req.user.name} assigned an issue to you`,
-                content: `${summary}`,
-                createdAt: new Date(),
-                read: false,
-            });
-            await newNotification.save();
-        }
         res.json({
             message: 'add new issue successfully',
             data: newIssues,
