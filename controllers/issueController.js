@@ -80,18 +80,8 @@ const issueDetail = async (req, res) => {
                 message: 'is not id issue',
             });
         }
-        const project =await modelWorkProject.findOne({codeProject}).populate({
-                path: 'sprint',
-            })
-            .populate({
-                path: 'assignee',
-                select: '-passWord',
-            })
-            .populate({
-                path: 'reporter',
-                select: '-passWord',
-            })
-        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id});
+        const project =await modelWorkProject.findOne({codeProject})
+        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id}).populate({path: 'sprint'}).populate({path: 'assignee',select: '-passWord'}).populate({path: 'reporter',select: '-passWord'});
         if(!issue){
             return res.status(404).json({
                 message:"not found"
