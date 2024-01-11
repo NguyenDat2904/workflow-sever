@@ -138,7 +138,9 @@ const addNewIssues = async (req, res) => {
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue(
-           dataIssue
+            {...dataIssue,
+            projectID:project._id,
+            name:nameIssue }
         );
         await newIssues.save();
          if (dataIssue?.assignee) {
