@@ -74,23 +74,23 @@ const listIssuesProject = async (req, res) => {
 };
 const issueDetail = async (req, res) => {
     try {
-        const { nameIssue,codeProject } = req.params;
-        if (!nameIssue||!codeProject) {
+        const { nameIssue, codeProject } = req.params;
+        if (!nameIssue || !codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
             });
         }
-        const project =await modelWorkProject.findOne({codeProject})
-        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id});
-        if(!issue){
+        const project = await modelWorkProject.findOne({ codeProject });
+        const issue = await modelIssue.findOne({ name: nameIssue, projectID: project._id });
+        if (!issue) {
             return res.status(404).json({
-                message:"not found"
-            })
+                message: 'not found',
+            });
         }
         res.status(200).json(issue);
     } catch (error) {
         res.status(500).json({
-            message:error
+            message: error,
         });
     }
 };
@@ -133,7 +133,7 @@ const addNewIssues = async (req, res) => {
             issueType,
             summary,
             sprintID,
-            assignee
+            assignee,
         } = req.body;
         const { codeProject } = req.params;
         if (!summary) {
@@ -164,6 +164,7 @@ const addNewIssues = async (req, res) => {
         if (assignee) {
             const newNotification = new modelNotification({
                 userID: assignee,
+                reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
                 title: `${req.user.name} assigned an issue to you`,
                 content: `${summary}`,
@@ -212,6 +213,7 @@ const editInformationIssue = async (req, res) => {
         if (checkIssue.assignee === issueEdit.assignee) {
             const newNotification = new modelNotification({
                 userID: checkIssue.assignee,
+                reporter: issueEdit.reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${checkIssue._id}`,
                 title: `${req.user.name} changed a your issue`,
                 content: `${checkIssue.summary}`,
@@ -247,6 +249,7 @@ const deleteIssue = async (req, res) => {
     if (issue) {
         const newNotification = new modelNotification({
             userID: issue.assignee,
+            reporter: issue.reporter,
             link: '',
             title: `${req.user.name} deleted a your issue`,
             content: `${issue.summary}`,
@@ -326,5 +329,5 @@ module.exports = {
     addNewIssues,
     issuesChildren,
     deleteIssue,
-    issueDetail
+    issueDetail,
 };
