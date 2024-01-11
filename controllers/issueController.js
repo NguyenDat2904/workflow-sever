@@ -87,7 +87,7 @@ const issueDetail = async (req, res) => {
         const issue = await modelIssue.findOne({  $or: [
             { name:search},
             { _id: isObjectIdOrHexString(search)?search:null},
-        ],projectID:project._id});
+        ],projectID:project._id}).populate({path: 'sprint'}).populate({path: 'projectID'}).populate({path: 'assignee',select: '-passWord'}).populate({path: 'reporter',select: '-passWord'});
         if(!issue){
             return res.status(404).json({
                 message:"not found"
