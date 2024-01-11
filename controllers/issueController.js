@@ -40,7 +40,7 @@ const listIssuesProject = async (req, res) => {
                     { priority: { $regex: search } },
                     { issueType: { $regex: search } },
                 ],
-            })
+            }).populate({path: 'projectID'})
             .populate({
                 path: 'sprint',
             })
@@ -81,7 +81,7 @@ const issueDetail = async (req, res) => {
             });
         }
         const project =await modelWorkProject.findOne({codeProject})
-        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id}).populate({path: 'sprint'}).populate({path: 'assignee',select: '-passWord'}).populate({path: 'reporter',select: '-passWord'});
+        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id}).populate({path: 'sprint'}).populate({path: 'projectID'}).populate({path: 'assignee',select: '-passWord'}).populate({path: 'reporter',select: '-passWord'});
         if(!issue){
             return res.status(404).json({
                 message:"not found"
