@@ -124,7 +124,7 @@ const addNewIssues = async (req, res) => {
     try {
         const dataIssue = req.body;
         const { codeProject } = req.params;
-        if (!summary) {
+        if (!dataIssue?.summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
@@ -149,6 +149,17 @@ const addNewIssues = async (req, res) => {
             description: dataIssue?.description || '',
         });
         await newIssues.save();
+         if (dataIssue?.assignee) {
+            const newNotification = new modelNotification({
+                userID: dataIssue?.assignee,
+                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
+                title: `${req.user.name} assigned an issue to you`,
+                content: `${dataIssue?.summary}`,
+                createdAt: new Date(),
+                read: false,
+            });
+            await newNotification.save();
+        }
         res.json({
             message: 'add new issue successfully',
             data: newIssues,
