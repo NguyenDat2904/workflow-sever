@@ -7,7 +7,7 @@ const getNotifications = async (req, res) => {
     const limit = parseInt(req.query.limit) || 25;
 
     const notification = await modelNotification
-        .find({ userID: _id, ...(read===false && { read: false }) })
+        .find({ userID: _id, ...(read==='false' && { read: false }) })
         .skip((skip - 1) * limit)
         .limit(limit)
         .populate({
