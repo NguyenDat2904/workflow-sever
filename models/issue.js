@@ -11,7 +11,7 @@ const IssueModel = new Schema(
         assignee: { type: String, ref: 'users' },
         reporter: { type: mongoose.Types.ObjectId, ref: 'users' },
         priority: { type: String, enum: ['Highest', 'High', 'Low', 'Lowest', 'Medium'], default: 'Medium' },
-        sprint: { type: String, ref: 'sprints' },
+        sprint: { type: mongoose.Types.ObjectId, ref: 'sprints' },
         storyPointEstimate: { type: Number },
         startDate: { type: Date },
         dueDate: { type: Date },
