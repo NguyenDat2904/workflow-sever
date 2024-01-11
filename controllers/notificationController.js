@@ -10,7 +10,7 @@ const getNotifications = async (req, res) => {
         .skip((skip - 1) * limit)
         .limit(limit)
         .populate({
-            path: 'userID',
+            path: 'reporter',
             select: 'imgCover',
         });
     if (!notification)
@@ -23,7 +23,7 @@ const getNotifications = async (req, res) => {
 
 const addNotification = async (req, res) => {
     try {
-        const { link, title, content } = req.body;
+        const { link, title, content, reporter } = req.body;
         const { _id } = req.user;
 
         if (!link || !title || !content)
@@ -33,6 +33,7 @@ const addNotification = async (req, res) => {
 
         const newNotification = new modelNotification({
             userID: _id,
+            reporter,
             link,
             title,
             content,

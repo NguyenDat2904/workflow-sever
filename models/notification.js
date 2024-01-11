@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const NotificationModal = new Schema(
     {
         userID: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
+        reporter: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
         link: { type: String },
         title: { type: String },
         content: { type: String },
