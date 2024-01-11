@@ -137,11 +137,16 @@ const addNewIssues = async (req, res) => {
             projectID: project._id,
             issueType: dataIssue?.issueType,
             status: 'TODO',
-            summary: dataIssue?.summary,
+            summary:dataIssue?.summary,
             sprint: dataIssue?.sprintID,
             name: nameIssue,
             parentIssue: dataIssue?.parentIssue || null,
-            priority: 'Medium',
+            startDate: dataIssue?.startDate || null,
+            dueDate: dataIssue?.dueDate || null,
+            storyPointEstimate: dataIssue?.storyPointEstimate || null,
+            priority: dataIssue?.priority || 'Medium',
+            reporter: dataIssue?.reporter || '',
+            description: dataIssue?.description || '',
         });
         await newIssues.save();
         res.json({
