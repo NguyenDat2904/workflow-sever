@@ -198,6 +198,9 @@ const editInformationIssue = async (req, res) => {
         for (const field in updateData) {
             if (checkIssue[field] !== undefined) {
                 checkIssue[field] = updateData[field];
+            }else {
+                // Nếu trường không tồn tại trong checkIssue, thêm trường mới vào
+                checkIssue[field] = updateData[field];
             }
         }
         const issueEdit = await checkIssue.save();
