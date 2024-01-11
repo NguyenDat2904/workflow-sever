@@ -2,6 +2,7 @@ const modelIssue = require('../models/issue');
 const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
 const modelNotification = require('../models/notification');
+const { isObjectIdOrHexString } = require('mongoose');
 require('dotenv').config();
 
 const listIssuesProject = async (req, res) => {
@@ -74,14 +75,19 @@ const listIssuesProject = async (req, res) => {
 };
 const issueDetail = async (req, res) => {
     try {
-        const { nameIssue,codeProject } = req.params;
-        if (!nameIssue||!codeProject) {
+        const {codeProject } = req.params;
+        
+        const {search}=req.query
+        if (!codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
             });
         }
         const project =await modelWorkProject.findOne({codeProject})
-        const issue = await modelIssue.findOne({ name: nameIssue,projectID:project._id});
+        const issue = await modelIssue.findOne({  $or: [
+            { name:search},
+            { _id: isObjectIdOrHexString(search)?search:null},
+        ],projectID:project._id});
         if(!issue){
             return res.status(404).json({
                 message:"not found"
@@ -89,6 +95,7 @@ const issueDetail = async (req, res) => {
         }
         res.status(200).json(issue);
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message:error
         });
