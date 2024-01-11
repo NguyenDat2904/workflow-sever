@@ -130,6 +130,11 @@ const addNewIssues = async (req, res) => {
             });
         }
         const project = await modelWorkProject.findOne({ codeProject });
+        if (!project) {
+            return res.status(404).json({
+                message: 'Project not found',
+            });
+        }
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue({
