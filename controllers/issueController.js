@@ -138,20 +138,7 @@ const addNewIssues = async (req, res) => {
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
         const newIssues = new modelIssue({
-            assignee: dataIssue?.assignee || '',
-            projectID: project._id,
-            issueType: dataIssue?.issueType,
-            status: 'TODO',
-            summary:dataIssue?.summary,
-            sprint: dataIssue?.sprintID,
-            name: nameIssue,
-            parentIssue: dataIssue?.parentIssue || null,
-            startDate: dataIssue?.startDate || null,
-            dueDate: dataIssue?.dueDate || null,
-            storyPointEstimate: dataIssue?.storyPointEstimate || null,
-            priority: dataIssue?.priority || 'Medium',
-            reporter: dataIssue?.reporter || '',
-            description: dataIssue?.description || '',
+           dataIssue
         });
         await newIssues.save();
          if (dataIssue?.assignee) {
