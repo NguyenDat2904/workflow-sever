@@ -124,7 +124,7 @@ const addNewIssues = async (req, res) => {
     try {
         const dataIssue = req.body;
         const { codeProject } = req.params;
-        if (!dataIssue?.summary) {
+        if (!dataIssue.summary) {
             return res.status(400).json({
                 message: 'A summary is required',
             });
@@ -137,9 +137,9 @@ const addNewIssues = async (req, res) => {
         }
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
-        const newIssues = new modelIssue({
+        const newIssues = new modelIssue(
            dataIssue
-        });
+        );
         await newIssues.save();
          if (dataIssue?.assignee) {
             const newNotification = new modelNotification({
