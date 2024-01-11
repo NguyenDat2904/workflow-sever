@@ -2,11 +2,12 @@ const modelNotification = require('../models/notification');
 
 const getNotifications = async (req, res) => {
     const { _id } = req.user;
+    const { read } = req.query;
     const skip = parseInt(req.query.skip) || 1;
     const limit = parseInt(req.query.limit) || 25;
 
     const notification = await modelNotification
-        .find({ userID: _id })
+        .find({ userID: _id, ...(read && { read: true }) })
         .skip((skip - 1) * limit)
         .limit(limit)
         .populate({
