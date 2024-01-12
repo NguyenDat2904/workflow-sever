@@ -336,18 +336,7 @@ const listMember = async (req, res) => {
         }
         const memberProject = await modelProject.aggregate([
             {
-                $lookup: {
-                    from: 'users',
-                    localField: 'listMembers',
-                    foreignField: 'email',
-                    as: 'infoUserMembers',
-                },
-                $lookup: {
-                    from: 'users',
-                    localField: 'listManagers',
-                    foreignField: 'email',
-                    as: 'infoListManagers',
-                },
+               
                 $lookup: {
                     from: 'users',
                     localField: 'admin',
@@ -355,7 +344,21 @@ const listMember = async (req, res) => {
                     as: 'infoAdmin',
                 },
             },
-
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'listManagers',
+                foreignField: 'email',
+                as: 'infoListManagers',
+            },
+            },{
+              $lookup: {
+                from: 'users',
+                localField: 'listMembers',
+                foreignField: 'email',
+                as: 'infoUserMembers',
+            },
+            },
             { $match: { codeProject: codeProject } },
         ]);
         const listMB = [
