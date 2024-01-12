@@ -839,13 +839,14 @@ const updatePermissions = async (req, res) => {
 //Delete the project directly
 const deleteTheProjectDirectly = async (req, res) => {
     try {
-        const { idProject } = req.params;
-        if (!idProject) {
+        const { codeProject } = req.params;
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id Project',
             });
         }
-        const deleteProject = await modelProject.findByIdAndDelete({ _id: idProject });
+        const project =await modelProject.findOne({codeProject})
+        const deleteProject = await modelProject.findByIdAndDelete({ _id: project._id });
         if (!deleteProject) {
             return res.status(400).json({
                 message: 'Could not find a project to delete',
