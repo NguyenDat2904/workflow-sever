@@ -15,6 +15,7 @@ const listIssuesProject = async (req, res) => {
         const sprintID = req.query.sprintID;
         const parentIssueID = req.query.parentIssueID;
         const assignee = req.query.assignee;
+        const issuesYourWork=req.query.issuesYourWork
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -24,6 +25,12 @@ const listIssuesProject = async (req, res) => {
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
             ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
+            ...(assignee && {
+                assignee: assignee,
+            }),
+           ...(issuesYourWork&& {
+            assignee:{$ne:""}
+           })
         });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
@@ -36,6 +43,9 @@ const listIssuesProject = async (req, res) => {
                 ...(assignee && {
                     assignee: assignee,
                 }),
+               ...(issuesYourWork&& {
+                assignee:{$ne:""}
+               }),
                 $or: [
                     { summary: { $regex: search } },
                     { priority: { $regex: search } },
