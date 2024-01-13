@@ -24,6 +24,10 @@ const listIssuesProject = async (req, res) => {
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
             ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
+            ...(assignee && {
+                assignee: assignee,
+            })
+           
         });
         const totalPage = Math.ceil(lengthIssue.length / 3);
         const checkCodeProject = await modelIssue
@@ -315,7 +319,53 @@ const listIssuesBroad = async (req, res) => {
         });
     }
 };
-
+const issueYourWork=async(req,res)=>{
+    try {
+         const{email}=req.user
+         const skip=parseInt(req.query.skip)||1
+         const limit=parseInt(req.query.limit)||15
+    if(!email){
+        return res.status(404).json({
+            message:'is not email'
+        })
+    }
+    const listProject=await modelWorkProject.find({
+        $or:[
+            {listMembers:email},
+            {listManagers:email},
+            {admin:email},
+        ]
+    })
+    const idProject=[]
+    listProject.forEach((element)=>{
+        idProject.push(element._id)
+    })
+    const issueLength=await modelIssue.find({
+        projectID:{$in:idProject},$and:[
+            {assignee:{$ne:''}},{assignee:{$ne:null}}
+        ]
+    })
+    const totalPage=Math.ceil(issueLength.length/limit)
+    console.log(issueLength.length)
+    const issue=await modelIssue.find({
+        projectID:{$in:idProject},$and:[
+            {assignee:{$ne:''}},{assignee:{$ne:null}}
+        ]
+    }).skip((skip-1) * limit)
+    .limit(limit)
+   
+    return res.json({
+        data:issue,
+        totalPage,
+        page:skip
+    })
+    } catch (error) {
+        return res.status(500).json({
+            message:'can not get'
+        })
+    }
+   
+}
 module.exports = {
     listIssuesBroad,
     editInformationIssue,
@@ -324,6 +374,7 @@ module.exports = {
     issuesChildren,
     deleteIssue,
     issueDetail,
+    issueYourWork
 };
 
 
