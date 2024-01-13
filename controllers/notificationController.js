@@ -2,15 +2,16 @@ const modelNotification = require('../models/notification');
 
 const getNotifications = async (req, res) => {
     const { _id } = req.user;
+    const { read } = req.query;
     const skip = parseInt(req.query.skip) || 1;
     const limit = parseInt(req.query.limit) || 25;
 
     const notification = await modelNotification
-        .find({ userID: _id })
+        .find({ userID: _id, ...(read==='false' && { read: false }) })
         .skip((skip - 1) * limit)
         .limit(limit)
         .populate({
-            path: 'userID',
+            path: 'reporter',
             select: 'imgCover',
         });
     if (!notification)
@@ -23,7 +24,7 @@ const getNotifications = async (req, res) => {
 
 const addNotification = async (req, res) => {
     try {
-        const { link, title, content } = req.body;
+        const { link, title, content, reporter } = req.body;
         const { _id } = req.user;
 
         if (!link || !title || !content)
@@ -33,6 +34,7 @@ const addNotification = async (req, res) => {
 
         const newNotification = new modelNotification({
             userID: _id,
+            reporter,
             link,
             title,
             content,

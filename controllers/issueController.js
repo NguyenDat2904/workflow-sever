@@ -45,7 +45,8 @@ const listIssuesProject = async (req, res) => {
                     { priority: { $regex: search } },
                     { issueType: { $regex: search } },
                 ],
-            }).populate({path: 'projectID'})
+            })
+            .populate({ path: 'projectID' })
             .populate({
                 path: 'sprint',
             })
@@ -79,29 +80,34 @@ const listIssuesProject = async (req, res) => {
 };
 const issueDetail = async (req, res) => {
     try {
-        const {codeProject } = req.params;
-        
-        const {search}=req.query
+        const { codeProject } = req.params;
+
+        const { search } = req.query;
         if (!codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
             });
         }
-        const project =await modelWorkProject.findOne({codeProject})
-        const issue = await modelIssue.findOne({  $or: [
-            { name:search},
-            { _id: isObjectIdOrHexString(search)?search:null},
-        ],projectID:project._id}).populate({path: 'sprint'}).populate({path: 'projectID'}).populate({path: 'assignee',select: '-passWord'}).populate({path: 'reporter',select: '-passWord'});
-        if(!issue){
-            return res.status(404).json({
-                message:"not found"
+        const project = await modelWorkProject.findOne({ codeProject });
+        const issue = await modelIssue
+            .findOne({
+                $or: [{ name: search }, { _id: isObjectIdOrHexString(search) ? search : null }],
+                projectID: project._id,
             })
+            .populate({ path: 'sprint' })
+            .populate({ path: 'projectID' })
+            .populate({ path: 'assignee', select: '-passWord' })
+            .populate({ path: 'reporter', select: '-passWord' });
+        if (!issue) {
+            return res.status(404).json({
+                message: 'not found',
+            });
         }
         res.status(200).json(issue);
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            message:error
+            message: error,
         });
     }
 };
@@ -148,15 +154,12 @@ const addNewIssues = async (req, res) => {
         }
         const issue = await modelIssue.find({ projectID: project._id });
         const nameIssue = `${codeProject}-${issue.length + 1}`;
-        const newIssues = new modelIssue(
-            {...dataIssue,
-            projectID:project._id,
-            name:nameIssue }
-        );
+        const newIssues = new modelIssue({ ...dataIssue, projectID: project._id, name: nameIssue });
         await newIssues.save();
-         if (dataIssue?.assignee) {
+        if (dataIssue?.assignee) {
             const newNotification = new modelNotification({
                 userID: dataIssue?.assignee,
+                reporter: dataIssue?.reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
                 title: `${req.user.name} assigned an issue to you`,
                 content: `${dataIssue?.summary}`,
@@ -199,12 +202,16 @@ const editInformationIssue = async (req, res) => {
         for (const field in updateData) {
             if (checkIssue[field] !== undefined) {
                 checkIssue[field] = updateData[field];
+            }else {
+                // Nếu trường không tồn tại trong checkIssue, thêm trường mới vào
+                checkIssue[field] = updateData[field];
             }
         }
         const issueEdit = await checkIssue.save();
         if (checkIssue.assignee === issueEdit.assignee) {
             const newNotification = new modelNotification({
-                userID: checkIssue.assignee,
+                userID: checkIssue?.assignee,
+                reporter: issueEdit?.reporter,
                 link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${checkIssue._id}`,
                 title: `${req.user.name} changed a your issue`,
                 content: `${checkIssue.summary}`,
@@ -239,7 +246,8 @@ const deleteIssue = async (req, res) => {
     }
     if (issue) {
         const newNotification = new modelNotification({
-            userID: issue.assignee,
+            userID: issue?.assignee,
+            reporter: issue?.reporter,
             link: '',
             title: `${req.user.name} deleted a your issue`,
             content: `${issue.summary}`,
