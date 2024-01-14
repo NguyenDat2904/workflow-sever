@@ -29,7 +29,7 @@ const listIssuesProject = async (req, res) => {
             })
            
         });
-        const totalPage = Math.ceil(lengthIssue.length / 3);
+        const totalPage = Math.ceil(lengthIssue.length / limitPage);
         const checkCodeProject = await modelIssue.aggregate([
            { $match:{
             projectID: checkProject._id,
