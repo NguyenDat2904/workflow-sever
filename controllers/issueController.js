@@ -30,37 +30,58 @@ const listIssuesProject = async (req, res) => {
            
         });
         const totalPage = Math.ceil(lengthIssue.length / 3);
-        const checkCodeProject = await modelIssue
-            .find({
-                projectID: checkProject._id,
-                ...(sprintID && {
-                    sprint: sprintID,
-                }),
-                ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
-                ...(assignee && {
-                    assignee: assignee,
-                }),
-                $or: [
-                    { summary: { $regex: search } },
-                    { priority: { $regex: search } },
-                    { issueType: { $regex: search } },
-                ],
-            })
-            .populate({ path: 'projectID' })
-            .populate({
-                path: 'sprint',
-            })
-            .populate({
-                path: 'assignee',
-                select: '-passWord',
-            })
-            .populate({
-                path: 'reporter',
-                select: '-passWord',
-            })
-            .sort({ createdAt: -1 })
-            .skip((skipPage - 1) * limitPage)
-            .limit(limitPage);
+        const checkCodeProject = await modelIssue.aggregate([
+           { $match:{
+            projectID: checkProject._id,
+            ...(sprintID && {
+                sprint: sprintID,
+            }),
+            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
+            ...(assignee && {
+                assignee: assignee,
+            }),
+            $or: [
+                { summary: { $regex: search } },
+                { priority: { $regex: search } },
+                { issueType: { $regex: search } },
+            ],
+        }},
+        {
+            $lookup: {
+                from: 'projects',
+                localField: 'projectID',
+                foreignField: '_id',
+                as: 'infoProjects',
+            },
+        },
+        { $unwind: '$infoProjects' },
+        {
+            $lookup: {
+                from: 'sprints',
+                localField: 'sprint',
+                foreignField: '_id',
+                as: 'infoSprints',
+            },
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'assignee',
+                foreignField: '_id',
+                as: 'infoAssignee',
+            },
+        },
+        {  $unwind: { path: "$infoSprints", preserveNullAndEmptyArrays: true }},
+        {  $unwind: { path: "$infoAssignee", preserveNullAndEmptyArrays: true }},
+        { $project: { infoSprints: { passWord: 0 } } },
+        { $project: { infoAssignee: { passWord: 0 } } },
+        {
+            $sort:{ createdAt: -1 }
+        },
+        { $skip: (skipPage - 1) * limitPage },
+        { $limit: limitPage },
+        ])
+          
         if (!checkCodeProject) {
             return req.status(400).json({
                 message: 'codeProject does not exist',
@@ -342,6 +363,8 @@ const issueYourWork=async(req,res)=>{
         projectID:{$in:idProject},$and:[
             {assignee:{$ne:''}},{assignee:{$ne:null}}
         ]
+    }).populate({
+        path:'projectID'
     })
    
     return res.json(issue)
