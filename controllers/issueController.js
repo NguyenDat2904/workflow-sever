@@ -322,8 +322,6 @@ const listIssuesBroad = async (req, res) => {
 const issueYourWork=async(req,res)=>{
     try {
          const{email}=req.user
-         const skip=parseInt(req.query.skip)||1
-         const limit=parseInt(req.query.limit)||15
     if(!email){
         return res.status(404).json({
             message:'is not email'
@@ -340,25 +338,13 @@ const issueYourWork=async(req,res)=>{
     listProject.forEach((element)=>{
         idProject.push(element._id)
     })
-    const issueLength=await modelIssue.find({
-        projectID:{$in:idProject},$and:[
-            {assignee:{$ne:''}},{assignee:{$ne:null}}
-        ]
-    })
-    const totalPage=Math.ceil(issueLength.length/limit)
-    console.log(issueLength.length)
     const issue=await modelIssue.find({
         projectID:{$in:idProject},$and:[
             {assignee:{$ne:''}},{assignee:{$ne:null}}
         ]
-    }).skip((skip-1) * limit)
-    .limit(limit)
-   
-    return res.json({
-        data:issue,
-        totalPage,
-        page:skip
     })
+   
+    return res.json(issue)
     } catch (error) {
         return res.status(500).json({
             message:'can not get'
