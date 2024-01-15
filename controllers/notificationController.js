@@ -19,7 +19,7 @@ const getNotifications = async (req, res) => {
             message: 'not found notification',
         });
 
-    res.json(notification);
+    res.json(notification.reverse());
 };
 
 const addNotification = async (req, res) => {

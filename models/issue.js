@@ -15,8 +15,9 @@ const IssueModel = new Schema(
         storyPointEstimate: { type: Number },
         startDate: { type: Date },
         dueDate: { type: Date },
-        parentIssue: { type: mongoose.Types.ObjectId, ref: 'issues' },
-        name:{type:String}
+        parentIssue: { type: String, ref: 'issues' },
+        name:{type:String},
+        img:{type:String}
     },
     { timestamps: true },
     { collection: 'issues' },

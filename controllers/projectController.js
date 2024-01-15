@@ -57,7 +57,7 @@ const getProject = async (req, res) => {
         if (!Project) {
             return res.status(404).json({
                 message: 'project not found',
-            });
+            });userId
         }
         return res.status(200).json({
             data: Project,
@@ -140,12 +140,17 @@ const addNewWork = async (req, res) => {
         }
         const checkCodeProject = await modelProject.find({ codeProject: codeProject });
         const checkNameProject = await modelProject.find({ nameProject: nameProject });
-
-        if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
-            return res.status(401).json({
-                message: 'already exists codeProject or checkNameProject',
+        if ( checkNameProject.length > 0) {
+            return res.status(400).json({
+                message: 'already exists checkNameProject',
             });
         }
+        if (checkCodeProject.length > 0) {
+            return res.status(400).json({
+                message: 'already exists checkCodeProject',
+            });
+        }
+         
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelProject({
             nameProject: nameProject,
@@ -336,18 +341,7 @@ const listMember = async (req, res) => {
         }
         const memberProject = await modelProject.aggregate([
             {
-                $lookup: {
-                    from: 'users',
-                    localField: 'listMembers',
-                    foreignField: 'email',
-                    as: 'infoUserMembers',
-                },
-                $lookup: {
-                    from: 'users',
-                    localField: 'listManagers',
-                    foreignField: 'email',
-                    as: 'infoListManagers',
-                },
+               
                 $lookup: {
                     from: 'users',
                     localField: 'admin',
@@ -355,16 +349,41 @@ const listMember = async (req, res) => {
                     as: 'infoAdmin',
                 },
             },
-
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'listManagers',
+                foreignField: 'email',
+                as: 'infoListManagers',
+            },
+            },{
+              $lookup: {
+                from: 'users',
+                localField: 'listMembers',
+                foreignField: 'email',
+                as: 'infoUserMembers',
+            },
+            },
             { $match: { codeProject: codeProject } },
         ]);
         const listMB = [
             ...(memberProject[0]?.infoUserMembers || []),
             ...(memberProject[0]?.infoListManagers || []),
-            memberProject[0]?.infoAdmin || [],
+            (memberProject[0]?.infoAdmin || []),
         ];
-        const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
-        return res.status(200).json(result);
+        const roles = {
+          infoUserMembers : "member",
+          infoListManagers : "managers",
+          infoAdmin: "admin",
+      };
+      const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
+
+      const resultWithRole = result.map(user => {
+          const role = Object.keys(roles).find(key => memberProject[0]?.[key]?.some(member => member.email === user.email));
+          console.log(roles[role])
+          return { ...user, role: roles[role] };
+      });
+        return res.status(200).json(resultWithRole);
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -836,13 +855,14 @@ const updatePermissions = async (req, res) => {
 //Delete the project directly
 const deleteTheProjectDirectly = async (req, res) => {
     try {
-        const { idProject } = req.params;
-        if (!idProject) {
+        const { codeProject } = req.params;
+        if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id Project',
             });
         }
-        const deleteProject = await modelProject.findByIdAndDelete({ _id: idProject });
+        const project =await modelProject.findOne({codeProject})
+        const deleteProject = await modelProject.findByIdAndDelete({ _id: project._id });
         if (!deleteProject) {
             return res.status(400).json({
                 message: 'Could not find a project to delete',

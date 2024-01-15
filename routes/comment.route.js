@@ -5,15 +5,15 @@ const router = express.Router();
 
 
 // get
-router.get('/:issueID', authMiddlerware, commentController.listComment);
+router.get('/list/:issueID', authMiddlerware, commentController.listComment);
 
 // post
 router.post('/add', authMiddlerware, commentController.addComment);
 
 // patch
-router.patch('/:commentID', authMiddlerware, commentController.editComment);
+router.patch('/edit/:commentID', authMiddlerware, commentController.editComment);
 
 // delete
-router.delete('/:commentID', authMiddlerware, commentController.deleteComment);
+router.delete('/delete/:commentID', authMiddlerware, commentController.deleteComment);
 
 module.exports = router;
