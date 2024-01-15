@@ -141,9 +141,14 @@ const addNewWork = async (req, res) => {
         const checkCodeProject = await modelProject.find({ codeProject: codeProject });
         const checkNameProject = await modelProject.find({ nameProject: nameProject });
 
-        if (checkCodeProject.length > 0 || checkNameProject.length > 0) {
-            return res.status(401).json({
-                message: 'already exists codeProject or checkNameProject',
+        if (checkCodeProject.length > 0) {
+            return res.status(400).json({
+                message: 'already exists checkNameProject',
+            });
+        }
+         if ( checkNameProject.length > 0) {
+            return res.status(400).json({
+                message: 'already exists checkNameProject',
             });
         }
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
