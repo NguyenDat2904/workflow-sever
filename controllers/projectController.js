@@ -27,10 +27,11 @@ const getProject = async (req, res) => {
             {
                 $match: {
                     $or: [
-                        { admin: email, deleteProject: deleteProject === true ? true : false ,codeProject: { $regex: key } },
-                        { listManagers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
-                        { listMembers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
+                        { admin: email, deleteProject: deleteProject === true ? true : false ,nameProject: { $regex: key } },
+                        { listManagers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: key }  },
+                        { listMembers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: key }  },
                     ],
+
                 },
             },
             {
