@@ -57,7 +57,7 @@ const getProject = async (req, res) => {
         if (!Project) {
             return res.status(404).json({
                 message: 'project not found',
-            });userId
+            });
         }
         return res.status(200).json({
             data: Project,

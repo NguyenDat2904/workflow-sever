@@ -301,21 +301,21 @@ const listIssuesBroad = async (req, res) => {
         }
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const sprint = await modelSprint.find({ projectID: checkProject._id, status: 'RUNNING' });
+
+        console.log(sprint)
         const sprintID = [];
         sprint.forEach((element) => {
-            sprintID.push(element._id);
+            sprintID.push(element._id.toString());
         });
         const countIssue = await modelIssue.find({
             projectID: checkProject._id,
             sprint: { $in: sprintID },
-            parentIssue: { $ne: null },
         });
         const totalPage = Math.ceil(countIssue.length / limit);
         const checkIssues = await modelIssue
             .find({
                 projectID: checkProject._id,
                 sprint: { $in: sprintID },
-                parentIssue: { $ne: null },
                 $or: [
                     { assignee: { $regex: searchIssueUser } },
                     { issueType: { $regex: searchIssueUser } },
