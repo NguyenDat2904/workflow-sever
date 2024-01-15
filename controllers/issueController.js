@@ -23,7 +23,7 @@ const listIssuesProject = async (req, res) => {
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
-            ...(parentIssueID !== undefined && { parentIssue:parentIssueID }),
+            ...(parentIssueID !== undefined && { parentIssue: parentIssueID }),
             ...(assignee && {
                 assignee: assignee,
             }),
@@ -38,14 +38,14 @@ const listIssuesProject = async (req, res) => {
                         sprint: sprintID,
                     }),
                     ...(parentIssueID !== undefined && {
-                        parentIssue:parentIssueID,
+                        parentIssue: parentIssueID,
                     }),
                     ...(assignee && {
                         assignee: assignee,
                     }),
                     $or: [
                         { summary: { $regex: search } },
-                        { priority: { $regex: search } },
+                        { name: { $regex: search } },
                         { issueType: { $regex: search } },
                     ],
                 },
@@ -302,7 +302,7 @@ const listIssuesBroad = async (req, res) => {
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const sprint = await modelSprint.find({ projectID: checkProject._id, status: 'RUNNING' });
 
-        console.log(sprint)
+        console.log(sprint);
         const sprintID = [];
         sprint.forEach((element) => {
             sprintID.push(element._id.toString());
@@ -342,6 +342,39 @@ const listIssuesBroad = async (req, res) => {
         console.log(error);
         return res.status(404).json({
             message: 'can not get issues broad',
+        });
+    }
+};
+const searchIssues = async (req, res) => {
+    try {
+        const { email } = req.user;
+        const search = req.query.search || '';
+        const skip = parseInt(req.query.skip) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const checkProject = await modelWorkProject.find({
+            $or: [{ listMembers: email }, { listManagers: email }, { admin: email }],
+        });
+        const idProject = [];
+        checkProject.forEach((element) => {
+            idProject.push(element._id);
+        });
+        const issuesLength = await modelIssue.find({
+            projectID: { $in: idProject },
+            $or: [{ summary: { $regex: search } }, { name: { $regex: search } }],
+        });
+        const totalPage = Math.ceil(issuesLength.length / limit);
+        const issues = await modelIssue
+            .find({
+                projectID: { $in: idProject },
+                $or: [{ summary: { $regex: search } }, { name: { $regex: search } }],
+            })
+            .skip((skip - 1) * limit)
+            .limit(limit);
+        res.status(200).json({ data: issues, page: skip, totalPage });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'can not search',
         });
     }
 };
@@ -385,4 +418,5 @@ module.exports = {
     deleteIssue,
     issueDetail,
     issueYourWork,
+    searchIssues,
 };
