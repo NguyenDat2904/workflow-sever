@@ -14,7 +14,7 @@ const listComment = async (req, res) => {
             });
         }
         const comments = await modelComment
-            .find({ issueID: issue._id })
+            .find({ issueID: issue._id }).populate({ path: 'authorID', select: '-passWord' })
             .skip((skip - 1) * limit)
             .limit(limit);
 
