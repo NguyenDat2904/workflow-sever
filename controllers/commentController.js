@@ -8,7 +8,7 @@ const listComment = async (req, res) => {
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
         const comments = await modelComment
-            .find({ issueID })
+            .find({ name: issueID })
             .skip((skip - 1) * limit)
             .limit(limit);
 
