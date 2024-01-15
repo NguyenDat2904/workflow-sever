@@ -312,8 +312,8 @@ const listIssuesBroad = async (req, res) => {
             sprint: { $in: sprintID },
         });
         const totalPage = Math.ceil(countIssue.length / limit);
-        const checkIssues = await modelIssue
-            .find({
+        const checkIssues = await modelIssue.aggregate([
+            {$match:{
                 projectID: checkProject._id,
                 sprint: { $in: sprintID },
                 $or: [
@@ -321,12 +321,36 @@ const listIssuesBroad = async (req, res) => {
                     { issueType: { $regex: searchIssueUser } },
                     { sprint: { $regex: searchIssueUser } },
                 ],
-            })
-            .populate({
-                path: 'parentIssue',
-            })
-            .skip((skip - 1) * limit)
-            .limit(limit);
+            }},
+            {
+                $lookup: {
+                    from: 'projects',
+                    localField: 'projectID',
+                    foreignField: '_id',
+                    as: 'infoProjects',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'sprints',
+                    let: { userObjId: { $toObjectId: '$sprint' } },
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    as: 'infoSprints',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userObjId: { $toObjectId: '$assignee' } },
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    as: 'infoAssignee',
+                },
+            },
+            { $skip: (skip - 1) * limit },
+            { $limit: limit }
+        ])
+            
+            
 
         if (!checkIssues) {
             return res.status(400).json({
