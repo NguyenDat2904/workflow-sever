@@ -366,6 +366,17 @@ const listMember = async (req, res) => {
             ...(memberProject[0]?.infoListManagers || []),
             memberProject[0]?.infoAdmin || [],
         ];
+        const roles = {
+          infoUserMembers: "Member",
+          infoListManagers: "Manager",
+          infoAdmin: "Admin",
+      };
+
+      const resultWithRole = listMB.map(user => {
+          const role = Object.keys(roles).find(key => memberProject[0]?.[key]?.some(member => member.email === user.email));
+          console.log(role)
+          return { ...user, role: roles[role] };
+      });
         const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
         return res.status(200).json({dataMember:result,idAdmin:memberProject[0].admin,idMember:memberProject[0].listMembers,idManagers:memberProject[0].listManagers});
     } catch (error) {
