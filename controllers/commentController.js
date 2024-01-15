@@ -7,7 +7,7 @@ const listComment = async (req, res) => {
         const { issueID } = req.params;
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const issue = modelIssue.find({name: issueID})
+        const issue = await  modelIssue.findOne({name: issueID})
         if(!issue){
              return res.status(400).json({
                 message: 'not found issue',
