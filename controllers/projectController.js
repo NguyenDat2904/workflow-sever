@@ -15,7 +15,7 @@ const getProject = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const key = req.query.key || '';
+        const search = req.query.search || '';
         if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
@@ -27,9 +27,9 @@ const getProject = async (req, res) => {
             {
                 $match: {
                     $or: [
-                        { admin: email, deleteProject: deleteProject === true ? true : false ,nameProject: { $regex: key } },
-                        { listManagers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: key }  },
-                        { listMembers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: key }  },
+                        { admin: email, deleteProject: deleteProject === true ? true : false ,nameProject: { $regex: search } },
+                        { listManagers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: search }  },
+                        { listMembers: email, deleteProject: deleteProject === true ? true : false,nameProject: { $regex: search }  },
                     ],
 
                 },
