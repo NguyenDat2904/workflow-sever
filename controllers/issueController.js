@@ -242,7 +242,7 @@ const deleteIssue = async (req, res) => {
             userID: issue?.assignee,
             reporter: issue?.reporter,
             link: '',
-            title: `${req.user.name} deleted a your issue`,
+            title: `${req.user.name} has deleted one of your issue`,
             content: `${issue.summary}`,
             createdAt: new Date(),
             read: false,

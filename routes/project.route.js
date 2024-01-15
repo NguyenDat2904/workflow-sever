@@ -50,7 +50,7 @@ router.delete(
     projectController.deleteExistingMembers,
 );
 router.delete(
-    '/:codeProject/delete-the-project-directly/:idProject',
+    '/:codeProject/delete',
     authMidddlerware,
     checkUserPermissions('delete-project'),
     projectController.deleteTheProjectDirectly,
