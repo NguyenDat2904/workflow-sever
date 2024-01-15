@@ -23,7 +23,7 @@ const listIssuesProject = async (req, res) => {
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
-            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? '' : parentIssueID }),
+            ...(parentIssueID !== undefined && { parentIssue:parentIssueID }),
             ...(assignee && {
                 assignee: assignee,
             }),
@@ -38,8 +38,7 @@ const listIssuesProject = async (req, res) => {
                         sprint: sprintID,
                     }),
                     ...(parentIssueID !== undefined && {
-                        parentIssue:{$exists :true},
-                        // parentIssue: parentIssueID === 'null' ?{ $exists : true}  :parentIssueID,
+                        parentIssue:parentIssueID,
                     }),
                     ...(assignee && {
                         assignee: assignee,
