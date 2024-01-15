@@ -57,7 +57,7 @@ const getProject = async (req, res) => {
         if (!Project) {
             return res.status(404).json({
                 message: 'project not found',
-            });
+            });userId
         }
         return res.status(200).json({
             data: Project,
@@ -367,7 +367,7 @@ const listMember = async (req, res) => {
             memberProject[0]?.infoAdmin || [],
         ];
         const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
-        return res.status(200).json(result);
+        return res.status(200).json({dataMember:result,idAdmin:memberProject[0].admin,idMember:memberProject[0].listMembers,idManagers:memberProject[0].listManagers});
     } catch (error) {
         console.log(error);
         return res.status(500).json({
