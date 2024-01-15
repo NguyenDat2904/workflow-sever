@@ -23,65 +23,71 @@ const listIssuesProject = async (req, res) => {
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
-            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
+            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? '' : parentIssueID }),
             ...(assignee && {
                 assignee: assignee,
-            })
-           
+            }),
         });
+
         const totalPage = Math.ceil(lengthIssue.length / limitPage);
         const checkCodeProject = await modelIssue.aggregate([
-           { $match:{
-            projectID: checkProject._id,
-            ...(sprintID && {
-                sprint: sprintID,
-            }),
-            ...(parentIssueID !== undefined && { parentIssue: parentIssueID === 'null' ? null : parentIssueID }),
-            ...(assignee && {
-                assignee: assignee,
-            }),
-            $or: [
-                { summary: { $regex: search } },
-                { priority: { $regex: search } },
-                { issueType: { $regex: search } },
-            ],
-        }},
-        {
-            $lookup: {
-                from: 'projects',
-                localField: 'projectID',
-                foreignField: '_id',
-                as: 'infoProjects',
+            {
+                $match: {
+                    projectID: checkProject._id,
+                    ...(sprintID && {
+                        sprint: sprintID,
+                    }),
+                    ...(parentIssueID !== undefined && {
+                        parentIssue:{$exists :true},
+                        // parentIssue: parentIssueID === 'null' ?{ $exists : true}  :parentIssueID,
+                    }),
+                    ...(assignee && {
+                        assignee: assignee,
+                    }),
+                    $or: [
+                        { summary: { $regex: search } },
+                        { priority: { $regex: search } },
+                        { issueType: { $regex: search } },
+                    ],
+                },
             },
-        },
-        { $unwind: '$infoProjects' },
-        {
-            $lookup: {
-                from: 'sprints',
-                localField: 'sprint',
-                foreignField: '_id',
-                as: 'infoSprints',
+            {
+                $lookup: {
+                    from: 'projects',
+                    localField: 'projectID',
+                    foreignField: '_id',
+                    as: 'infoProjects',
+                },
             },
-        },
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'assignee',
-                foreignField: '_id',
-                as: 'infoAssignee',
+
+            {
+                $lookup: {
+                    from: 'sprints',
+                    let: { userObjId: { $toObjectId: '$sprint' } },
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    as: 'infoSprints',
+                },
             },
-        },
-        {  $unwind: { path: "$infoSprints", preserveNullAndEmptyArrays: true }},
-        {  $unwind: { path: "$infoAssignee", preserveNullAndEmptyArrays: true }},
-        { $project: { infoSprints: { passWord: 0 } } },
-        { $project: { infoAssignee: { passWord: 0 } } },
-        {
-            $sort:{ createdAt: -1 }
-        },
-        { $skip: (skipPage - 1) * limitPage },
-        { $limit: limitPage },
-        ])
-          
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userObjId: { $toObjectId: '$assignee' } },
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    as: 'infoAssignee',
+                },
+            },
+            { $unwind: { path: '$infoProjects', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoSprints', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoAssignee', preserveNullAndEmptyArrays: true } },
+            { $project: { infoSprints: { passWord: 0 } } },
+            { $project: { infoAssignee: { passWord: 0 } } },
+            {
+                $sort: { createdAt: -1 },
+            },
+            { $skip: (skipPage - 1) * limitPage },
+            { $limit: limitPage },
+        ]);
+
         if (!checkCodeProject) {
             return req.status(400).json({
                 message: 'codeProject does not exist',
@@ -223,7 +229,7 @@ const editInformationIssue = async (req, res) => {
         for (const field in updateData) {
             if (checkIssue[field] !== undefined) {
                 checkIssue[field] = updateData[field];
-            }else {
+            } else {
                 // Nếu trường không tồn tại trong checkIssue, thêm trường mới vào
                 checkIssue[field] = updateData[field];
             }
@@ -340,41 +346,37 @@ const listIssuesBroad = async (req, res) => {
         });
     }
 };
-const issueYourWork=async(req,res)=>{
+const issueYourWork = async (req, res) => {
     try {
-         const{email}=req.user
-    if(!email){
-        return res.status(404).json({
-            message:'is not email'
-        })
-    }
-    const listProject=await modelWorkProject.find({
-        $or:[
-            {listMembers:email},
-            {listManagers:email},
-            {admin:email},
-        ]
-    })
-    const idProject=[]
-    listProject.forEach((element)=>{
-        idProject.push(element._id)
-    })
-    const issue=await modelIssue.find({
-        projectID:{$in:idProject},$and:[
-            {assignee:{$ne:''}},{assignee:{$ne:null}}
-        ]
-    }).populate({
-        path:'projectID'
-    })
-   
-    return res.json(issue)
+        const { email } = req.user;
+        if (!email) {
+            return res.status(404).json({
+                message: 'is not email',
+            });
+        }
+        const listProject = await modelWorkProject.find({
+            $or: [{ listMembers: email }, { listManagers: email }, { admin: email }],
+        });
+        const idProject = [];
+        listProject.forEach((element) => {
+            idProject.push(element._id);
+        });
+        const issue = await modelIssue
+            .find({
+                projectID: { $in: idProject },
+                $and: [{ assignee: { $ne: '' } }, { assignee: { $ne: null } }],
+            })
+            .populate({
+                path: 'projectID',
+            });
+
+        return res.json(issue);
     } catch (error) {
         return res.status(500).json({
-            message:'can not get'
-        })
+            message: 'can not get',
+        });
     }
-   
-}
+};
 module.exports = {
     listIssuesBroad,
     editInformationIssue,
@@ -383,9 +385,5 @@ module.exports = {
     issuesChildren,
     deleteIssue,
     issueDetail,
-    issueYourWork
+    issueYourWork,
 };
-
-
- 
- 
