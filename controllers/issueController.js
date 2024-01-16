@@ -12,9 +12,9 @@ const listIssuesProject = async (req, res) => {
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        const sprintID = req.query.sprintID;
-        const parentIssueID = req.query.parentIssueID;
-        const assignee = req.query.assignee;
+        const sprintID = req.query.sprintID||null;
+        const parentIssueID = req.query.parentIssueID||null;
+        const assignee = req.query.assignee||null;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -58,20 +58,23 @@ const listIssuesProject = async (req, res) => {
                     as: 'infoProjects',
                 },
             },
-
             {
                 $lookup: {
+                    let: { userObjId: {$convert: {input: '$sprint', to : 'objectId', onError: '',onNull: ''}} },
                     from: 'sprints',
-                    let: { userObjId: { $toObjectId: '$sprint' } },
-                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] },sprint: { $exists: false } } }],
                     as: 'infoSprints',
                 },
             },
             {
                 $lookup: {
                     from: 'users',
-                    let: { userObjId: { $toObjectId: '$assignee' } },
-                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] } } }],
+                    let: { userObjId: {$convert: {input: '$assignee', to : 'objectId', onError: '',onNull: ''}}  },
+                    pipeline: [{ 
+                        $match: { 
+                            $expr: { $eq: ['$_id', '$$userObjId'] },
+                            assignee: { $exists: false }
+                } }],
                     as: 'infoAssignee',
                 },
             },
