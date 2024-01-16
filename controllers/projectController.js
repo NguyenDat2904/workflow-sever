@@ -210,6 +210,7 @@ const deleteProject = async (req, res) => {
         if (findProjectID.deleteProject === false) {
             findProjectID.deleteProject = true;
             findProjectID.nameUserDelete=name
+            findProjectID.deleteAt=new Date()
             await findProjectID.save();
         }
         setTimeout(async () => {
@@ -217,7 +218,7 @@ const deleteProject = async (req, res) => {
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelProject.findOneAndDelete({ codeProject: codeProject });
             }
-        }, 3600000);
+        }, 86400000);
         return res.status(200).json({
             message: 'Moved to trash',
             data:findProjectID.nameUserDelete
@@ -249,6 +250,7 @@ const restoreProject = async (req, res) => {
                 message: 'Project no trash can',
             });
         }
+        checkId.deleteAt = null;
         checkId.deleteProject = false;
         await checkId.save();
         return res.status(200).json({
