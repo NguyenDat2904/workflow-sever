@@ -195,6 +195,7 @@ const addNewWork = async (req, res) => {
 const deleteProject = async (req, res) => {
     try {
         const { codeProject } = req.params;
+        const {name} = req.user
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id',
@@ -208,6 +209,7 @@ const deleteProject = async (req, res) => {
         }
         if (findProjectID.deleteProject === false) {
             findProjectID.deleteProject = true;
+            findProjectID.nameUserDelete=name
             await findProjectID.save();
         }
         setTimeout(async () => {
@@ -218,6 +220,7 @@ const deleteProject = async (req, res) => {
         }, 3600000);
         return res.status(200).json({
             message: 'Moved to trash',
+            data:findProjectID.nameUserDelete
         });
     } catch (error) {
         console.log(error);
