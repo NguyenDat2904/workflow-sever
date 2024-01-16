@@ -270,6 +270,11 @@ const deleteIssue = async (req, res) => {
             message: 'Deleting issue failed',
         });
     }
+    const updateParentIssue=await modelIssue.find({parentIssue:issueID})
+    updateParentIssue.forEach(async(element)=>{
+        element.parentIssue=null
+         await element.save()
+    })
     if (issue) {
         const newNotification = new modelNotification({
             userID: issue?.assignee,
@@ -282,7 +287,6 @@ const deleteIssue = async (req, res) => {
         });
         await newNotification.save();
     }
-
     res.json({
         message: 'Deleted issue successfully',
     });
