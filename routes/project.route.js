@@ -8,9 +8,9 @@ const checkVerifyToken = require('../middlewares/checkVerifyToken');
 //
 // patch
 router.patch(
-    '/:codeProject/restore-project',
+    '/:codeProject/restore',
     authMidddlerware,
-    checkUserPermissions,
+    checkUserPermissions('update-project'),
     projectController.restoreProject,
 );
 router.patch(
