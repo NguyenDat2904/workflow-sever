@@ -15,6 +15,9 @@ const listIssuesProject = async (req, res) => {
         const sprintID = req.query.sprintID||null;
         const parentIssueID = req.query.parentIssueID||null;
         const assignee = req.query.assignee||null;
+        const typeBug=req.query.typeBug
+        const typeUserStory=req.query.typeUserStory
+        const typeTask=req.query.typeTask
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -28,7 +31,16 @@ const listIssuesProject = async (req, res) => {
                 assignee: assignee,
             }),
         });
-
+        const type=[]
+        if(typeBug!==undefined){
+            type.push(typeBug)
+        }
+        if(typeUserStory!==undefined){
+            type.push(typeUserStory)
+        }
+        if(typeTask!==undefined){
+            type.push(typeTask)
+        }
         const totalPage = Math.ceil(lengthIssue.length / limitPage);
         const checkCodeProject = await modelIssue.aggregate([
             {
@@ -42,6 +54,9 @@ const listIssuesProject = async (req, res) => {
                     }),
                     ...(assignee && {
                         assignee: assignee,
+                    }),
+                    ...(type.length>0&& {
+                        issueType:{$in:type}
                     }),
                     $or: [
                         { summary: { $regex: search } },
