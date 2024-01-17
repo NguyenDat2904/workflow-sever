@@ -12,9 +12,9 @@ const listIssuesProject = async (req, res) => {
         const skipPage = parseInt(req.query.page) || 1;
         const limitPage = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
-        const sprintID = req.query.sprintID||null;
-        const parentIssueID = req.query.parentIssueID||null;
-        const assignee = req.query.assignee||null;
+        const sprintID = req.query.sprintID;
+        const parentIssueID = req.query.parentIssueID;
+        const assignee = req.query.assignee;
         const typeBug=req.query.typeBug
         const typeUserStory=req.query.typeUserStory
         const typeTask=req.query.typeTask
