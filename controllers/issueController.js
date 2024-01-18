@@ -126,7 +126,7 @@ const issueDetail = async (req, res) => {
     try {
         const { codeProject } = req.params;
 
-        const { search } = req.query;
+        const { search, idParen } = req.query;
         if (!codeProject) {
             return res.status(404).json({
                 message: 'is not id issue',
@@ -135,7 +135,7 @@ const issueDetail = async (req, res) => {
         const project = await modelWorkProject.findOne({ codeProject });
         const issue = await modelIssue
             .findOne({
-                $or: [{ name: search }, { _id: isObjectIdOrHexString(search) ? search : null }],
+                $or: [{ name: search }, { _id: isObjectIdOrHexString(idParen) ? idParen : null }],
                 projectID: project._id,
             })
             .populate({ path: 'sprint' })
