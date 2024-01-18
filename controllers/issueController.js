@@ -3,6 +3,8 @@ const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
 const modelNotification = require('../models/notification');
 const { isObjectIdOrHexString } = require('mongoose');
+const { parse } = require('dotenv');
+const url=require('url')
 require('dotenv').config();
 
 const listIssuesProject = async (req, res) => {
@@ -14,7 +16,9 @@ const listIssuesProject = async (req, res) => {
         const search = req.query.search || '';
         const sprintID = req.query.sprintID;
         const parentIssueID = req.query.parentIssueID;
-        const assignee = req.query.assignee;
+        const urlString=req.url;
+        const parseUrl=url.parse(urlString,true)
+        const assignee = parseUrl.query;
         const typeBug=req.query.typeBug
         const typeUserStory=req.query.typeUserStory
         const typeTask=req.query.typeTask
@@ -23,12 +27,14 @@ const listIssuesProject = async (req, res) => {
                 message: 'is not id or jobCode',
             });
         }
+        const arrayAssignee=assignee.assignee?.split("-")
+        console.log(arrayAssignee)
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
             ...(parentIssueID !== undefined && { parentIssue: parentIssueID }),
-            ...(assignee && {
-                assignee: assignee,
+            ...(arrayAssignee!== undefined && {
+                assignee:{$in:arrayAssignee} ,
             }),
         });
         const type=[]
@@ -52,8 +58,8 @@ const listIssuesProject = async (req, res) => {
                     ...(parentIssueID !== undefined && {
                         parentIssue: parentIssueID,
                     }),
-                    ...(assignee && {
-                        assignee: assignee,
+                    ...(arrayAssignee!== undefined && {
+                        assignee:{$in:arrayAssignee},
                     }),
                     ...(type.length>0&& {
                         issueType:{$in:type}
