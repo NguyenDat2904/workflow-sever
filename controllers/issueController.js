@@ -210,7 +210,7 @@ const addNewIssues = async (req, res) => {
             const newNotification = new modelNotification({
                 userID: dataIssue?.assignee,
                 reporter: dataIssue?.reporter,
-                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${newIssues._id}`,
+                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${newIssues._id}`,
                 title: `${req.user.name} assigned an issue to you`,
                 content: `${dataIssue?.summary}`,
                 createdAt: new Date(),
@@ -262,7 +262,7 @@ const editInformationIssue = async (req, res) => {
             const newNotification = new modelNotification({
                 userID: checkIssue?.assignee,
                 reporter: issueEdit?.reporter,
-                link: `${process.env.URL_ISSUE}/projects/${codeProject}/issues/${checkIssue._id}`,
+                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${checkIssue._id}`,
                 title: `${req.user.name} changed a your issue`,
                 content: `${checkIssue.summary}`,
                 createdAt: new Date(),
