@@ -413,7 +413,7 @@ const searchIssues = async (req, res) => {
             .find({
                 projectID: { $in: idProject },
                 $or: [{ summary: { $regex: search } }, { name: { $regex: search } }],
-            })
+            }).populate({ path: 'projectID' })
             .skip((skip - 1) * limit)
             .limit(limit);
         res.status(200).json({ data: issues, page: skip, totalPage });
