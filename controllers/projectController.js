@@ -11,11 +11,11 @@ const getProject = async (req, res) => {
     try {
         const { sortKey, deleteProject } = req.query;
         const { email } = req.user;
-        console.log(email)
+
         const page = parseInt(req.query.page) || 1;
         const sortOrder = parseInt(req.query.sortOrder) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const key = req.query.key || '';
+        const search = req.query.search || '';
         if (!email || deleteProject === '') {
             return res.status(404).json({
                 message: 'not found id or deleteProject',
@@ -27,10 +27,11 @@ const getProject = async (req, res) => {
             {
                 $match: {
                     $or: [
-                        { admin: email, deleteProject: deleteProject === true ? true : false ,codeProject: { $regex: key } },
-                        { listManagers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
-                        { listMembers: email, deleteProject: deleteProject === true ? true : false,codeProject: { $regex: key }  },
+                        { admin:email, deleteProject:deleteProject==="true"?true:false ,nameProject: { $regex: search } },
+                        { listManagers:email,deleteProject:deleteProject==="true"?true:false,nameProject: { $regex: search }  },
+                        { listMembers:email,deleteProject:deleteProject==="true"?true:false,nameProject: { $regex: search }  },
                     ],
+
                 },
             },
             {
@@ -57,7 +58,7 @@ const getProject = async (req, res) => {
         if (!Project) {
             return res.status(404).json({
                 message: 'project not found',
-            });userId
+            });
         }
         return res.status(200).json({
             data: Project,
@@ -194,6 +195,7 @@ const addNewWork = async (req, res) => {
 const deleteProject = async (req, res) => {
     try {
         const { codeProject } = req.params;
+        const {name} = req.user
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id',
@@ -207,6 +209,8 @@ const deleteProject = async (req, res) => {
         }
         if (findProjectID.deleteProject === false) {
             findProjectID.deleteProject = true;
+            findProjectID.nameUserDelete=name
+            findProjectID.deleteAt=new Date()
             await findProjectID.save();
         }
         setTimeout(async () => {
@@ -214,9 +218,10 @@ const deleteProject = async (req, res) => {
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelProject.findOneAndDelete({ codeProject: codeProject });
             }
-        }, 3600000);
+        }, 86400000);
         return res.status(200).json({
             message: 'Moved to trash',
+            data:findProjectID.nameUserDelete
         });
     } catch (error) {
         console.log(error);
@@ -245,6 +250,7 @@ const restoreProject = async (req, res) => {
                 message: 'Project no trash can',
             });
         }
+        checkId.deleteAt = null;
         checkId.deleteProject = false;
         await checkId.save();
         return res.status(200).json({

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const IssueModel = new Schema(
     {
         projectID: { type: mongoose.Types.ObjectId, ref: 'projects' },
-        issueType: { type: String, enum: ['EPIC', 'TASK', 'USER_STORY', 'BUG'], default: 'USER_STORY' },
+        issueType: { type: String, enum: ['EPIC', 'TASK', 'USER_STORY', 'BUG','SUB_TASK'], default: 'USER_STORY' },
         status: { type: String,enum:['TODO','INPROGRESS','REVIEW','DONE'],default:'TODO' },
         summary: { type: String },
         description: { type: String },

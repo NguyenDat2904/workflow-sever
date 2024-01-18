@@ -15,6 +15,8 @@ const ModelProject = new Schema(
         projectStatus: { type: String },
         deleteProject: { type: Boolean },
         imgProject: { type: String },
+        nameUserDelete: { type: String },
+        deleteAt:{type:Date}
     },
     { timestamps: true },
     { collection: 'projects' },
