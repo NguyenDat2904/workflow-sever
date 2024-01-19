@@ -19,7 +19,12 @@ router.patch(
     checkUserPermissions('update-project'),
     projectController.editProjectInformation,
 );
-router.patch('/:codeProject/delete', authMidddlerware, checkUserPermissions('delete-project'), projectController.deleteProject);
+router.patch(
+    '/:codeProject/delete',
+    authMidddlerware,
+    checkUserPermissions('delete-project'),
+    projectController.deleteProject,
+);
 router.patch(
     '/:codeProject/update-permissions',
     authMidddlerware,
@@ -39,7 +44,7 @@ router.post(
 
 // get
 router.get('/list-member', authMidddlerware, projectController.listMember);
-router.get('/project-detail/:codeProject', authMidddlerware, projectController.projectDetail); 
+router.get('/project-detail/:codeProject', authMidddlerware, projectController.projectDetail);
 router.get('/list', authMidddlerware, projectController.getProject);
 
 // delete
