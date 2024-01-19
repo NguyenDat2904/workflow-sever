@@ -1,5 +1,6 @@
 const modelProject = require('../models/project');
 const modelSprint = require('../models/sprint');
+const modelIssues=require('../models/issue')
 const dataImgProject = require('../imgProject.json');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
@@ -217,6 +218,8 @@ const deleteProject = async (req, res) => {
             const checkAfterTimeOut = await modelProject.findOne({ codeProject: codeProject });
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelProject.findOneAndDelete({ codeProject: codeProject });
+                await modelSprint.deleteMany({projectID:project._id});
+                await modelIssues.deleteMany({projectID:project._id});
             }
         }, 86400000);
         return res.status(200).json({
@@ -869,6 +872,8 @@ const deleteTheProjectDirectly = async (req, res) => {
         }
         const project =await modelProject.findOne({codeProject})
         const deleteProject = await modelProject.findByIdAndDelete({ _id: project._id });
+        await modelSprint.deleteMany({projectID:project._id});
+        await modelIssues.deleteMany({projectID:project._id});
         if (!deleteProject) {
             return res.status(400).json({
                 message: 'Could not find a project to delete',
@@ -878,6 +883,7 @@ const deleteTheProjectDirectly = async (req, res) => {
             message: 'delete project successfully',
         });
     } catch (error) {
+      console.log(error)
         return res.status(404).json({
             message: 'Can not delete project',
         });
