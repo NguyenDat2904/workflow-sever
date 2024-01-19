@@ -4,7 +4,7 @@ const modelWorkProject = require('../models/project');
 const modelNotification = require('../models/notification');
 const { isObjectIdOrHexString } = require('mongoose');
 const { parse } = require('dotenv');
-const url=require('url')
+const url = require('url');
 require('dotenv').config();
 
 const listIssuesProject = async (req, res) => {
@@ -16,36 +16,36 @@ const listIssuesProject = async (req, res) => {
         const search = req.query.search || '';
         const sprintID = req.query.sprintID;
         const parentIssueID = req.query.parentIssueID;
-        const urlString=req.url;
-        const parseUrl=url.parse(urlString,true)
+        const urlString = req.url;
+        const parseUrl = url.parse(urlString, true);
         const assignee = parseUrl.query;
-        const typeBug=req.query.typeBug
-        const typeUserStory=req.query.typeUserStory
-        const typeTask=req.query.typeTask
+        const typeBug = req.query.typeBug;
+        const typeUserStory = req.query.typeUserStory;
+        const typeTask = req.query.typeTask;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const arrayAssignee=assignee.assignee?.split("-")
-        console.log(arrayAssignee)
+        const arrayAssignee = assignee.assignee?.split('-');
+        console.log(arrayAssignee);
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
             ...(parentIssueID !== undefined && { parentIssue: parentIssueID }),
-            ...(arrayAssignee!== undefined && {
-                assignee:{$in:arrayAssignee} ,
+            ...(arrayAssignee !== undefined && {
+                assignee: { $in: arrayAssignee },
             }),
         });
-        const type=[]
-        if(typeBug!==undefined){
-            type.push(typeBug)
+        const type = [];
+        if (typeBug !== undefined) {
+            type.push(typeBug);
         }
-        if(typeUserStory!==undefined){
-            type.push(typeUserStory)
+        if (typeUserStory !== undefined) {
+            type.push(typeUserStory);
         }
-        if(typeTask!==undefined){
-            type.push(typeTask)
+        if (typeTask !== undefined) {
+            type.push(typeTask);
         }
         const totalPage = Math.ceil(lengthIssue.length / limitPage);
         const checkCodeProject = await modelIssue.aggregate([
@@ -58,11 +58,11 @@ const listIssuesProject = async (req, res) => {
                     ...(parentIssueID !== undefined && {
                         parentIssue: parentIssueID,
                     }),
-                    ...(arrayAssignee!== undefined && {
-                        assignee:{$in:arrayAssignee},
+                    ...(arrayAssignee !== undefined && {
+                        assignee: { $in: arrayAssignee },
                     }),
-                    ...(type.length>0&& {
-                        issueType:{$in:type}
+                    ...(type.length > 0 && {
+                        issueType: { $in: type },
                     }),
                     $or: [
                         { summary: { $regex: search } },
@@ -81,21 +81,24 @@ const listIssuesProject = async (req, res) => {
             },
             {
                 $lookup: {
-                    let: { userObjId: {$convert: {input: '$sprint', to : 'objectId', onError: '',onNull: ''}} },
+                    let: { userObjId: { $convert: { input: '$sprint', to: 'objectId', onError: '', onNull: '' } } },
                     from: 'sprints',
-                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] },sprint: { $exists: false } } }],
+                    pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$userObjId'] }, sprint: { $exists: false } } }],
                     as: 'infoSprints',
                 },
             },
             {
                 $lookup: {
                     from: 'users',
-                    let: { userObjId: {$convert: {input: '$assignee', to : 'objectId', onError: '',onNull: ''}}  },
-                    pipeline: [{ 
-                        $match: { 
-                            $expr: { $eq: ['$_id', '$$userObjId'] },
-                            assignee: { $exists: false }
-                } }],
+                    let: { userObjId: { $convert: { input: '$assignee', to: 'objectId', onError: '', onNull: '' } } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$_id', '$$userObjId'] },
+                                assignee: { $exists: false },
+                            },
+                        },
+                    ],
                     as: 'infoAssignee',
                 },
             },
@@ -294,11 +297,11 @@ const deleteIssue = async (req, res) => {
             message: 'Deleting issue failed',
         });
     }
-    const updateParentIssue=await modelIssue.find({parentIssue:issueID})
-    updateParentIssue.forEach(async(element)=>{
-        element.parentIssue=null
-         await element.save()
-    })
+    const updateParentIssue = await modelIssue.find({ parentIssue: issueID });
+    updateParentIssue.forEach(async (element) => {
+        element.parentIssue = null;
+        await element.save();
+    });
     if (issue) {
         const newNotification = new modelNotification({
             userID: issue?.assignee,
@@ -341,15 +344,17 @@ const listIssuesBroad = async (req, res) => {
         });
         const totalPage = Math.ceil(countIssue.length / limit);
         const checkIssues = await modelIssue.aggregate([
-            {$match:{
-                projectID: checkProject._id,
-                sprint: { $in: sprintID },
-                $or: [
-                    { assignee: { $regex: searchIssueUser } },
-                    { issueType: { $regex: searchIssueUser } },
-                    { sprint: { $regex: searchIssueUser } },
-                ],
-            }},
+            {
+                $match: {
+                    projectID: checkProject._id,
+                    sprint: { $in: sprintID },
+                    $or: [
+                        { assignee: { $regex: searchIssueUser } },
+                        { issueType: { $regex: searchIssueUser } },
+                        { sprint: { $regex: searchIssueUser } },
+                    ],
+                },
+            },
             {
                 $lookup: {
                     from: 'projects',
@@ -375,10 +380,8 @@ const listIssuesBroad = async (req, res) => {
                 },
             },
             { $skip: (skip - 1) * limit },
-            { $limit: limit }
-        ])
-            
-            
+            { $limit: limit },
+        ]);
 
         if (!checkIssues) {
             return res.status(400).json({
@@ -419,7 +422,8 @@ const searchIssues = async (req, res) => {
             .find({
                 projectID: { $in: idProject },
                 $or: [{ summary: { $regex: search } }, { name: { $regex: search } }],
-            }).populate({ path: 'projectID' })
+            })
+            .populate({ path: 'projectID' })
             .skip((skip - 1) * limit)
             .limit(limit);
         res.status(200).json({ data: issues, page: skip, totalPage });
@@ -461,7 +465,45 @@ const issueYourWork = async (req, res) => {
         });
     }
 };
+
+const changeParent = async (req, res) => {
+    try {
+        const { codeProject, idIssue } = req.params;
+        const { parentIssue } = req.body;
+
+        const project = await modelWorkProject.findOne({ codeProject });
+        const issue = await modelIssue.findById({ _id: idIssue });
+
+        if (!project || !issue) {
+            return res.status(400).json({
+                message: 'not found codeProject or idIssue',
+            });
+        }
+        if (issue.projectID.toString() !== project._id.toString()) {
+            return res.status(400).json({
+                message: "issue doesn't in the project",
+            });
+        }
+        if (issue._id.toString() === parentIssue) {
+            return res.status(400).json({
+                message: "idIssue have the same id this issue",
+            });
+        }
+        issue.parentIssue = parentIssue;
+        await issue.save();
+        res.json({
+            message: 'change parent issue is successfully',
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            error: error.message,
+        });
+    }
+};
+
 module.exports = {
+    changeParent,
     listIssuesBroad,
     editInformationIssue,
     listIssuesProject,
