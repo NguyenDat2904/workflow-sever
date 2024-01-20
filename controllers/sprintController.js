@@ -107,25 +107,31 @@ const editInformationSprint=async(req,res)=>{
 //delete sprint
 const deleteSprint=async(req,res)=>{
     try {
-        const {idSprint}=req.params
+        const {idSprint,codeProject}=req.params
         if(!idSprint){
             return res.status(404).json({
                 message:'is not id sprint'
             })
         }
+        const project=await modelWorkProject.findOne({codeProject})
         const sprint=await modelSprint.findByIdAndDelete({_id:idSprint})
         if (!sprint) {
             return res.status(400).json({
                 message: 'Deleting sprint failed',
             });
         }
+        const updateNameSprint=await modelSprint.find({projectID:project._id})
         const updateParentIssue=await modelIssue.find({sprint:idSprint.toString()})
         updateParentIssue.forEach(async(element)=>{
             element.sprint=null
              await element.save()
         })
+        updateNameSprint.forEach(async(element,index)=>{
+            element.name=`${codeProject} Sprint ${index + 1}`
+            await element.save()
+        })
         res.status(200).json({
-            message: 'Deleted issue successfully',
+            message: 'Deleted issue successfully'
         });
     } catch (error) {
         res.status(404).json({

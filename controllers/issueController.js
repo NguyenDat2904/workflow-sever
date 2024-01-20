@@ -45,7 +45,7 @@ const listIssuesProject = async (req, res) => {
                 sprint: sprintID==="null"?null:sprintID,
             }),
             ...(parentIssueID !== undefined && {
-                parentIssue: parentIssueID,
+                parentIssue: parentIssueID==="null"?null:parentIssueID,
             }),
             ...(arrayAssignee!== undefined && {
                 assignee:{$in:arrayAssignee},
@@ -64,7 +64,7 @@ const listIssuesProject = async (req, res) => {
                         sprint: sprintID==="null"?null:sprintID,
                     }),
                     ...(parentIssueID !== undefined && {
-                        parentIssue: parentIssueID,
+                        parentIssue:  parentIssueID==="null"?null:parentIssueID,
                     }),
                     ...(arrayAssignee !== undefined && {
                         assignee: { $in: arrayAssignee },
@@ -291,7 +291,7 @@ const editInformationIssue = async (req, res) => {
 };
 //delete issue
 const deleteIssue = async (req, res) => {
-    const { issueID } = req.params;
+    const { issueID,codeProject } = req.params;
 
     if (!issueID) {
         return res.status(400).json({
@@ -305,9 +305,15 @@ const deleteIssue = async (req, res) => {
             message: 'Deleting issue failed',
         });
     }
+    const project =await modelWorkProject.findOne({codeProject})
+    const updateNameIssue=await modelIssue.find({projectID:project._id})
     const updateParentIssue = await modelIssue.find({ parentIssue: issueID });
     updateParentIssue.forEach(async (element) => {
         element.parentIssue = null;
+        await element.save();
+    });
+    updateNameIssue.forEach(async (element,index) => {
+        element.name=`${codeProject}-${index + 1}`
         await element.save();
     });
     if (issue) {
@@ -323,7 +329,7 @@ const deleteIssue = async (req, res) => {
         await newNotification.save();
     }
     res.json({
-        message: 'Deleted issue successfully',
+        message: 'Deleted issue successfully'
     });
 };
 //list issues in broad
