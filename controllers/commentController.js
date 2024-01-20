@@ -58,7 +58,7 @@ const addComment = async (req, res) => {
                 const newNotification = new modelNotification({
                     userID: id,
                     reporter: _id,
-                    link: `${process.env.URL_ISSUE}/projects/${issue.projectID.codeProject}/issues/${issue._id}`,
+                    link: `${process.env.URL_FE}/projects/${issue.projectID.codeProject}/issues/${issue._id}`,
                     title: `${name} mentioned you in a comment`,
                     content,
                     notificationTime: new Date(),

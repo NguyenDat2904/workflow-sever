@@ -22,6 +22,12 @@ router.patch(
     permissions('update-issue'),
     issueController.editInformationIssue,
 );
+router.patch(
+    '/:codeProject/change-parent/:idIssue',
+    authMidddlerware,
+    permissions('update-issue'),
+    issueController.changeParent,
+);
 
 // delete
 router.delete(
