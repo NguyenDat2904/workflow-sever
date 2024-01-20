@@ -2,6 +2,7 @@
 const modelSprint = require('../models/sprint');
 const modelWorkProject = require('../models/project');
 const modelIssues=require('../models/issue')
+const modelIssue=require('../models/issue')
 // add sprint
 const addNewSprint = async (req, res) => {
     try {
@@ -118,6 +119,11 @@ const deleteSprint=async(req,res)=>{
                 message: 'Deleting sprint failed',
             });
         }
+        const updateParentIssue=await modelIssue.find({sprint:idSprint.toString()})
+        updateParentIssue.forEach(async(element)=>{
+            element.sprint=null
+             await element.save()
+        })
         res.status(200).json({
             message: 'Deleted issue successfully',
         });
