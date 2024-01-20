@@ -27,19 +27,11 @@ const listIssuesProject = async (req, res) => {
                 message: 'is not id or jobCode',
             });
         }
-        const arrayAssignee = assignee.assignee?.split('-');
-        console.log(arrayAssignee);
+        const arrayAssignee=assignee.assignee?.split("-")
         const checkProject = await modelWorkProject.findOne({ codeProject });
-        const lengthIssue = await modelIssue.find({
-            projectID: checkProject._id,
-            ...(parentIssueID !== undefined && { parentIssue: parentIssueID }),
-            ...(arrayAssignee !== undefined && {
-                assignee: { $in: arrayAssignee },
-            }),
-        });
-        const type = [];
-        if (typeBug !== undefined) {
-            type.push(typeBug);
+        const type=[]
+        if(typeBug!==undefined){
+            type.push(typeBug)
         }
         if (typeUserStory !== undefined) {
             type.push(typeUserStory);
@@ -47,13 +39,29 @@ const listIssuesProject = async (req, res) => {
         if (typeTask !== undefined) {
             type.push(typeTask);
         }
+        const lengthIssue = await modelIssue.find({
+            projectID: checkProject._id,
+            ...(sprintID && {
+                sprint: sprintID==="null"?null:sprintID,
+            }),
+            ...(parentIssueID !== undefined && {
+                parentIssue: parentIssueID,
+            }),
+            ...(arrayAssignee!== undefined && {
+                assignee:{$in:arrayAssignee},
+            }),
+            ...(type.length>0&& {
+                issueType:{$in:type}
+            }),
+        });
+
         const totalPage = Math.ceil(lengthIssue.length / limitPage);
         const checkCodeProject = await modelIssue.aggregate([
             {
                 $match: {
                     projectID: checkProject._id,
                     ...(sprintID && {
-                        sprint: sprintID,
+                        sprint: sprintID==="null"?null:sprintID,
                     }),
                     ...(parentIssueID !== undefined && {
                         parentIssue: parentIssueID,
