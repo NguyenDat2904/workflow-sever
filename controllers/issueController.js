@@ -213,8 +213,9 @@ const addNewIssues = async (req, res) => {
                 message: 'Project not found',
             });
         }
-        const issue = await modelIssue.find({ projectID: project._id });
-        const nameIssue = `${codeProject}-${issue.length + 1}`;
+        const issue = await modelIssue.find({ projectID: project._id }).sort({createdAt:-1});
+        const splitName=issue[0]?.name?.split("-")
+        const nameIssue =issue.length>0? `${codeProject}-${Number(splitName[1]) + 1}`:`${codeProject}-${1}`;
         const newIssues = new modelIssue({ ...dataIssue, projectID: project._id, name: nameIssue });
         await newIssues.save();
         if (dataIssue?.assignee) {
@@ -291,7 +292,7 @@ const editInformationIssue = async (req, res) => {
 };
 //delete issue
 const deleteIssue = async (req, res) => {
-    const { issueID,codeProject } = req.params;
+    const { issueID } = req.params;
 
     if (!issueID) {
         return res.status(400).json({
@@ -305,15 +306,9 @@ const deleteIssue = async (req, res) => {
             message: 'Deleting issue failed',
         });
     }
-    const project =await modelWorkProject.findOne({codeProject})
-    const updateNameIssue=await modelIssue.find({projectID:project._id})
     const updateParentIssue = await modelIssue.find({ parentIssue: issueID });
     updateParentIssue.forEach(async (element) => {
         element.parentIssue = null;
-        await element.save();
-    });
-    updateNameIssue.forEach(async (element,index) => {
-        element.name=`${codeProject}-${index + 1}`
         await element.save();
     });
     if (issue) {

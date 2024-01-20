@@ -15,7 +15,8 @@ const addNewSprint = async (req, res) => {
         
         const project= await modelWorkProject.findOne({codeProject})
          const listSprint=await modelSprint.find({projectID:project._id}).sort({createdAt:-1})
-        const nameSprin=`${codeProject} Sprint ${listSprint.length + 1}`
+         const splitName=listSprint[0]?.name?.split(" ")
+        const nameSprin= `${codeProject} Sprint ${Number(splitName[2]) + 1}`
         const startDate=listSprint[0]?.endDate
         const endDate=startDate + 1209600033
         const newIssue = new modelSprint({
@@ -107,28 +108,22 @@ const editInformationSprint=async(req,res)=>{
 //delete sprint
 const deleteSprint=async(req,res)=>{
     try {
-        const {idSprint,codeProject}=req.params
+        const {idSprint}=req.params
         if(!idSprint){
             return res.status(404).json({
                 message:'is not id sprint'
             })
         }
-        const project=await modelWorkProject.findOne({codeProject})
         const sprint=await modelSprint.findByIdAndDelete({_id:idSprint})
         if (!sprint) {
             return res.status(400).json({
                 message: 'Deleting sprint failed',
             });
         }
-        const updateNameSprint=await modelSprint.find({projectID:project._id})
         const updateParentIssue=await modelIssue.find({sprint:idSprint.toString()})
         updateParentIssue.forEach(async(element)=>{
             element.sprint=null
              await element.save()
-        })
-        updateNameSprint.forEach(async(element,index)=>{
-            element.name=`${codeProject} Sprint ${index + 1}`
-            await element.save()
         })
         res.status(200).json({
             message: 'Deleted issue successfully'
