@@ -1,6 +1,6 @@
 const modelProject = require('../models/project');
 const modelSprint = require('../models/sprint');
-const modelIssues=require('../models/issue')
+const modelIssues = require('../models/issue');
 const dataImgProject = require('../imgProject.json');
 const { transporter, checkEmail } = require('../helpers/email');
 const jwt = require('jsonwebtoken');
@@ -28,11 +28,22 @@ const getProject = async (req, res) => {
             {
                 $match: {
                     $or: [
-                        { admin:email, deleteProject:deleteProject==="true"?true:false ,nameProject: { $regex: search } },
-                        { listManagers:email,deleteProject:deleteProject==="true"?true:false,nameProject: { $regex: search }  },
-                        { listMembers:email,deleteProject:deleteProject==="true"?true:false,nameProject: { $regex: search }  },
+                        {
+                            admin: email,
+                            deleteProject: deleteProject === 'true' ? true : false,
+                            nameProject: { $regex: search },
+                        },
+                        {
+                            listManagers: email,
+                            deleteProject: deleteProject === 'true' ? true : false,
+                            nameProject: { $regex: search },
+                        },
+                        {
+                            listMembers: email,
+                            deleteProject: deleteProject === 'true' ? true : false,
+                            nameProject: { $regex: search },
+                        },
                     ],
-
                 },
             },
             {
@@ -142,7 +153,7 @@ const addNewWork = async (req, res) => {
         }
         const checkCodeProject = await modelProject.find({ codeProject: codeProject });
         const checkNameProject = await modelProject.find({ nameProject: nameProject });
-        if ( checkNameProject.length > 0) {
+        if (checkNameProject.length > 0) {
             return res.status(400).json({
                 message: 'already exists checkNameProject',
             });
@@ -152,7 +163,7 @@ const addNewWork = async (req, res) => {
                 message: 'already exists checkCodeProject',
             });
         }
-         
+
         const randomImgProject = (Math.random() * dataImgProject.length) | 0;
         const newProject = new modelProject({
             nameProject: nameProject,
@@ -196,7 +207,7 @@ const addNewWork = async (req, res) => {
 const deleteProject = async (req, res) => {
     try {
         const { codeProject } = req.params;
-        const {name} = req.user
+        const { name } = req.user;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id',
@@ -210,21 +221,21 @@ const deleteProject = async (req, res) => {
         }
         if (findProjectID.deleteProject === false) {
             findProjectID.deleteProject = true;
-            findProjectID.nameUserDelete=name
-            findProjectID.deleteAt=new Date()
+            findProjectID.nameUserDelete = name;
+            findProjectID.deleteAt = new Date();
             await findProjectID.save();
         }
         setTimeout(async () => {
             const checkAfterTimeOut = await modelProject.findOne({ codeProject: codeProject });
             if (checkAfterTimeOut.deleteProject === true) {
                 await modelProject.findOneAndDelete({ codeProject: codeProject });
-                await modelSprint.deleteMany({projectID:project._id});
-                await modelIssues.deleteMany({projectID:project._id});
+                await modelSprint.deleteMany({ projectID: project._id });
+                await modelIssues.deleteMany({ projectID: project._id });
             }
         }, 86400000);
         return res.status(200).json({
             message: 'Moved to trash',
-            data:findProjectID.nameUserDelete
+            data: findProjectID.nameUserDelete,
         });
     } catch (error) {
         console.log(error);
@@ -274,14 +285,21 @@ const deleteExistingMembers = async (req, res) => {
                 message: 'Is nos id or _idMemberDelete',
             });
         }
+        const user = await modelUser.findById({ _id: _idMemberDelete });
         const project = await modelProject.findOneAndUpdate(
             { codeProject: codeProject },
-            { $pull: { userMembers: _idMemberDelete } },
+            { $pull: { listMembers: user.email } },
             { new: true },
         );
+        if (!user || !project) {
+            return res.status(404).json({
+                message: 'Could not find project or user',
+            });
+        }
+        const newProject = await project.save();
         return res.status(200).json({
             message: 'Delete Existing Members Successfully',
-            date: project,
+            data: newProject,
         });
     } catch (error) {
         return res.status(404).json({
@@ -350,7 +368,6 @@ const listMember = async (req, res) => {
         }
         const memberProject = await modelProject.aggregate([
             {
-               
                 $lookup: {
                     from: 'users',
                     localField: 'admin',
@@ -359,39 +376,42 @@ const listMember = async (req, res) => {
                 },
             },
             {
-              $lookup: {
-                from: 'users',
-                localField: 'listManagers',
-                foreignField: 'email',
-                as: 'infoListManagers',
+                $lookup: {
+                    from: 'users',
+                    localField: 'listManagers',
+                    foreignField: 'email',
+                    as: 'infoListManagers',
+                },
             },
-            },{
-              $lookup: {
-                from: 'users',
-                localField: 'listMembers',
-                foreignField: 'email',
-                as: 'infoUserMembers',
-            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'listMembers',
+                    foreignField: 'email',
+                    as: 'infoUserMembers',
+                },
             },
             { $match: { codeProject: codeProject } },
         ]);
         const listMB = [
             ...(memberProject[0]?.infoUserMembers || []),
             ...(memberProject[0]?.infoListManagers || []),
-            (memberProject[0]?.infoAdmin || []),
+            memberProject[0]?.infoAdmin || [],
         ];
         const roles = {
-          infoUserMembers : "member",
-          infoListManagers : "managers",
-          infoAdmin: "admin",
-      };
-      const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
+            infoUserMembers: 'member',
+            infoListManagers: 'managers',
+            infoAdmin: 'admin',
+        };
+        const result = listMB.reduceRight((accumulator, currentValue) => accumulator.concat(currentValue));
 
-      const resultWithRole = result.map(user => {
-          const role = Object.keys(roles).find(key => memberProject[0]?.[key]?.some(member => member.email === user.email));
-          console.log(roles[role])
-          return { ...user, role: roles[role] };
-      });
+        const resultWithRole = result.map((user) => {
+            const role = Object.keys(roles).find((key) =>
+                memberProject[0]?.[key]?.some((member) => member.email === user.email),
+            );
+            console.log(roles[role]);
+            return { ...user, role: roles[role] };
+        });
         return res.status(200).json(resultWithRole);
     } catch (error) {
         console.log(error);
@@ -870,10 +890,10 @@ const deleteTheProjectDirectly = async (req, res) => {
                 message: 'is not id Project',
             });
         }
-        const project =await modelProject.findOne({codeProject})
+        const project = await modelProject.findOne({ codeProject });
         const deleteProject = await modelProject.findByIdAndDelete({ _id: project._id });
-        await modelSprint.deleteMany({projectID:project._id});
-        await modelIssues.deleteMany({projectID:project._id});
+        await modelSprint.deleteMany({ projectID: project._id });
+        await modelIssues.deleteMany({ projectID: project._id });
         if (!deleteProject) {
             return res.status(400).json({
                 message: 'Could not find a project to delete',
@@ -883,7 +903,7 @@ const deleteTheProjectDirectly = async (req, res) => {
             message: 'delete project successfully',
         });
     } catch (error) {
-      console.log(error)
+        console.log(error);
         return res.status(404).json({
             message: 'Can not delete project',
         });
