@@ -22,6 +22,7 @@ const listIssuesProject = async (req, res) => {
         const typeBug = req.query.typeBug;
         const typeUserStory = req.query.typeUserStory;
         const typeTask = req.query.typeTask;
+        const typeSubTask=req.query.typeSubTask
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
@@ -38,6 +39,9 @@ const listIssuesProject = async (req, res) => {
         }
         if (typeTask !== undefined) {
             type.push(typeTask);
+        }
+        if(typeSubTask!==undefined){
+            type.push(typeSubTask)
         }
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
