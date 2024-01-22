@@ -31,7 +31,7 @@ router.patch(
     checkUserPermissions('update-project'),
     projectController.updatePermissions,
 );
-router.patch('/:codeProject/member/add', checkVerifyToken, projectController.addMembersToProject);
+router.patch('/:codeProject/member/add', checkVerifyToken, checkUserPermissions('update-project'), projectController.addMembersToProject);
 
 // post
 router.post('/create', authMidddlerware, projectController.addNewWork);
