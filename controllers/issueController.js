@@ -432,6 +432,9 @@ const listIssuesBroad = async (req, res) => {
                     as: 'infoAssignee',
                 },
             },
+            { $unwind: { path: '$infoProjects', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoSprints', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoAssignee', preserveNullAndEmptyArrays: true } },
             { $skip: (skip - 1) * limit },
             { $limit: limit },
         ]);
