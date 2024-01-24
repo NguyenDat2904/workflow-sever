@@ -48,6 +48,7 @@ const listSprint = async (req, res) => {
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
         const search = req.query.search || '';
+        const status=req.query.status
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id project',
@@ -57,7 +58,7 @@ const listSprint = async (req, res) => {
         const totalSprint = await modelSprint.find({ projectID: checkProject._id });
         const totalPage = Math.ceil(totalSprint.length / limit);
         const sprintProject = await modelSprint
-            .find({ projectID: checkProject._id, $or: [{ name: { $regex: search } }, { sprintGoal: { $regex: search } }] })
+            .find({ projectID: checkProject._id,...(status!==undefined && {status:status}), $or: [{ name: { $regex: search } }, { sprintGoal: { $regex: search } }] })
             .sort({ createdAt: -1 })
             .skip((skip - 1) * limit)
             .limit(limit);
