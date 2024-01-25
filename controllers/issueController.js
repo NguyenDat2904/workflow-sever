@@ -274,7 +274,7 @@ const editInformationIssue = async (req, res) => {
             }
         }
         const issueEdit = await checkIssue.save();
-        if (checkIssue.assignee === issueEdit.assignee && issueEdit.assignee !== '') {
+        if (checkIssue.assignee === issueEdit.assignee && issueEdit.assignee) {
             const newNotification = new modelNotification({
                 userID: issueEdit?.assignee,
                 reporter: issueEdit?.reporter,
