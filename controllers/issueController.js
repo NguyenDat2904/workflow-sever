@@ -338,15 +338,37 @@ const listIssuesBroad = async (req, res) => {
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
         const searchIssueUser = req.query.issueUser || '';
+        const urlString = req.url;
+        const parseUrl = url.parse(urlString, true);
+        const assignee = parseUrl.query;
+        const typeBug = req.query.typeBug;
+        const typeUserStory = req.query.typeUserStory;
+        const typeTask = req.query.typeTask;
+        const typeSubTask=req.query.typeSubTask
+        const IDsprint = req.query.sprintID;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id project',
             });
         }
+        const arrayAssignee=assignee.assignee?.split("-")
+        const type=[]
+        if(typeBug!==undefined){
+            type.push(typeBug)
+        }
+        if (typeUserStory !== undefined) {
+            type.push(typeUserStory);
+        }
+        if (typeTask !== undefined) {
+            type.push(typeTask);
+        }
+        if(typeSubTask!==undefined){
+            type.push(typeSubTask)
+        }
         const checkProject = await modelWorkProject.findOne({ codeProject });
         const sprint = await modelSprint.find({ projectID: checkProject._id, status: 'RUNNING' });
 
-        console.log(sprint);
+ 
         const sprintID = [];
         sprint.forEach((element) => {
             sprintID.push(element._id.toString());
@@ -354,6 +376,15 @@ const listIssuesBroad = async (req, res) => {
         const countIssue = await modelIssue.find({
             projectID: checkProject._id,
             sprint: { $in: sprintID },
+            ...(type.length > 0 && {
+                issueType: { $in: type },
+            }),
+            ...(arrayAssignee !== undefined && {
+                assignee: { $in: arrayAssignee },
+            }),
+            ...(IDsprint && {
+                sprint: IDsprint==="null"?null:IDsprint,
+            }),
         });
         const totalPage = Math.ceil(countIssue.length / limit);
         const checkIssues = await modelIssue.aggregate([
@@ -361,6 +392,15 @@ const listIssuesBroad = async (req, res) => {
                 $match: {
                     projectID: checkProject._id,
                     sprint: { $in: sprintID },
+                    ...(type.length > 0 && {
+                        issueType: { $in: type },
+                    }),
+                    ...(arrayAssignee !== undefined && {
+                        assignee: { $in: arrayAssignee },
+                    }),
+                    ...(IDsprint && {
+                        sprint: IDsprint==="null"?null:IDsprint,
+                    }),
                     $or: [
                         { assignee: { $regex: searchIssueUser } },
                         { issueType: { $regex: searchIssueUser } },
@@ -392,6 +432,9 @@ const listIssuesBroad = async (req, res) => {
                     as: 'infoAssignee',
                 },
             },
+            { $unwind: { path: '$infoProjects', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoSprints', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$infoAssignee', preserveNullAndEmptyArrays: true } },
             { $skip: (skip - 1) * limit },
             { $limit: limit },
         ]);
