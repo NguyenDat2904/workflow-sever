@@ -13,6 +13,8 @@ const getNotifications = async (req, res) => {
         .populate({
             path: 'reporter',
             select: 'imgCover',
+        }).populate({
+            path: 'userID',
         });
     if (!notification)
         return res.status(400).json({

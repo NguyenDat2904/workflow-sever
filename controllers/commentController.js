@@ -8,14 +8,15 @@ const listComment = async (req, res) => {
         const { issueID } = req.params;
         const skip = parseInt(req.query.skip) || 1;
         const limit = parseInt(req.query.limit) || 25;
-        const issue = await  modelIssue.findOne({name: issueID})
-        if(!issue){
-             return res.status(400).json({
+        const issue = await modelIssue.findOne({ name: issueID });
+        if (!issue) {
+            return res.status(400).json({
                 message: 'not found issue',
             });
         }
         const comments = await modelComment
-            .find({ issueID: issue._id }).populate({ path: 'authorID', select: '-passWord' })
+            .find({ issueID: issue._id })
+            .populate({ path: 'authorID', select: '-passWord' })
             .skip((skip - 1) * limit)
             .limit(limit);
 
@@ -34,10 +35,10 @@ const listComment = async (req, res) => {
 
 const addComment = async (req, res) => {
     try {
-        const { content, issueID, mentionUsers } = req.body;
+        const { content, nameIssue, mentionUsers } = req.body;
         const { _id, name } = req.user;
 
-        const issue = await modelIssue.findById({ _id: issueID }).populate({
+        const issue = await modelIssue.findOne({ name: nameIssue }).populate({
             path: 'projectID',
             select: 'codeProject',
         });
@@ -47,7 +48,7 @@ const addComment = async (req, res) => {
             });
 
         const newComment = new modelComment({
-            issueID,
+            issueID: issue._id,
             authorID: _id,
             mentionUsers,
             content,
@@ -58,7 +59,7 @@ const addComment = async (req, res) => {
                 const newNotification = new modelNotification({
                     userID: id,
                     reporter: _id,
-                    link: `${process.env.URL_FE}/projects/${issue.projectID.codeProject}/issues/${issue._id}`,
+                    link: `${process.env.URL_FE}/projects/${issue.projectID.codeProject}/issues/${issue.name}`,
                     title: `${name} mentioned you in a comment`,
                     content,
                     notificationTime: new Date(),
