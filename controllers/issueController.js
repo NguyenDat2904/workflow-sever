@@ -22,17 +22,17 @@ const listIssuesProject = async (req, res) => {
         const typeBug = req.query.typeBug;
         const typeUserStory = req.query.typeUserStory;
         const typeTask = req.query.typeTask;
-        const typeSubTask=req.query.typeSubTask
+        const typeSubTask = req.query.typeSubTask;
         if (!codeProject) {
             return res.status(400).json({
                 message: 'is not id or jobCode',
             });
         }
-        const arrayAssignee=assignee.assignee?.split("-")
+        const arrayAssignee = assignee.assignee?.split('-');
         const checkProject = await modelWorkProject.findOne({ codeProject });
-        const type=[]
-        if(typeBug!==undefined){
-            type.push(typeBug)
+        const type = [];
+        if (typeBug !== undefined) {
+            type.push(typeBug);
         }
         if (typeUserStory !== undefined) {
             type.push(typeUserStory);
@@ -40,22 +40,22 @@ const listIssuesProject = async (req, res) => {
         if (typeTask !== undefined) {
             type.push(typeTask);
         }
-        if(typeSubTask!==undefined){
-            type.push(typeSubTask)
+        if (typeSubTask !== undefined) {
+            type.push(typeSubTask);
         }
         const lengthIssue = await modelIssue.find({
             projectID: checkProject._id,
             ...(sprintID && {
-                sprint: sprintID==="null"?null:sprintID,
+                sprint: sprintID === 'null' ? null : sprintID,
             }),
             ...(parentIssueID !== undefined && {
-                parentIssue: parentIssueID==="null"?null:parentIssueID,
+                parentIssue: parentIssueID === 'null' ? null : parentIssueID,
             }),
-            ...(arrayAssignee!== undefined && {
-                assignee:{$in:arrayAssignee},
+            ...(arrayAssignee !== undefined && {
+                assignee: { $in: arrayAssignee },
             }),
-            ...(type.length>0&& {
-                issueType:{$in:type}
+            ...(type.length > 0 && {
+                issueType: { $in: type },
             }),
         });
 
@@ -65,10 +65,10 @@ const listIssuesProject = async (req, res) => {
                 $match: {
                     projectID: checkProject._id,
                     ...(sprintID && {
-                        sprint: sprintID==="null"?null:sprintID,
+                        sprint: sprintID === 'null' ? null : sprintID,
                     }),
                     ...(parentIssueID !== undefined && {
-                        parentIssue:  parentIssueID==="null"?null:parentIssueID,
+                        parentIssue: parentIssueID === 'null' ? null : parentIssueID,
                     }),
                     ...(arrayAssignee !== undefined && {
                         assignee: { $in: arrayAssignee },
@@ -217,16 +217,16 @@ const addNewIssues = async (req, res) => {
                 message: 'Project not found',
             });
         }
-        const issue = await modelIssue.find({ projectID: project._id }).sort({createdAt:-1});
-        const splitName=issue[0]?.name?.split("-")
-        const nameIssue =issue.length>0? `${codeProject}-${Number(splitName[1]) + 1}`:`${codeProject}-${1}`;
+        const issue = await modelIssue.find({ projectID: project._id }).sort({ createdAt: -1 });
+        const splitName = issue[0]?.name?.split('-');
+        const nameIssue = issue.length > 0 ? `${codeProject}-${Number(splitName[1]) + 1}` : `${codeProject}-${1}`;
         const newIssues = new modelIssue({ ...dataIssue, projectID: project._id, name: nameIssue });
         await newIssues.save();
         if (dataIssue?.assignee) {
             const newNotification = new modelNotification({
                 userID: dataIssue?.assignee,
                 reporter: dataIssue?.reporter,
-                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${newIssues._id}`,
+                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${newIssues.name}`,
                 title: `${req.user.name} assigned an issue to you`,
                 content: `${dataIssue?.summary}`,
                 createdAt: new Date(),
@@ -274,11 +274,11 @@ const editInformationIssue = async (req, res) => {
             }
         }
         const issueEdit = await checkIssue.save();
-        if (checkIssue.assignee === issueEdit.assignee) {
+        if (checkIssue.assignee === issueEdit.assignee && issueEdit.assignee !== '') {
             const newNotification = new modelNotification({
-                userID: checkIssue?.assignee,
+                userID: issueEdit?.assignee,
                 reporter: issueEdit?.reporter,
-                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${checkIssue._id}`,
+                link: `${process.env.URL_FE}/projects/${codeProject}/issues/${checkIssue.name}`,
                 title: `${req.user.name} changed a your issue`,
                 content: `${checkIssue.summary}`,
                 createdAt: new Date(),
@@ -315,11 +315,11 @@ const deleteIssue = async (req, res) => {
         element.parentIssue = null;
         await element.save();
     });
-    if (issue) {
+    if (issue.assignee) {
         const newNotification = new modelNotification({
             userID: issue?.assignee,
             reporter: issue?.reporter,
-            link: '',
+            link: `${process.env.URL_FE}/your-Work`,
             title: `${req.user.name} has deleted one of your issue`,
             content: `${issue.summary}`,
             createdAt: new Date(),
@@ -328,7 +328,7 @@ const deleteIssue = async (req, res) => {
         await newNotification.save();
     }
     res.json({
-        message: 'Deleted issue successfully'
+        message: 'Deleted issue successfully',
     });
 };
 //list issues in broad
@@ -499,7 +499,7 @@ const changeParent = async (req, res) => {
         }
         if (issue._id.toString() === parentIssue) {
             return res.status(400).json({
-                message: "idIssue have the same id this issue",
+                message: 'idIssue have the same id this issue',
             });
         }
         issue.parentIssue = parentIssue;
